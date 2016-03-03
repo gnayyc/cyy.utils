@@ -7,7 +7,6 @@
   + `dicom2nii "none" <subject_list_file> <protocol_list_file> <output_dir> [subdir_name]`
     + `dicom2nii “none” subject.txt protocol.txt ./MRI`
 2. NeuroBattery # for multimodalities
-
 <pre>
 diff --git a/scripts/run_test.sh b/scripts/run_test.sh
 index 494fae8..60dc08a 100755
@@ -19,8 +18,13 @@ index 494fae8..60dc08a 100755
  ./process_modalities.sh
 -./warp_labels.h PEDS012 20131101
 +./warp_labels.sh PEDS012 20131101`
-
 </pre>
+  + `battery\_all.sh <input_subj_dir> <output_subj_dir>`
+    + set template dir (ANTS_TDIR) in `battery\_all.sh` first
+    + install `parallel` first
+    + will scan input\_subj\_dir for each subject each timepoint, and do 
+      + T1: `antsCorticalThickness.sh`
+      + DTI: `nii2dt.sh` and `antsNeuroimagingBattery` for DTI
 
 3. antsCorticalThickness
 4. antsMalfLabeling
