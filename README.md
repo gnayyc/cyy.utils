@@ -10,4 +10,4 @@
 3. antsCorticalThickness
 4. antsMalfLabeling
 5. KellyKapowski -d 3 -s exampleCorticalThickness.nii.gz,2,3 -o outputfilename
-6. test2
+6. 
