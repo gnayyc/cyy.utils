@@ -12,4 +12,5 @@ echo "    O_DIR = $TO_DIR/$S_DIR"
 
 battery.t1.sh ${1} ${2}
 battery.mm.sh ${1} ${2}
+battery.label.sh ${1} ${2}
 

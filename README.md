@@ -25,8 +25,8 @@ index 494fae8..60dc08a 100755
     + will scan input\_subj\_dir for each subject each timepoint, and do 
       + T1: `antsCorticalThickness.sh`
       + DTI: `nii2dt.sh` and `antsNeuroimagingBattery` for DTI
-3. antsCorticalThickness
-  + `cortical.sh`
+      + warp_label:
+3. 
 4. antsMalfLabeling
 5. KellyKapowski -d 3 -s exampleCorticalThickness.nii.gz,2,3 -o outputfilename
 6. 

@@ -28,6 +28,7 @@ export ANTS_T1=${ANTS_TDIR}/PTBP_T1_Head.nii.gz
 export ANTS_PROB=${ANTS_TDIR}/PTBP_T1_BrainCerebellumProbabilityMask.nii.gz
 export ANTS_MASK=${ANTS_TDIR}/PTBP_T1_BrainCerebellumProbabilityMask.nii.gz
 export ANTS_T1BRAIN=${ANTS_TDIR}/PTBP_T1_BrainCerebellum.nii.gz
+export ANTS_AAL=${ANTS_TDIR}/Labels/PTBP_T1_AAL.nii.gz
 #export ANTS_T1=${ANTS_TDIR}/T_template2.nii.gz
 #export ANTS_PROB=${ANTS_TDIR}/T_template_BrainCerebellumProbabilityMask.nii.gz
 #export ANTS_MASK=${ANTS_TDIR}/T_template_BrainCerebellumExtractionMask.nii.gz
