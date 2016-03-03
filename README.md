@@ -7,7 +7,7 @@
   + `dicom2nii "none" <subject_list_file> <protocol_list_file> <output_dir> [subdir_name]`
     + `dicom2nii “none” subject.txt protocol.txt ./MRI`
 2. NeuroBattery # for multimodalities
-`diff --git a/scripts/run_test.sh b/scripts/run_test.sh
+  + `diff --git a/scripts/run_test.sh b/scripts/run_test.sh
 index 494fae8..60dc08a 100755
 --- a/scripts/run_test.sh
 +++ b/scripts/run_test.sh
