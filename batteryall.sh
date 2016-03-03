@@ -23,12 +23,16 @@ if [ $# -ne 2 ]; then #  must be two
 fi
 
 #export T_DIR=/Users/cyyang/work/ants_templates/MICCAI2012-Multi-Atlas-Challenge-Data
-export ANTS_TDIR=/Volumes/Data/ants_templates/IXI
-export ANTS_T1=${ANTS_TDIR}/T_template2.nii.gz
-export ANTS_PROB=${ANTS_TDIR}/T_template_BrainCerebellumProbabilityMask.nii.gz
-export ANTS_MASK=${ANTS_TDIR}/T_template_BrainCerebellumExtractionMask.nii.gz
+export ANTS_TDIR=/Volumes/Ramdisk/data/template/PTBP
+export ANTS_T1=${ANTS_TDIR}/PTBP_T1_Head.nii.gz
+export ANTS_PROB=${ANTS_TDIR}/PTBP_T1_BrainCerebellumProbabilityMask.nii.gz
+export ANTS_MASK=${ANTS_TDIR}/PTBP_T1_BrainCerebellumProbabilityMask.nii.gz
+export ANTS_T1BRAIN=${ANTS_TDIR}/PTBP_T1_BrainCerebellum.nii.gz
+#export ANTS_T1=${ANTS_TDIR}/T_template2.nii.gz
+#export ANTS_PROB=${ANTS_TDIR}/T_template_BrainCerebellumProbabilityMask.nii.gz
+#export ANTS_MASK=${ANTS_TDIR}/T_template_BrainCerebellumExtractionMask.nii.gz
+#export ANTS_T1BRAIN=${ANTS_TDIR}/T_template2_BrainCerebellum.nii.gz
 export ANTS_PRIORS_DIR=${ANTS_TDIR}/Priors
-export ANTS_T1BRAIN=${ANTS_TDIR}/T_template2_BrainCerebellum.nii.gz
 export FROM_DIR=${1}
 export TO_DIR=${2}
 
