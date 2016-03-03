@@ -42,6 +42,8 @@ else
 	--anatomical-mask ${O_DIR}/${SID}_BrainExtractionMask.nii.gz \
 	--template ${ANTS_T1} \
 	--dti-flag DTI/dt.nii.gz/DTI_ \
+	# --rsbold-flag BOLD/bold_fc_1.nii.gz/BOLD_ 
+	# --pcasl-flag PCASL/pcasl_1.nii.gz/PCASL_ 
 	--template-transform-name ${SID}_SubjectToTemplate
 fi
 
