@@ -23,10 +23,16 @@ index 494fae8..60dc08a 100755
     + set template dir (ANTS_TDIR) in `battery\all.sh` first
     + install `parallel` first
     + will scan input\_subj\_dir for each subject each timepoint, and do 
-      + T1: `antsCorticalThickness.sh`
+      + T1: 
+        + `antsCorticalThickness.sh`
+          + `KellyKapowski`
       + DTI: `nii2dt.sh` and `antsNeuroimagingBattery` for DTI
       + warp_label:
-3. 
-4. antsMalfLabeling
-5. KellyKapowski -d 3 -s exampleCorticalThickness.nii.gz,2,3 -o outputfilename
-6. 
+3. `LabelGeometryMeasures imageDimension labelImage [intensityImage=none] [csvFile]`
+  + `LabelGeometryMeasures 3 labelImage`
+4. JointLabelFusion
+  + `antsJointLabelFusion.sh`: used for multi-atlas segmentation with joint label fusion
+6. Atlas
+  + [Mindboggle Data](http://www.mindboggle.info/data.html)
+  + [Mindboggle Label](http://www.mindboggle.info/faq/labels.html)
+
