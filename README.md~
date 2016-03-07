@@ -29,7 +29,7 @@ index 494fae8..60dc08a 100755
       + DTI: `nii2dt.sh` and `antsNeuroimagingBattery` for DTI
       + warp_label:
 3. `LabelGeometryMeasures imageDimension labelImage [intensityImage=none] [csvFile]`
-  + ` LabelGeometryMeasures 3 PEDS012_20131101_BrainSegmentation.nii.gz`
+  + `LabelGeometryMeasures 3 labelImage`
 4. JointLabelFusion
   + `antsJointLabelFusion.sh`: used for multi-atlas segmentation with joint label fusion
 6. Atlas
