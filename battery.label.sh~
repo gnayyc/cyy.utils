@@ -24,6 +24,10 @@ ${SUBJECTT1DIR}/${SUBJECTID}_aal.nii.gz \
 ${SUBJECTT1DIR}/${SUBJECTID}_BrainExtractionMask.nii.gz
 echo "      Labeling T1 for ${O_DIR} done"
 
+${ANTSPATH}/ImageMath 3 ${SUBJECTBOLDDIR}/${SUBJECTID}_BOLD_aal.nii.gz m \
+${SUBJECTBOLDDIR}/${SUBJECTID}_BOLD_aal.nii.gz \
+${SUBJECTBOLDDIR}/${SUBJECTID}_BOLD_brainmask.nii.gz
+
 ${ANTSPATH}/antsApplyTransforms -d 3 \
 -i ${ANTS_AAL} \
 -r ${SUBJECTBOLDDIR}/${SUBJECTID}_BOLD_brainmask.nii.gz \
