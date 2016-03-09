@@ -17,10 +17,10 @@ index 494fae8..60dc08a 100755
  ./process_t1.sh
  ./process_modalities.sh
 -./warp_labels.h PEDS012 20131101
-+./warp_labels.sh PEDS012 20131101`
++./warp_labels.sh PEDS012 20131101
 </pre>
   + `battery_all.sh <input_subj_dir> <output_subj_dir>`
-    + set template dir (ANTS_TDIR) in `battery\all.sh` first
+    + set template dir (ANTS\_TDIR) in `battery\all.sh` first
     + install `parallel` first
     + will scan input\_subj\_dir for each subject each timepoint, and do 
       + T1: 
