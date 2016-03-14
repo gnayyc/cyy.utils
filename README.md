@@ -25,7 +25,12 @@ index 494fae8..60dc08a 100755
     + will scan input\_subj\_dir for each subject each timepoint, and do 
       + T1: 
         + `antsCorticalThickness.sh`
-          + `KellyKapowski`
+          + `KellyKapowski` -> _CorticalThickness.nii.gz (DiReCt)
+          + To measure mean cortical thickness, measure mean value of the ROI
+            + `thick.test = as.array(antsImageRead(thick.test, 3))`
+	    + `mask.test = as.array(antsImageRead(mask.label.image.file, 3))`
+	    + `mask.label = ifelse( mask.test == label.id, 1, 0)`
+	    + `mean( thick.test[mask.label>0] )` # this is the mean thickness of the specific label
       + DTI: `nii2dt.sh` and `antsNeuroimagingBattery` for DTI
       + warp_label:
         + `antsApplyTransforms`, applied to an **input image**, transforms it according to a **reference image** and a **transform** (or a set of transforms): Transform atlas label (`PTBP_T1_AAL.nii.gz`) to subject space (`${SUBJECTID}_BrainExtractionMask.nii.gz`) using transforms (`${SUBJECTID}_TemplateToSubject1GenericAffine.mat` + `${SUBJECTID}_TemplateToSubject0Warp.nii.gz`) -> `${SUBJECTID}_aal.nii.gz`
