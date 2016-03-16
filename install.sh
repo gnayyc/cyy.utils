@@ -1,3 +1,3 @@
 #!/bin/sh
 
-install *.sh ~/bin
+install battery*.sh ~/bin
