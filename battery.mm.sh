@@ -31,7 +31,7 @@ else
 	--output-name ${SID}_ \
 	--anatomical ${O_DIR}/${SID}_BrainExtractionBrain.nii.gz \
 	--anatomical-mask ${O_DIR}/${SID}_BrainExtractionMask.nii.gz \
-	--template ${ANTS_T1} \
+	--template ${T_T1} \
 	--dti-flag DTI/dt.nii.gz/DTI_ \
 	--template-transform-name ${SID}_SubjectToTemplate
     ${ANTSPATH}/antsNeuroimagingBattery \
@@ -40,7 +40,7 @@ else
 	--output-name ${SID}_ \
 	--anatomical ${O_DIR}/${SID}_BrainExtractionBrain.nii.gz \
 	--anatomical-mask ${O_DIR}/${SID}_BrainExtractionMask.nii.gz \
-	--template ${ANTS_T1} \
+	--template ${T_T1} \
 	--dti-flag DTI/dt.nii.gz/DTI_ \
 	# --rsbold-flag BOLD/bold_fc_1.nii.gz/BOLD_ 
 	# --pcasl-flag PCASL/pcasl_1.nii.gz/PCASL_ 

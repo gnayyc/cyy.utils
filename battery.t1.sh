@@ -14,16 +14,18 @@ else
 	T1=${I_DIR}/MRI/${SID}_*mprage*.nii.gz
     elif [ -f ${I_DIR}/MRI/${SID}_*SPGR*.nii.gz ]; then
 	T1=${I_DIR}/MRI/${SID}_*SPGR*.nii.gz
+    elif [ -f ${I_DIR}/MRI/${SID}_*T1*.nii.gz ]; then
+	T1=${I_DIR}/MRI/${SID}_*T1*.nii.gz
     else
 	exit
     fi
     ${ANTSPATH}/antsCorticalThickness.sh -d 3 \
 	-a ${T1} \
-	-e ${ANTS_T1} \
-	-m ${ANTS_PROB} \
-	-f ${ANTS_MASK} \
-	-p ${ANTS_PRIORS_DIR}/priors%d.nii.gz \
-	-t ${ANTS_T1BRAIN} \
+	-e ${T_T1} \
+	-m ${T_PROB} \
+	-f ${T_MASK} \
+	-p ${T_PRIORS_DIR}/priors%d.nii.gz \
+	-t ${T_T1BRAIN} \
 	-k 1 \
 	-n 3 \
 	-w 0.25 \

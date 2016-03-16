@@ -23,17 +23,16 @@ if [ $# -ne 2 ]; then #  must be two
 fi
 
 #export T_DIR=/Users/cyyang/work/ants_templates/MICCAI2012-Multi-Atlas-Challenge-Data
-export ANTS_TDIR=/Volumes/Ramdisk/data/template/PTBP
-export ANTS_T1=${ANTS_TDIR}/PTBP_T1_Head.nii.gz
-export ANTS_PROB=${ANTS_TDIR}/PTBP_T1_BrainCerebellumProbabilityMask.nii.gz
-export ANTS_MASK=${ANTS_TDIR}/PTBP_T1_BrainCerebellumProbabilityMask.nii.gz
-export ANTS_T1BRAIN=${ANTS_TDIR}/PTBP_T1_BrainCerebellum.nii.gz
-export ANTS_AAL=${ANTS_TDIR}/Labels/PTBP_T1_AAL.nii.gz
-#export ANTS_T1=${ANTS_TDIR}/T_template2.nii.gz
-#export ANTS_PROB=${ANTS_TDIR}/T_template_BrainCerebellumProbabilityMask.nii.gz
-#export ANTS_MASK=${ANTS_TDIR}/T_template_BrainCerebellumExtractionMask.nii.gz
-#export ANTS_T1BRAIN=${ANTS_TDIR}/T_template2_BrainCerebellum.nii.gz
-export ANTS_PRIORS_DIR=${ANTS_TDIR}/Priors
+
+export T_DIR=/Volumes/Ramdisk/data/template/OASIS
+export T_T1=${ANTS_TDIR}/T_template0.nii.gz
+export T_PROB=${ANTS_TDIR}/T_template0_BrainCerebellumProbabilityMask.nii.gz
+export T_MASK=${ANTS_TDIR}/T_template0_BrainCerebellumExtractionMask.nii.gz
+export T_T1BRAIN=${ANTS_TDIR}/T_template0_BrainCerebellum.nii.gz
+export T_AAL=${ANTS_TDIR}/Labels/T_template0_AAL.nii.gz
+export T_DKT=${ANTS_TDIR}/Labels/T_template0_DKT.nii.gz
+export T_PRIORS_DIR=${ANTS_TDIR}/Priors
+
 export FROM_DIR=${1}
 export TO_DIR=${2}
 
