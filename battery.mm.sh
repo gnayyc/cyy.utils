@@ -2,8 +2,9 @@
 
 SID="${1}_${2}"
 S_DIR="${1}/${2}"
-I_DIR="$TMP_FROM_DIR/$S_DIR"
-O_DIR="$TMP_TO_DIR/$S_DIR"
+I_DIR="$FROM_DIR/$S_DIR"
+#O_DIR="$TO_DIR/$S_DIR"
+O_DIR=$TMP_DIR
 
 if [ ! -f "$I_DIR/DTI/${SID}_DTI_rgb.nii.gz" ]; then
     echo sh ${PIPEDREAMPATH}/nii2dt/nii2dt.sh \

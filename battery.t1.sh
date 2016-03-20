@@ -2,11 +2,14 @@
 
 SID="${1}_${2}"
 S_DIR="${1}/${2}"
-I_DIR="$TMP_FROM_DIR/$S_DIR"
-O_DIR="$TMP_TO_DIR/$S_DIR"
+I_DIR="$FROM_DIR/$S_DIR"
+O_DIR="$TO_DIR/$S_DIR"
 
 if [ -f "${O_DIR}/${SID}_BrainSegmentationTiledMosaic.png" ]; then
     echo "      antsCorticalThickness.sh for ${O_DIR} done"
+elif [ -f "${W_DIR}/${SID}_BrainSegmentationTiledMosaic.png" ]; then
+    echo "      antsCorticalThickness.sh for ${W_DIR} done"
+
 else
     if [ -f ${I_DIR}/MRI/${SID}_*3D*.nii.gz ]; then
 	T1=${I_DIR}/MRI/${SID}_*3D*.nii.gz
@@ -16,6 +19,8 @@ else
 	T1=${I_DIR}/MRI/${SID}_*SPGR*.nii.gz
     elif [ -f ${I_DIR}/MRI/${SID}_*T1*.nii.gz ]; then
 	T1=${I_DIR}/MRI/${SID}_*T1*.nii.gz
+    elif [ -f ${I_DIR}/MRI/${SID}_*t1*.nii.gz ]; then
+	T1=${I_DIR}/MRI/${SID}_*t1*.nii.gz
     else
 	exit
     fi
@@ -30,5 +35,5 @@ else
 	-n 3 \
 	-w 0.25 \
 	-q 1 \
-	-o ${O_DIR}/${SID}_ 
+	-o ${W_DIR}/${SID}_ 
 fi

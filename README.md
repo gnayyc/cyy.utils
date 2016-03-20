@@ -4,8 +4,8 @@
   + `dicom2series <sorted_MRI_dir> 0 0 <raw_subject_exam_dicom_dir>` # 0: don't empty field; 0: don't rename files
     + `dicom2series MRI/S1 0 0 raw/S1`
     + `cd raw; foreach s in *; dicom2series ../MRI/$s 0 0 $s; end`
-  + `dicom2nii "none" <subject_list_file> <protocol_list_file> <output_dir> [subdir_name]`
-    + `dicom2nii "none" subject.txt protocol.txt ./MRI`
+  + `dicom2nii "none" <subject_list_file> <protocol_list_file> <data_dir> <output_dir> [subdir_name]`
+    + `dicom2nii "none" subject.txt protocol.txt ./MRI ./input MRI`
 2. NeuroBattery # for multimodalities
 <pre>
 diff --git a/scripts/run_test.sh b/scripts/run_test.sh

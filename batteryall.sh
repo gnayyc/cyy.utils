@@ -47,7 +47,7 @@ for D in ${T_DEPENDENCIES[@]};
     if [[ ! -s ${D} ]];
       then
         echo "Error:  we can't find the $D template"
-        #exit
+        exit
       fi
   done
 
@@ -61,5 +61,5 @@ echo paralleling...
 export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=10
 find ${FROM_DIR} -d 2 | \
     awk -F"/" '{print $(NF-1) " " $(NF)}' | \
-    parallel --will-cite -j1 --linebuffer --colsep ' ' battery.sh {1} {2} # {SUBJ} {TIME}
+    parallel --will-cite -j2 --linebuffer --colsep ' ' battery.sh {1} {2} # {SUBJ} {TIME}
 
