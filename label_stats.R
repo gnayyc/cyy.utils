@@ -10,7 +10,8 @@ if ( length(args) != 3 ) {
 
 test.location = file.path(wdir, subj, time)
 
-if ( exists("test.location") ) {
+print(paste("Testing directory:", test.location))
+if ( file.exists(test.location) ) {
     print(paste("Testing directory:", test.location))
 }  else {
     stop(paste0("Testing directory (", test.location, ") does not exist!"))
@@ -19,7 +20,7 @@ if ( exists("test.location") ) {
 suppressMessages(library(ANTsR))
 
 mask.test = file.path(test.location, paste(subj, time,"BrainExtractionMask.nii.gz", sep="_"))
-if (exists("mask.test")) {
+if (file.exists(mask.test)) {
   mask.test = antsImageRead(mask.test, 3)
   bvol = length(which(as.array(mask.test)>0))*prod(antsGetSpacing(mask.test))
   mask.test = as.array(mask.test)
@@ -29,10 +30,8 @@ if (exists("mask.test")) {
 }
 
 seg.names = c("CSF", "Cortex", "White matter", "Deep Gray", "BrainStem", "Cerebellum")
-  #seg.glob = glob2rx("*BrainSegmentation.nii.gz")
-  #seg.test = list.files(path=test.location, recursive=T, full.names=T, pattern=seg.glob)[1]
 seg.file = file.path(test.location, paste(subj, time, "BrainSegmentation.nii.gz", sep="_"))
-if (exists("seg.file")) {
+if (file.exists(seg.file)) {
     seg.img = antsImageRead(seg.file, 3)
     seg.array = as.array(seg.img)
     test.values = rep(0,6)
@@ -58,22 +57,45 @@ if (exists("seg.file")) {
   #thick.glob = glob2rx("*CorticalThickness.nii.gz")
   #thick.test = list.files(path=test.location, recursive=T, full.names=T, pattern=thick.glob)[1]
   thick.file = file.path(test.location, paste(subj, time, "CorticalThickness.nii.gz", sep="_"))
-  if(exists("thick.file"))
+  if(file.exists(thick.file))
   {
       thick.array = as.array(antsImageRead(thick.file, 3))
-      mean.ct = mean( thick.array[seg.array == 2] )
+      mean.ct = mean( thick.array[seg.array == 2 & thick.array > 0] )
       print(paste("Mean cortical thickness:", mean.ct))
       
     dkt.file = file.path(test.location, paste(subj, time, "DKT.nii.gz", sep="_"))
-    if (exists("dkt.file")) {
-      data(DesikanKillianyTourville)
+    if (file.exists(dkt.file)) {
       dkt.array = as.array(antsImageRead(dkt.file, 3))
       dkt.values = unique(as.vector(dkt.array))
-      for (i in sort(dkt.values))
+      #for (i in sort(dkt.values))
+      for (i in 2035)
 	{
-	  mean.ct = mean( thick.array[dkt.array == i] )
+	  mean.ct = mean( thick.array[dkt.array == i & thick.array > 0] )
 	  print(paste0("Mean cortical thickness (", i, "): ", mean.ct))
 	}
+    }
+    aal.file = file.path(test.location, paste(subj, time, "aal.nii.gz", sep="_"))
+    if (file.exists(aal.file)) {
+      aal.array = as.array(antsImageRead(aal.file, 3))
+      aal.values = unique(as.vector(aal.array))
+      #for (i in sort(aal.values))
+      for (i in 82)
+	{
+	  mean.ct = mean( thick.array[aal.array == i & thick.array > 0] )
+	  print(paste0("Mean cortical thickness (", i, "): ", mean.ct))
+	}
+    } else {
+	aal.file = file.path(test.location, paste(subj, time, "AAL.nii.gz", sep="_"))
+	if (file.exists(aal.file)) {
+	      aal.array = as.array(antsImageRead(aal.file, 3))
+	      aal.values = unique(as.vector(aal.array))
+	      #for (i in sort(aal.values))
+      for (i in 82)
+		{
+		  mean.ct = mean( thick.array[aal.array == i & thick.array > 0] )
+		  print(paste0("Mean cortical thickness (", i, "): ", mean.ct))
+		}
+	} 
     }
   } 
 
@@ -83,7 +105,7 @@ if (exists("seg.file")) {
   #fa.glob = glob2rx("*fa_anatomical.nii.gz")
   #fa.test = list.files(path=test.location, recursive=T, full.names=T, pattern=fa.glob)[1]
   fa.test = file.path(test.location, paste(subj, time, "fa_anatomical.nii.gz", sep="_"))
-  if ( exists(fa.test) ) {
+  if ( file.exists(fa.test) ) {
 
       fa.test = as.array(antsImageRead(fa.test, 3))
 
@@ -102,7 +124,7 @@ if (exists("seg.file")) {
   #cbf.glob = glob2rx("*meancbf_anatomical.nii.gz")
   #cbf.test = list.files(path=test.location, recursive=T, full.names=T, pattern=cbf.glob)[1]
   cbf.test = file.path(test.location, paste(subj, time, "meancbf_anatomical.nii.gz", sep="_"))
-  if ( exists(cbf.test) ) {
+  if ( file.exists(cbf.test) ) {
       cbf.test = as.array(antsImageRead(cbf.test, 3))
 
       mask.test = as.array(seg.test)
@@ -140,7 +162,7 @@ if (exists("seg.file")) {
   #bold.glob = glob2rx("*BOLD_anatomical.nii.gz")
   #bold.test = list.files(path=test.location, recursive=T, full.names=T, pattern=bold.glob)[1]
   bold.test = file.path(test.location, paste(subj, time, "BOLD_anatomical.nii.gz", sep="_"))
-  if ( exists(bold.test) ) {
+  if ( file.exists(bold.test) ) {
 
       bold.test = as.array(antsImageRead(bold.test, 3))
 
