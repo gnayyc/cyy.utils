@@ -16,6 +16,10 @@ battery.t1.sh ${1} ${2}
 #battery.mm.sh ${1} ${2}
 battery.label.sh ${1} ${2}
 
-echo "mv $W_DIR $O_DIR/.."
+echo "mv $W_DIR $TO_DIR/${ID}"
+if [ -d $TO_DIR/${ID} ]; then
+    echo mkdir -p $TO_DIR/${ID}
+    mkdir -p $TO_DIR/${ID}
+fi
 mv $W_DIR $TO_DIR/${ID}
 
