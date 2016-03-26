@@ -1,0 +1,47 @@
+#!/bin/sh
+#-N fs
+#-l mem=3gb
+#-j oe
+#-m e
+#-M 9714034@gmail.com,cyyang@ntu.edu.tw
+#-o $HOME/freesurfer/qsub.log
+
+#cd $PBS_O_WORKDIR
+
+#PATH=$PBS_O_PATH
+ulimit -s 3000000
+#export FREESURFER_HOME=/opt/freesurfer
+export FREESURFER_HOME=/Applications/freesurfer
+. ${FREESURFER_HOME}/SetUpFreeSurfer.sh
+#export SUBJECTS_DIR=$PBS_O_WORKDIR
+export SUBJECTS_DIR=$HOME/freesurfer/subjects
+export SUBJECTS_DIR_DONE=$HOME/freesurfer/subjects.done
+export DICOM_DIR=$HOME/freesurfer/dicom
+export DICOM_DIR_DONE=$HOME/freesurfer/dicom.done
+
+cd $DICOM_DIR
+export IMG=`ls $SUBJECT_ID/*dcm|head -n 1`
+
+echo Running on host `hostname`
+echo Time is `date`
+echo Directory is `pwd`
+echo SUBJECT_ID = $SUBJECT_ID
+echo Subject Directory is $SUBJECTS_DIR
+echo Dicom Directory is $DICOM_DIR
+echo PATH=$PATH
+echo IMG=$IMG
+
+# Run programs
+hostname
+if [ -d $SUBJECTS_DIR/$SUBJECT_ID ]; then
+    recon-all -s $SUBJECT_ID -all && \
+    mv $DICOM_DIR/$SUBJECT_ID $DICOM_DIR_DONE && \
+    mv $SUBJECTS_DIR/$SUBJECT_ID $SUBJECTS_DIR_DONE
+else
+    recon-all -i $IMG -s $SUBJECT_ID -all && \
+    mv $DICOM_DIR/$SUBJECT_ID $DICOM_DIR_DONE && \
+    mv $SUBJECTS_DIR/$SUBJECT_ID $SUBJECTS_DIR_DONE
+fi
+
+echo job finished at `date`
+

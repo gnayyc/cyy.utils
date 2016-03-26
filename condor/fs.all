@@ -1,0 +1,11 @@
+#!/bin/sh
+
+export DICOM_DIR=$HOME/freesurfer/dicom
+
+cd $DICOM_DIR
+for s in *; do
+    if [ -d $s ]; then
+	echo qsub $s
+	~/bin/fs $s
+    fi
+done

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ ! $1 ]; then
+    echo Please input subject ID!
+else
+    export SUBJECT_ID=$1
+    qsub -N fs_$SUBJECT_ID \
+    -o /home/hpc/hmliu/freesurfer/qsub.log/$SUBJECT_ID.log \
+    -v SUBJECT_ID=$SUBJECT_ID /home/hpc/hmliu/bin/freesurfer.skull.qsub
+fi
+
