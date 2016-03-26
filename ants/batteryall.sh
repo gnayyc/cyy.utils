@@ -24,8 +24,8 @@ fi
 
 #export T_DIR=/Users/cyyang/work/ants_templates/MICCAI2012-Multi-Atlas-Challenge-Data
 
-export T0_DIR=/Volumes/Data/ants_templates/OASIS-30_Atropos_template
-export T_DIR=/Volumes/Ramdisk/data/template/OASIS
+export T0_DIR=/Volumes/Data/ants_templates/ADNI
+export T_DIR=/Volumes/Ramdisk/data/template/ADNI
 if [[ ! -d $T_DIR ]];
   then
     echo "The template directory \"$T_DIR\" does not exist. Making it."
@@ -36,11 +36,9 @@ export T_T1=${T_DIR}/T_template0.nii.gz
 export T_MASK=${T_DIR}/T_template0_BrainCerebellumExtractionMask.nii.gz
 export T_PROB=${T_DIR}/T_template0_BrainCerebellumProbabilityMask.nii.gz
 export T_T1BRAIN=${T_DIR}/T_template0_BrainCerebellum.nii.gz
-export T_AAL=${T_DIR}/Labels/T_template0_AAL.nii.gz
-export T_DKT=${T_DIR}/Labels/T_template0_DKT.nii.gz
 export T_PRIORS_DIR=${T_DIR}/Priors
 
-T_DEPENDENCIES=( $T_T1 $T_MASK $T_PROB $T_T1BRAIN $T_DKT $T_PRIORS_DIR )
+T_DEPENDENCIES=( $T_T1 $T_MASK $T_PROB $T_T1BRAIN $T_PRIORS_DIR )
 
 for D in ${T_DEPENDENCIES[@]};
   do
