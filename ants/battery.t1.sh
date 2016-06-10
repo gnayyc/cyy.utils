@@ -11,14 +11,16 @@ elif [ -f "${W_DIR}/${SID}_BrainSegmentationTiledMosaic.png" ]; then
     echo "      antsCorticalThickness.sh for ${W_DIR} done"
 
 else
-    if [ -f ${I_DIR}/MRI/${SID}_*3D*.nii.gz ]; then
-	T1=${I_DIR}/MRI/${SID}_*3D*.nii.gz
+    if [ -f ${I_DIR}/MRI/${SID}_*T1*.nii.gz ]; then
+	T1=${I_DIR}/MRI/${SID}_*T1*.nii.gz
+    elif [ -f ${I_DIR}/MRI/${SID}_*mprage*.nii.gz ]; then
+	T1=${I_DIR}/MRI/${SID}_*mprage*.nii.gz
     elif [ -f ${I_DIR}/MRI/${SID}_*mprage*.nii.gz ]; then
 	T1=${I_DIR}/MRI/${SID}_*mprage*.nii.gz
     elif [ -f ${I_DIR}/MRI/${SID}_*SPGR*.nii.gz ]; then
 	T1=${I_DIR}/MRI/${SID}_*SPGR*.nii.gz
-    elif [ -f ${I_DIR}/MRI/${SID}_*T1*.nii.gz ]; then
-	T1=${I_DIR}/MRI/${SID}_*T1*.nii.gz
+    elif [ -f ${I_DIR}/MRI/${SID}_*3D*.nii.gz ]; then
+	T1=${I_DIR}/MRI/${SID}_*3D*.nii.gz
     elif [ -f ${I_DIR}/MRI/${SID}_*t1*.nii.gz ]; then
 	T1=${I_DIR}/MRI/${SID}_*t1*.nii.gz
     else
