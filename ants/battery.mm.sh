@@ -19,15 +19,15 @@ echo
 
 if [ ! -f "$I_DIR/DTI/${SID}_DTI_rgb.nii.gz" ]; then
     echo sh ${PIPEDREAMPATH}/nii2dt/nii2dt.sh \
-	--dwi ${I_DIR}/MRI/${SID}_*_Tensor*.nii.gz \
-	--bvals ${I_DIR}/MRI/${SID}_*_Tensor*.bval \
-	--bvecs ${I_DIR}/MRI/${SID}_*_Tensor*.bvec \
+	--dwi ${I_DIR}/MRI/${SID}_*_DTI*.nii.gz \
+	--bvals ${I_DIR}/MRI/${SID}_*_DTI*.bval \
+	--bvecs ${I_DIR}/MRI/${SID}_*_DTI*.bvec \
 	--outroot ${SID}_DTI_ \
 	--outdir ${I_DIR}/DTI
     sh ${PIPEDREAMPATH}/nii2dt/nii2dt.sh \
-	--dwi ${I_DIR}/MRI/${SID}_*_Tensor*.nii.gz \
-	--bvals ${I_DIR}/MRI/${SID}_*_Tensor*.bval \
-	--bvecs ${I_DIR}/MRI/${SID}_*_Tensor*.bvec \
+	--dwi ${I_DIR}/MRI/${SID}_*_DTI*.nii.gz \
+	--bvals ${I_DIR}/MRI/${SID}_*_DTI*.bval \
+	--bvecs ${I_DIR}/MRI/${SID}_*_DTI*.bvec \
 	--outroot ${SID}_DTI_ \
 	--outdir ${I_DIR}/DTI
 else
@@ -45,17 +45,18 @@ else
 	--anatomical-mask ${O_DIR}/${SID}_BrainExtractionMask.nii.gz \
 	--template ${T_T1} \
 	--dti-flag DTI/dt.nii.gz/DTI_ \
-	--template-transform-name ${SID}_SubjectToTemplate
+	--rsbold-flag BOLD/rsfMRI_3x3x3.nii.gz/BOLD_ \
+       	--template-transform-name ${SID}_SubjectToTemplate 
     ${ANTSPATH}/antsNeuroimagingBattery \
-	--input-directory ${I_DIR} \
-	--output-directory ${O_DIR}\
+       	--input-directory ${I_DIR} \
+       	--output-directory ${O_DIR}\
 	--output-name ${SID}_ \
 	--anatomical ${O_DIR}/${SID}_BrainExtractionBrain.nii.gz \
 	--anatomical-mask ${O_DIR}/${SID}_BrainExtractionMask.nii.gz \
 	--template ${T_T1} \
 	--dti-flag DTI/dt.nii.gz/DTI_ \
-	--rsbold-flag MRI/rsfMRI_3x3x3.nii.gz/BOLD_ 
-	# --pcasl-flag PCASL/pcasl_1.nii.gz/PCASL_ 
+	--rsbold-flag BOLD/rsfMRI_3x3x3.nii.gz/BOLD_ \
 	--template-transform-name ${SID}_SubjectToTemplate
+	# --pcasl-flag PCASL/pcasl_1.nii.gz/PCASL_ 
 fi
 
