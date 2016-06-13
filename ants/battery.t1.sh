@@ -23,31 +23,27 @@ elif [ -f "${W_DIR}/${SID}_BrainSegmentationTiledMosaic.png" ]; then
     echo "      antsCorticalThickness.sh for ${W_DIR} done"
 
 else
-    if [ -f ${I_DIR}/MRI/${SID}_*T1*.nii.gz ]; then
-	T1=${I_DIR}/MRI/${SID}_*T1*.nii.gz
-    elif [ -f ${I_DIR}/MRI/${SID}_*mprage*.nii.gz ]; then
-	T1=${I_DIR}/MRI/${SID}_*mprage*.nii.gz
-    elif [ -f ${I_DIR}/MRI/${SID}_*mprage*.nii.gz ]; then
-	T1=${I_DIR}/MRI/${SID}_*mprage*.nii.gz
-    elif [ -f ${I_DIR}/MRI/${SID}_*SPGR*.nii.gz ]; then
-	T1=${I_DIR}/MRI/${SID}_*SPGR*.nii.gz
-    elif [ -f ${I_DIR}/MRI/${SID}_*3D*.nii.gz ]; then
-	T1=${I_DIR}/MRI/${SID}_*3D*.nii.gz
-    elif [ -f ${I_DIR}/MRI/${SID}_*t1*.nii.gz ]; then
-	T1=${I_DIR}/MRI/${SID}_*t1*.nii.gz
-    else
-	exit
+    T1=`find ${I_DIR}/MRI -maxdepth 1 -name "*T1*" \
+	-o -name "*MPRAGE*" \
+	-o -name "*SPGR*" \
+	-o -name "*t1*" \
+	-o -name "*mprage*" \
+	-o -name "*spgr*" |\
+	head -1`
+
+    if [ -f ${T1} ]; then
+	${ANTSPATH}/antsCorticalThickness.sh -d 3 \
+	    -a ${T1} \
+	    -e ${T_T1} \
+	    -m ${T_PROB} \
+	    -f ${T_MASK} \
+	    -p ${T_PRIORS_DIR}/priors%d.nii.gz \
+	    -t ${T_T1BRAIN} \
+	    -k 1 \
+	    -n 3 \
+	    -w 0.25 \
+	    -q 1 \
+	    -o ${O_DIR}/${SID}_
     fi
-    ${ANTSPATH}/antsCorticalThickness.sh -d 3 \
-	-a ${T1} \
-	-e ${T_T1} \
-	-m ${T_PROB} \
-	-f ${T_MASK} \
-	-p ${T_PRIORS_DIR}/priors%d.nii.gz \
-	-t ${T_T1BRAIN} \
-	-k 1 \
-	-n 3 \
-	-w 0.25 \
-	-q 1 \
-	-o ${W_DIR}/${SID}_ 
 fi
+

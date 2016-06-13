@@ -17,14 +17,14 @@ echo "    O_DIR = $TO_DIR/$S_DIR"
 echo "    W_DIR = /Volumes/RamDisk/data/output/$S_DIR"
 
 battery.t1.sh ${1} ${2} ${3} ${4}
+battery.mm.sh ${1} ${2} ${3} ${4}
 battery.label.sh ${1} ${2} ${3} ${4}
 
-if [ ! -d $TO_DIR/${ID} ]; then
-    echo mkdir -p $TO_DIR/${ID}
-    mkdir -p $TO_DIR/${ID}
-fi
+#if [ ! -d $TO_DIR/${ID} ]; then
+#    echo mkdir -p $TO_DIR/${ID}
+#    mkdir -p $TO_DIR/${ID}
+#fi
 
-echo "mv $W_DIR $TO_DIR/${ID}"
-mv $W_DIR $TO_DIR/${ID}
+#echo "mv $W_DIR $TO_DIR/${ID}"
+#mv $W_DIR $TO_DIR/${ID}
 
-battery.mm.sh ${1} ${2} ${3} ${4}

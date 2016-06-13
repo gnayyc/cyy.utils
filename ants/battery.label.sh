@@ -1,15 +1,27 @@
 #!/bin/bash
 
-SID="${1}_${2}"
-S_DIR="${1}/${2}"
+. `which battery.rc.sh`
+
+FROM_DIR=${1}
+TO_DIR=${2}
+SID="${3}_${4}"
+S_DIR="${3}/${4}"
 I_DIR="$FROM_DIR/$S_DIR"
 O_DIR="$TO_DIR/$S_DIR"
 
-SUBJECTID="${1}_${2}"
-SUBJECTBOLDDIR="${W_DIR}/BOLD"
-SUBJECTDTIDIR="${W_DIR}/DTI"
-SUBJECTPCASLDIR="${W_DIR}/PCASL"
-SUBJECTT1DIR="${W_DIR}"
+echo FROM_DIR=$FROM_DIR
+echo TO_DIR=$TO_DIR
+echo SID=$SID
+echo S_DIR=$S_DIR
+echo I_DIR=$I_DIR
+echo O_DIR=$O_DIR
+echo 
+
+SUBJECTID=$SID
+SUBJECTBOLDDIR="${O_DIR}/BOLD"
+SUBJECTDTIDIR="${O_DIR}/DTI"
+SUBJECTPCASLDIR="${O_DIR}/PCASL"
+SUBJECTT1DIR="${O_DIR}"
 TEMPLATEDIR=${T_TDIR}
 
 LABELS=( 'DKT' 'AAL' 'MalfLabeling' )

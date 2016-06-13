@@ -1,10 +1,21 @@
 #!/usr/bin/env sh
 
-SID="${1}_${2}"
-S_DIR="${1}/${2}"
+. `which battery.rc.sh`
+
+FROM_DIR=${1}
+TO_DIR=${2}
+SID="${3}_${4}"
+S_DIR="${3}/${4}"
 I_DIR="$FROM_DIR/$S_DIR"
-#O_DIR="$TO_DIR/$S_DIR"
-O_DIR=$TMP_DIR
+O_DIR="$TO_DIR/$S_DIR"
+
+echo FROM_DIR=$FROM_DIR
+echo TO_DIR=$TO_DIR
+echo SID=$SID
+echo S_DIR=$S_DIR
+echo I_DIR=$I_DIR
+echo O_DIR=$O_DIR
+echo 
 
 if [ ! -f "$I_DIR/DTI/${SID}_DTI_rgb.nii.gz" ]; then
     echo sh ${PIPEDREAMPATH}/nii2dt/nii2dt.sh \
@@ -43,7 +54,7 @@ else
 	--anatomical-mask ${O_DIR}/${SID}_BrainExtractionMask.nii.gz \
 	--template ${T_T1} \
 	--dti-flag DTI/dt.nii.gz/DTI_ \
-	# --rsbold-flag BOLD/bold_fc_1.nii.gz/BOLD_ 
+	--rsbold-flag MRI/rsfMRI_3x3x3.nii.gz/BOLD_ 
 	# --pcasl-flag PCASL/pcasl_1.nii.gz/PCASL_ 
 	--template-transform-name ${SID}_SubjectToTemplate
 fi
