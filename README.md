@@ -39,7 +39,9 @@ index 494fae8..60dc08a 100755
   + ` LabelGeometryMeasures 3 PEDS012_20131101_BrainSegmentation.nii.gz`
 4. JointLabelFusion
   + `antsJointLabelFusion.sh`: used for multi-atlas segmentation with joint label fusion
-6. Atlas
+5. Atlas
   + [Mindboggle Data](http://www.mindboggle.info/data.html)
   + [Mindboggle Label](http://www.mindboggle.info/faq/labels.html)
-
+6. Registration
+  + `antsRegistrationSyN.sh -d 3 -o <ID> -f <fixed_img.nii.gz> -m <moving_img.nii.gz> -t bo -s 26`
+  + antsRegistrationSyN.sh will take more time to register than antsRegistrationSyNQuick.sh will
