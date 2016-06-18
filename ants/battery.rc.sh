@@ -38,6 +38,6 @@ echo "    W_DIR = /Volumes/RamDisk/data/output/$S_DIR"
 
 export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=10
 echo "    ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS = ${ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS}"
-echo "====== [Environments] ======"
+echo "============================"
 echo 
 

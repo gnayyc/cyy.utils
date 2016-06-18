@@ -6,15 +6,15 @@ export FROM_DIR=${1}
 export TO_DIR=${2}
 export ID="${3}"
 export SID="${3}_${4}"
-export S_DIR="${1}/${2}"
+export S_DIR="${3}/${4}"
 export I_DIR="$FROM_DIR/$S_DIR"
 export O_DIR="$TO_DIR/$S_DIR"
 export W_DIR="/Volumes/RamDisk/ants.tmp/output/$S_DIR"
-echo "    SID   = ${1}_${2}"
-echo "    S_DIR = ${1}/${2}"
-echo "    I_DIR = $FROM_DIR/$S_DIR"
-echo "    O_DIR = $TO_DIR/$S_DIR"
-echo "    W_DIR = /Volumes/RamDisk/data/output/$S_DIR"
+echo "    SID   = ${SID}"
+echo "    S_DIR = ${S_DIR}"
+echo "    I_DIR = $I_DIR"
+echo "    O_DIR = $O_DIR"
+echo "    W_DIR = $W_DIR"
 
 battery.t1.sh ${1} ${2} ${3} ${4}
 battery.mm.sh ${1} ${2} ${3} ${4}
