@@ -45,3 +45,5 @@ index 494fae8..60dc08a 100755
 6. Registration
   + `antsRegistrationSyN.sh -d 3 -o <ID> -f <fixed_img.nii.gz> -m <moving_img.nii.gz> -t bo -s 26`
   + antsRegistrationSyN.sh will take more time to register than antsRegistrationSyNQuick.sh will
+7. rsfMRI
+  + `melodic -i BOLD_rsbold.nii.gz -m BOLD_brainmask.nii.gz --report -v`

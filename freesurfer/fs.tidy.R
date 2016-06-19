@@ -100,6 +100,7 @@ for (.i in seq_along(aseg.files))
 
 
 fs = rbind_list(aparc, aseg) %>% 
+  mutate(key = as.character(key)) %>%
   unique 
 
 
