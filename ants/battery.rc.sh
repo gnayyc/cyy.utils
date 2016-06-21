@@ -2,6 +2,8 @@
 
 export T0_DIR=/Volumes/Data/ants_templates/ADNI
 export T_DIR=/Volumes/Ramdisk/data/template/ADNI
+#export T0_DIR=/Volumes/Data/ants_templates/OASIS-30_Atropos_template
+#export T_DIR=/Volumes/Ramdisk/data/template/OASIS-30_Atropos_template
 if [[ ! -d $T_DIR ]];
   then
     echo "The template directory \"$T_DIR\" does not exist. Making it."

@@ -1,6 +1,10 @@
 # notes about neuroimaging using ants
 
 1. piperdream
+  + series names
+    + T1: T1 MPRAGE
+    + DTI: DTI.nii.gz
+    + RSBOLD: BOLD rsbold.nii.gz
   + `dicom2series <sorted_MRI_dir> 0 0 <raw_subject_exam_dicom_dir>` # 0: don't empty field; 0: don't rename files
     + `dicom2series MRI/S1 0 0 raw/S1`
     + `cd raw; foreach s in *; dicom2series ../MRI/$s 0 0 $s; end`

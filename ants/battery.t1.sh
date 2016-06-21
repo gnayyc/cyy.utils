@@ -36,7 +36,6 @@ else
 	    -a ${T1} \
 	    -e ${T_T1} \
 	    -m ${T_PROB} \
-	    -f ${T_MASK} \
 	    -p ${T_PRIORS_DIR}/priors%d.nii.gz \
 	    -t ${T_T1BRAIN} \
 	    -k 1 \
@@ -44,6 +43,7 @@ else
 	    -w 0.25 \
 	    -q 1 \
 	    -o ${O_DIR}/${SID}_
+	    #-f ${T_MASK} \
     fi
 fi
 
