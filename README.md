@@ -50,4 +50,23 @@ index 494fae8..60dc08a 100755
   + `antsRegistrationSyN.sh -d 3 -o <ID> -f <fixed_img.nii.gz> -m <moving_img.nii.gz> -t bo -s 26`
   + antsRegistrationSyN.sh will take more time to register than antsRegistrationSyNQuick.sh will
 7. rsfMRI
-  + `melodic -i BOLD_rsbold.nii.gz -m BOLD_brainmask.nii.gz --report -v`
+  + `melodic --report -v -i BOLD_rsbold.nii.gz -m BOLD_brainmask.nii.gz`
+  + rsbold = ANTsR::antsBOLDNetworkAnalysis()
+    + ANTsR::heatmap(rsbold$mynetwork$corrmat)
+8. TBSS
+  + FSL
+  + [ANTS](https://sourceforge.net/p/advants/discussion/840261/thread/e6fc9a8c/?limit=25) 
+    + mapping: `for faImage in faImages*nii.gz do
+		    antsApplyTransforms .... -i faImage -o faImageWarped -t
+			faImageWarp.nii.gz -t faImage0GenericAffine.mat -r faTemplate
+		done`
+    + skel.sh:
+`AverageImages 3 averageFA.nii.gz 0 *fa.nii.gz`
+then call skel.sh on averageFA.nii.gz
+
+`ThresholdImage 3 id002_TransformationMNI.nii.gz wm.nii.gz 0.25 Inf`
+`SmoothImage 3 wm.nii.gz 1 wms.nii.gz`
+`ThresholdImage 3 wms.nii.gz wm.nii.gz 0.25 Inf`
+`skel.sh wm.nii.gz wm_skel 1`
+`snap -g wm.nii.gz -s wm_skel_topo_skel.nii.gz`
+    + [bigLMstats](https://github.com/stnava/ANTsTutorial/blob/master/src/phantomMorphometryStudy.Rmd)
