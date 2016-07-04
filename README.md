@@ -64,6 +64,7 @@ index 494fae8..60dc08a 100755
     + `tbss_4_prestats`
       + threshold mean FA skeleton image (0.2)
     + `design_ttest2 design 7 11`
+    + Summary: Do stats in (FA -> template) space
   + [ANTS](https://sourceforge.net/p/advants/discussion/840261/thread/e6fc9a8c/?limit=25) 
     + [Local circularity in VBA](http://www.ncbi.nlm.nih.gov/pubmed/23151955)
       + FA_i -> T1_i normalization
