@@ -55,7 +55,23 @@ index 494fae8..60dc08a 100755
     + ANTsR::heatmap(rsbold$mynetwork$corrmat)
 8. TBSS
   + FSL
+    + `tbss_1_preproc`
+      + Erode FA_i slightly; zero the end slices
+    + `tbss_2_reg`
+      + Nonlinear registration to a target (template FMRIB58_FA or specific subject)
+    + `tbss_3_postreg`
+      + apply transform to target space
+    + `tbss_4_prestats`
+      + threshold mean FA skeleton image (0.2)
+    + `design_ttest2 design 7 11`
   + [ANTS](https://sourceforge.net/p/advants/discussion/840261/thread/e6fc9a8c/?limit=25) 
+    + [Local circularity in VBA](http://www.ncbi.nlm.nih.gov/pubmed/23151955)
+      + FA_i -> T1_i normalization
+    + [To prevent Local circularity in VBA](https://sourceforge.net/p/advants/discussion/840261/thread/dbfe8da5/)
+      + Normalize FA_i to T1_i 
+      + Build T1_n template using T1_i
+      + Do stats after warping normalized FA_i to T1_n template
+      + Summary: Do stats in (FA_i -> T1_i -> T1_n) space
     + mapping: `for faImage in faImages*nii.gz do
 		    antsApplyTransforms .... -i faImage -o faImageWarped -t
 			faImageWarp.nii.gz -t faImage0GenericAffine.mat -r faTemplate
