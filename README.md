@@ -28,7 +28,7 @@ index 494fae8..60dc08a 100755
     + install `parallel` first
     + will scan input\_subj\_dir for each subject each timepoint, and do 
       + T1: 
-        + `antsCorticalThickness.sh`
+        + [`antsCorticalThickness.sh`](https://github.com/stnava/ANTs/wiki/antsCorticalThickness-and-antsLongitudinalCorticalThickness-output)
           + `KellyKapowski` -> _CorticalThickness.nii.gz (DiReCt)
           + To measure mean cortical thickness, measure mean value of the ROI
             + `thick.test = as.array(antsImageRead(thick.test, 3))`
@@ -48,7 +48,7 @@ index 494fae8..60dc08a 100755
   + [Mindboggle Label](http://www.mindboggle.info/faq/labels.html)
 6. Registration
   + `antsRegistrationSyN.sh -d 3 -o <ID> -f <fixed_img.nii.gz> -m <moving_img.nii.gz> -t bo -s 26`
-  + antsRegistrationSyN.sh will take more time to register than antsRegistrationSyNQuick.sh will
+  + antsRegistrationSyN.sh will take much more time to register than antsRegistrationSyNQuick.sh will
 7. rsfMRI
   + `melodic --report -v -i BOLD_rsbold.nii.gz -m BOLD_brainmask.nii.gz`
   + rsbold = ANTsR::antsBOLDNetworkAnalysis()
@@ -68,6 +68,10 @@ index 494fae8..60dc08a 100755
   + [ANTS](https://sourceforge.net/p/advants/discussion/840261/thread/e6fc9a8c/?limit=25) 
     + [Local circularity in VBA](http://www.ncbi.nlm.nih.gov/pubmed/23151955)
       + FA_i -> T1_i normalization
+      + The idea is, to maintain independence between the features used in normalization and in hypothesis testing
+      + The features that drive the minimization of a similarity metric should be independent of the features that will be used in hypothesis testing.
+      + eg. one should avoid combining the `SSD` and `Demons` metrics for normalization with Student's t test for assessing image-derived differences.
+      + Local circularity will increase Type 1 errors (false positive rate)
     + [To prevent Local circularity in VBA](https://sourceforge.net/p/advants/discussion/840261/thread/dbfe8da5/)
       + Normalize FA_i to T1_i 
       + Build T1_n template using T1_i
@@ -87,3 +91,5 @@ then call skel.sh on averageFA.nii.gz
 `skel.sh wm.nii.gz wm_skel 1`
 `snap -g wm.nii.gz -s wm_skel_topo_skel.nii.gz`
     + [bigLMstats](https://github.com/stnava/ANTsTutorial/blob/master/src/phantomMorphometryStudy.Rmd)
+9. Bulding Template
+  + `antsMultivariateTemplateConstruction.sh` is the updated script. You can use that to create a template image. Then you can use `antsJointLabelFusion.sh` to fuse the labels in template space.
