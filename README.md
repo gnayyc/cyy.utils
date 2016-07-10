@@ -73,7 +73,7 @@ index 494fae8..60dc08a 100755
       + eg. one should avoid combining the `SSD` and `Demons` metrics for normalization with Student's t test for assessing image-derived differences.
       + Local circularity will increase Type 1 errors (false positive rate)
     + [To prevent Local circularity in VBA](https://sourceforge.net/p/advants/discussion/840261/thread/dbfe8da5/)
-      + Normalize FA_i to T1_i 
+      + Normalize FA_i to T1_i
       + Build T1_n template using T1_i
       + Do stats after warping normalized FA_i to T1_n template
       + Summary: Do stats in (FA_i -> T1_i -> T1_n) space
@@ -92,4 +92,7 @@ then call skel.sh on averageFA.nii.gz
 `snap -g wm.nii.gz -s wm_skel_topo_skel.nii.gz`
     + [bigLMstats](https://github.com/stnava/ANTsTutorial/blob/master/src/phantomMorphometryStudy.Rmd)
 9. Bulding Template
-  + `antsMultivariateTemplateConstruction.sh` is the updated script. You can use that to create a template image. Then you can use `antsJointLabelFusion.sh` to fuse the labels in template space.
+  + `antsMultivariateTemplateConstruction.sh` to build template image.
+  + `antsJointLabelFusion.sh` to jointly fuse the labels into template space.
+    + template image T1<sub>n</sub> from T1<sub>i</sub> (produced by `antsMultivariateTemplateConstruction.sh`)
+    + labels in each T1<sub>i</sub>
