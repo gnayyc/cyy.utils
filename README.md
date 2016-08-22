@@ -73,9 +73,11 @@ index 494fae8..60dc08a 100755
       + eg. one should avoid combining the `SSD` and `Demons` metrics for normalization with Student's t test for assessing image-derived differences.
       + Local circularity will increase Type 1 errors (false positive rate)
     + [To prevent Local circularity in VBA](https://sourceforge.net/p/advants/discussion/840261/thread/dbfe8da5/)
-      + Normalize FA_i to T1_i
-      + Build T1_n template using T1_i
-      + Do stats after warping normalized FA_i to T1_n template
+      + Normalize FA<sub>i</sub> to T1<sub>i</sub>
+      + Build T1<sub>n</sub> template using T1<sub>i</sub>
+      + Register T1<sub>i</sub> to T1<sub>n</sub> template, got Transform<sub>i</sub>
+      + Normalized FA<sub>i</sub> to T1<sub>n</sub> template using Transform<sub>i</sub>
+      + Do stats at warped FA<sub>i</sub> in T1<sub>n</sub> template space
       + Summary: Do stats in (FA_i -> T1_i -> T1_n) space
     + mapping: `for faImage in faImages*nii.gz do
 		    antsApplyTransforms .... -i faImage -o faImageWarped -t
@@ -91,8 +93,29 @@ then call skel.sh on averageFA.nii.gz
 `skel.sh wm.nii.gz wm_skel 1`
 `snap -g wm.nii.gz -s wm_skel_topo_skel.nii.gz`
     + [bigLMstats](https://github.com/stnava/ANTsTutorial/blob/master/src/phantomMorphometryStudy.Rmd)
-9. Bulding Template
+9. Building Template
   + `antsMultivariateTemplateConstruction.sh` to build template image.
   + `antsJointLabelFusion.sh` to jointly fuse the labels into template space.
     + template image T1<sub>n</sub> from T1<sub>i</sub> (produced by `antsMultivariateTemplateConstruction.sh`)
     + labels in each T1<sub>i</sub>
+10. VBM pipeline
+  + `antsMultivariateTemplateConstruction.sh`: Build study specific template 
+  + `antsCorticalThickness.sh`: T1/MM normalization
+  + Use warped images for VBM
+11. Jacobian
+  + the log jacobian transforms jacobian values > 1 to > 0 and values < 1 to < 0
+  + [geodesic shooting (Ashburner & Friston Neuroimage 2011)](https://sourceforge.net/p/advants/discussion/840260/thread/88f73dee/)
+<pre>
+looks like you need two images to estimate this ... let me accentuate estimate.
+image 1 is the jacobian of the transformation:
+CreateJacobianDeterminantImage
+​image 2 is the difference between the transformed image and the template
+you can compute this (in ANTsR) via:
+template = antsImageRead("template.nii.gz")
+jimg = createJacobianDeterminantImage( template, fileNameOfWarp )
+dimg = template - antsImageRead("warpedImage.nii.gz")
+​scalarmom = dimg * jimg
+i might have a sign error but this should get you close to what you want.
+</pre>
+12. To create a probability mask
+  + `SmoothImage 3 $mask 1.0 $probabilityMask 1`
