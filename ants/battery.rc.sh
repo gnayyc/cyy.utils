@@ -44,7 +44,8 @@ echo "    T_PRIORS_DIR = ${T_DIR}/Priors"
 export W_DIR="/Volumes/RamDisk/ants.tmp/output/$S_DIR"
 echo "    W_DIR = /Volumes/RamDisk/data/output/$S_DIR"
 
-export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=10
+#export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=10
+export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=2
 echo "    ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS = ${ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS}"
 echo "============================"
 echo 
