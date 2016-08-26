@@ -2,4 +2,6 @@
 *.png
 *.jpg
 *.JPG
+*.gz
+*.mat
 .DS_Store
