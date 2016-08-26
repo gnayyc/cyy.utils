@@ -9,7 +9,7 @@ function Usage {
 
 Usage:
 
-`basename $0` [-k 0] handimage
+`basename $0` [-k] handimage
 
 USAGE
     exit 1
@@ -25,7 +25,8 @@ else
     do
       case $OPT in
           k) # keep images
-	      KEEP_TMP_IMAGES=$OPTARG
+	      KEEP_TMP_IMAGES=1
+	      shift
               ;;
           *) # getopts issues an error message
               echo "ERROR:  unrecognized option -$OPT $OPTARG"
