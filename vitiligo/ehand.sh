@@ -70,11 +70,11 @@ function logCmd() {
 }
 
 if [[ ! -d ${ODIR} ]]; then
-    echo ${ODIR} not exists. Making it!
-    mkdir -p ${ODIR}
+    echo Directory "${ODIR}" not exists. Making it!
+    logCmd mkdir -p ${ODIR}
     if [[ ! -d ${ODIR} ]]; then
 	echo mkdir ${ODIR} failed! Exiting!
-	exit
+	exit 0
     fi
 fi
 
@@ -101,7 +101,12 @@ fi
 	# Convert value 2 to 1
 	logCmd ThresholdImage 2 $maskrg $mask 2 2 1 0
 	# Get largest component (hand)
+	logCmd ImageMath 2 $mask ME $mask 2
 	logCmd ImageMath 2 $mask GetLargestComponent $mask
+	logCmd ImageMath 2 $mask MD $mask 2
+	logCmd ImageMath 2 $mask FillHoles $mask 2
+	logCmd ImageMath 2 $mask MD $mask 4
+	logCmd ImageMath 2 $mask ME $mask 4
 	# convert mask from nii to png
 	logCmd ConvertImagePixelType $mask $maskpng 1
     fi

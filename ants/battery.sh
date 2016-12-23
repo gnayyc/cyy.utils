@@ -16,6 +16,7 @@ echo "    I_DIR = $I_DIR"
 echo "    O_DIR = $O_DIR"
 echo "    W_DIR = $W_DIR"
 
+battery.dti.sh ${1} ${3} ${4}
 battery.t1.sh ${1} ${2} ${3} ${4}
 battery.mm.sh ${1} ${2} ${3} ${4}
 battery.label.sh ${1} ${2} ${3} ${4}

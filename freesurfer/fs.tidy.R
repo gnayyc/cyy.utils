@@ -25,37 +25,44 @@ labels = c(label.frontal, label.parietal, label.temporal, label.occipital, label
 
 ###                         read aparc stats
 fs.dir = "."
-aparc.files = c(
-  'lh.a2009s.area.csv', 
-  'lh.a2009s.meancurv.csv',
-  'lh.a2009s.thickness.csv',
-  'lh.a2009s.thicknessstd.csv',
-  'lh.a2009s.vol.csv', 
-  'rh.a2009s.area.csv', 
-  'rh.a2009s.meancurv.csv',
-  'rh.a2009s.thickness.csv', 
-  'rh.a2009s.thicknessstd.csv', 
-  'rh.a2009s.vol.csv',
-  'lh.aparc.area.csv', 
-  'lh.aparc.meancurv.csv',
-  'lh.aparc.thickness.csv', 
-  'lh.aparc.thicknessstd.csv',
-  'lh.aparc.vol.csv', 
-  'rh.aparc.area.csv',
-  'rh.aparc.meancurv.csv', 
-  'rh.aparc.thickness.csv',
-  'rh.aparc.thicknessstd.csv',
-  'rh.aparc.vol.csv')
+f.a2009s = dir(fs.dir, ".*a2009s.*.csv")
+f.aparc = dir(fs.dir, ".*aparc.*.csv")
+f.aseg = dir(fs.dir, ".*aseg.*.csv")
+f.wm = dir(fs.dir, ".*wm.*.csv")
+f.lobes = dir(fs.dir, ".*h.lobes.csv")
 
-seg.files = c(
-  'aseg.mean.csv', 'aseg.std.csv', 'aseg.vol.csv',
-  'wm.mean.csv', 'wm.std.csv', 'wm.vol.csv')
+aparc.files = c(f.a2009s, f.aparc)
+  #'lh.a2009s.area.csv', 
+  #'lh.a2009s.meancurv.csv',
+  #'lh.a2009s.thickness.csv',
+  #'lh.a2009s.thicknessstd.csv',
+  #'lh.a2009s.vol.csv', 
+  #'rh.a2009s.area.csv', 
+  #'rh.a2009s.meancurv.csv',
+  #'rh.a2009s.thickness.csv', 
+  #'rh.a2009s.thicknessstd.csv', 
+  #'rh.a2009s.vol.csv',
+  #'lh.aparc.area.csv', 
+  #'lh.aparc.meancurv.csv',
+  #'lh.aparc.thickness.csv', 
+  #'lh.aparc.thicknessstd.csv',
+  #'lh.aparc.vol.csv', 
+  #'rh.aparc.area.csv',
+  #'rh.aparc.meancurv.csv', 
+  #'rh.aparc.thickness.csv',
+  #'rh.aparc.thicknessstd.csv',
+  #'rh.aparc.vol.csv')
+
+aseg.files = c(f.aseg, f.wm)
+  #'aseg.mean.csv', 'aseg.std.csv', 'aseg.vol.csv',
+  #'wm.mean.csv', 'wm.std.csv', 'wm.vol.csv')
 
 
-aparc = data_frame()
-for (.i in seq_along(aparc.files))
+aparc = tibble()
+for (.a in aparc.files)
 {
-  .data = read_csv(paste0(fs.dir,"/",aparc.files[.i]))
+  cat(file.path(fs.dir, .a))
+  .data = read_csv(file.path(fs.dir, .a))
   # lh_bankssts_thickness -> ctx-lh-bankssts
   # rh_G_and_S_subcentral_volume
   # names(.data) = str_replace(names(.data), "(.h)_(.*)_(.*)", "\\2")
@@ -67,11 +74,11 @@ for (.i in seq_along(aparc.files))
   names(.data) = str_replace(names(.data), "(.h)_(.*)_(.*)", "\\.\\3\\.\\1\\.\\2")
   names(.data) = paste0(.parc, names(.data))
   names(.data)[1] = "sid"
-  aparc = .data %>%
-    mutate(sid = str_replace(sid, "\\.long\\..*", "")) %>%
+  aparc = .data %>% # mutate(sid = str_replace(sid, "\\.long\\..*", "")) %>%
     gather("key", "value", -sid) %>% 
     mutate(key = as.character(key)) %>%
-    rbind_list(aparc)
+    bind_rows(aparc)
+    #rbind_list(aparc)
 }
 
 aseg.files = c(
@@ -81,25 +88,48 @@ aseg.labels = c(
   'aseg.mean', 'aseg.std', 'aseg.volume',
   'wm.mean', 'wm.std', 'wm.volume')
 
-aseg = data_frame()
-for (.i in seq_along(aseg.files))
+
+aseg = tibble()
+for (.a in aseg.files)
 {
-  .data = read_csv(paste0(fs.dir, "/", aseg.files[.i]))
+  .data = read_csv(file.path(fs.dir, .a))
+  .s = str_replace(.a, ".csv", "")
   .names = names(.data)
   .hemi = ifelse(str_detect(.names, "Right|rh"), "rh",
                  ifelse(str_detect(.names, "Left|lh"), "lh", "mid"))
-  names(.data) = paste0(aseg.labels[.i],".", .hemi, ".", .names) %>%
+  names(.data) = paste0(.s,".", .hemi, ".", .names) %>%
     str_replace("^X", "")
   names(.data)[1] = "sid"
-  aseg = .data %>%
-    mutate(sid = str_replace(sid, "\\.long\\..*", "")) %>%
+  aseg = .data %>% # mutate(sid = str_replace(sid, "\\.long\\..*", "")) %>%
     gather("key", "value", -sid) %>%
     mutate(key = as.character(key)) %>%
-    rbind_list(aseg)
+    bind_rows(aseg)
+    #rbind_list(aseg)
 }
 
+cols = c("Lobe", "NumVert", "SurfArea", "GrayVol", "ThickAvg", "ThickStd", "MeanCurv", "GausCurv", "FoldInd", "CurvInd")
+lobe = tibble()
+for (.l in f.lobes)
+{
+  .hemi = ifelse(str_detect(.l, "rh"), "rh", "lh")
+  .sid = 
+      .l %>% 
+      str_replace("..h.lobes.csv", "") # %>% str_replace("\\.long\\..*", "")
 
-fs = rbind_list(aparc, aseg) %>% 
+  lobe = 
+      read_fwf(.l, fwf_empty(.l, col_names=cols,comment="#", skip=52), comment="#", skip=52) %>%
+	  mutate(sid = .sid, hemi = .hemi) %>%
+	  bind_rows(lobe)
+}
+
+lobe = 
+    lobe %>% 
+    mutate(aparc = "lobe") %>%
+    gather(key, value, NumVert:CurvInd) %>% 
+    unite(key, aparc, key, hemi, Lobe, sep = ".")
+
+#fs = rbind_list(aparc, aseg) %>% 
+fs = bind_rows(aparc, aseg, lobe) %>% 
   mutate(key = as.character(key)) %>%
   unique 
 

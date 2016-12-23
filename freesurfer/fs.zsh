@@ -11,10 +11,10 @@ function qa() {
 
 function fs.stats() {
     S_DIR=$SUBJECTS_DIR
-    export SUBJECTS_DIR=$PWD
-    export STATS_DIR=./fs.stats
+    SUBJECTS_DIR=$PWD
+    STATS_DIR=./fs.stats
     mkdir -p ${STATS_DIR}
-    export SUBJ="`find . -type d -mindepth 1 -maxdepth 1| grep -v fs.stats| grep -v average | grep -v qdec| grep -v QA | tr '\n' ' ' | sed "s/.\///g"`"
+    SUBJ="`find . -type d -mindepth 1 -maxdepth 1| grep -v fs.stats| grep -v average | grep -v qdec| grep -v QA | tr '\n' ' ' | sed "s/.\///g"`"
     echo "subjects: $SUBJ"
     eval aparcstats2table --skip -d comma --hemi=rh --meas area --tablefile ${STATS_DIR}/rh.aparc.area.csv --subjects $SUBJ
     eval aparcstats2table --skip -d comma --hemi=rh --meas volume --tablefile ${STATS_DIR}/rh.aparc.vol.csv --subjects $SUBJ
@@ -45,6 +45,24 @@ function fs.stats() {
     eval asegstats2table --skip -d comma --stats wmparc.stats --meas mean --tablefile ${STATS_DIR}/wm.mean.csv --subjects $SUBJ
     eval asegstats2table --skip -d comma --stats wmparc.stats --meas std --tablefile ${STATS_DIR}/wm.std.csv --subjects $SUBJ
 
+    SUBJ=(`find . -type d -mindepth 1 -maxdepth 1| grep -v fs.stats| grep -v average | grep -v qdec| grep -v QA | sed "s/.\///g"`)
+    echo
+    echo "subjects: $SUBJ"
+    echo
+    for S in $SUBJ; do
+	for H in rh lh; do
+	    if [[ ! -f $S/label/$H.lobes.annot ]]; then
+		echo 
+		echo "mri_annotation2label --sd . --subject $S --hemi $H --lobesStrict lobes"
+		mri_annotation2label --sd . --subject $S --hemi $H --lobesStrict lobes
+	    fi
+	    #if [[ ! -f ${STATS_DIR}/$S.$H.lobes.csv ]]; then
+		echo 
+		echo "mris_anatomical_stats -a $S/label/$H.lobes.annot -f ${STATS_DIR}/$S.$H.lobes.csv $S $H"
+		mris_anatomical_stats -a $S/label/$H.lobes.annot -f ${STATS_DIR}/$S.$H.lobes.csv $S $H
+	    #fi
+	done
+    done
     export SUBJECTS_DIR=$S_DIR
 }
 

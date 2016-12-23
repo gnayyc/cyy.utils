@@ -31,9 +31,18 @@ export TO_DIR=${2}
 echo "FROM_DIR=${FROM_DIR}"
 echo "TO_DIR=${TO_DIR}"
 
+# building study specific tempalte
+echo 
+echo "Building study specific tempalte..."
+echo 
+
+battery.tempalte.sh ${FROM_DIR} ${TO_DIR}
+export T_DIR=${TO_DIR}/T/template0
+
 echo paralleling...
 #export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=10
 find ${FROM_DIR} -d 2 | \
+    grep -v T/template0 | \
     awk -F"/" '{print $(NF-1) " " $(NF)}' | \
-    parallel --will-cite -j10 --linebuffer --colsep ' ' battery.sh ${FROM_DIR} ${TO_DIR} {1} {2} # {SUBJ} {TIME}
+    parallel --will-cite -j10 --linebuffer --colsep ' ' env T0_DIR=${T_DIR} battery.sh ${FROM_DIR} ${TO_DIR} {1} {2} # {SUBJ} {TIME}
 
