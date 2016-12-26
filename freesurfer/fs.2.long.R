@@ -36,19 +36,28 @@ sid =
 	str_replace("_.*", "") %>%
 	unique()
 
+base.cmd = c()
+long.cmd = c()
+
 for (s in sid)
 {
     tp = tps[str_detect(tps, s)]
     arg = paste("-tp", paste(tp, collapse=" "), collpase=" ")
-    cmd = paste("recon-all -all -sd", SD, "-base", paste0(s, ".base"), arg)
-    cat(cmd, "\n")
+    base.cmd = c(base.cmd, paste("recon-all -all -sd", SD, "-base", paste0(s, ".base"), arg))
+    #system(cmd)
     for (.tp in tp)
     {
-	cmd = paste("recon-all -all -sd", SD, "-long", .tp, paste0(s, ".base"))
-	cat(cmd, "\n")
+	long.cmd = c(long.cmd, paste("recon-all -all -sd", SD, "-long", .tp, paste0(s, ".base")))
+	#system(cmd)
     }
 }
 
+parallel::mclapply(base.cmd,
+		     function(.cmd) system(shQuote(.cmd)),
+		       mc.cores=10, mc.preschedule=F)
+parallel::mclapply(long.cmd,
+		     function(.cmd) system(shQuote(.cmd)),
+		       mc.cores=10, mc.preschedule=F)
 
 #recon-all -base <templateid> -tp <tp1id> -tp <tp2id> ... -all
 
