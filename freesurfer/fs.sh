@@ -56,7 +56,8 @@ fi
 if [[ -f "$IF" ]]; then
     SID=`echo ${IF} | awk -F"/" '{print $(NF-3) "_" $(NF-2)}'` 
     if [[ -f ${SD}/${SID}/mri/rawavg.mgz ]]; then
-	logCmd recon-all -all -sd ${SD} -s ${SID}
+	#logCmd recon-all -all -sd ${SD} -s ${SID}
+	echo ${SD} exists! Skipped!
     else 
 	logCmd recon-all -all -sd ${SD} -s ${SID} -i ${IF}
     fi
@@ -64,5 +65,3 @@ else
     echo $IF does not exist!!
 fi
 
-    SID=$1_$2
-    IF=${FROM_DIR}/$1/$2/$3/$4
