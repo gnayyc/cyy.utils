@@ -31,7 +31,6 @@ filename = sys.argv[1]
 dcm = dicom.read_file(filename)
 
 header = ",".join([
-    "Filename",
     "PatientID",
     "PatientAge",
     "PatientSex",
@@ -58,11 +57,12 @@ header = ",".join([
     "SpacingBetweenSlices",
     "NumberOfAverages",
     "PixelSpacingRows",
-    "PixelSpacingColumns"
+    "PixelSpacingColumns",
+    "Filename"
     ])
 
 data = ",".join(str(x) for x in 
-    [filename, 
+    [
     dcm.get("PatientID", "").strip(), 
     dcm.get("PatientAge", "").strip(), 
     dcm.get("PatientSex", "").strip(), 
@@ -89,7 +89,8 @@ data = ",".join(str(x) for x in
     dcm.get("SpacingBetweenSlices", ""),
     dcm.get("NumberOfAverages", ""),
     dcm.get("PixelSpacing", [0,0])[0],
-    dcm.get("PixelSpacing", [0,0])[1]
+    dcm.get("PixelSpacing", [0,0])[1],
+    filename
     #dcm.PixelSpacing[0],
     #dcm.PixelSpacing[1]
     ])
