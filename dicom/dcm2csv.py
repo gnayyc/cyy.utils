@@ -41,7 +41,7 @@ header = ",".join([
     "StudyTime",
     "SeriesNumber",
     "Modality",
-    "NanufacturerModelName",
+    "ManufacturerModelName",
     "Manufacturer",
     "MagneticFieldStrength",
     "MRAcquisitionType",
