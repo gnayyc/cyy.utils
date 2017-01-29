@@ -3,6 +3,23 @@
 library(tidyverse)
 library(stringr)
 
+## Collect arguments
+args <- commandArgs(TRUE)
+
+## Default setting when no arguments passed
+if(length(args) == 0) {
+        BIDS = "."
+} else {
+        BIDS = args[1]
+}
+
+cat("BIDS directory == ", BIDS, "\n")
+
+csv_files =
+    BIDS %>%
+    dir(pattern = "*.csv")
+
+
 info = tibble()
 for (f in csv_files)
 {
