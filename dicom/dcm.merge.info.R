@@ -19,6 +19,11 @@ csv_files =
     BIDS %>%
     dir(pattern = "*.csv")
 
+if (length(csv_files) == 0)
+{
+    cat("No csv files!\nQuitting!\n")
+    quit()
+}
 
 info = tibble()
 for (f in csv_files)
