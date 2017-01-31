@@ -8,60 +8,63 @@ args <- commandArgs(TRUE)
 
 ## Default setting when no arguments passed
 if(length(args) == 0) {
-        BIDS = "."
+    info_csv = file.path(".","info.csv")
 } else {
-        BIDS = args[1]
+    info_csv = args[1]
+    if (!dir.exists(info_csv))
+	info_csv = file.path(info_csv, "info.csv")
+    if (!file.exists(info_csv))
+	stop(paste(info_csv, "does not exits!"))
 }
 
-cat("BIDS directory == ", BIDS, "\n")
+info_dir = dirname(info_csv)
 
-csv_files =
-    BIDS %>%
-    dir(pattern = "*.csv")
+cat("Info csv == ", info_csv, "\n")
+#cat("Info directory == ", info_dir, "\n")
 
-if (length(csv_files) == 0)
-{
-    cat("No csv files!\nQuitting!\n")
-    quit()
-}
+#csv_files =
+#    BIDS %>%
+#    dir(pattern = "*.csv")
+#
+#if (length(csv_files) == 0)
+#{
+#    cat("No csv files!\nQuitting!\n")
+#    quit()
+#}
 
-info = tibble()
-for (f in csv_files)
-{
-    info = 
-	read_csv(f, col_types = cols(PatientSex = "c"), trim_ws = T) %>% 
-	mutate_all(funs(as.character)) %>% 
-	bind_rows(info)
-}
+info = 
+    info_csv %>%
+    read_csv()
 
+cat("Analyzing demo...\n")
 demo = 
     info %>%
-    expand(PatientID, PatientsBirthDate, PatientSex, StudyDate, StudyTime)
+    distinct(PatientID, PatientsBirthDate, PatientSex, StudyDate, StudyTime)
+write_csv(demo, "demo.csv")
 
+cat("Analyzing protocol...")
 protocol = 
     info %>%
-    expand(
-    Modality,
-    ManufacturerModelName,
-    Manufacturer,
-    MagneticFieldStrength,
-    MRAcquisitionType,
-    SeriesDescription,
-    RepetitionTime,
-    EchoTime,
-    InversionTime,
-    FlipAngle,
-    Rows,
-    Columns,
-    SliceThickness,
-    SpacingBetweenSlices,
-    NumberOfAverages,
-    PixelSpacingRows,
-    PixelSpacingColumns)
+    distinct(
+	Modality,
+	ManufacturerModelName,
+	Manufacturer,
+	MagneticFieldStrength,
+	MRAcquisitionType,
+	SeriesDescription),
+	RepetitionTime,
+	EchoTime,
+	InversionTime,
+	FlipAngle)#,
+	#Rows,
+	#Columns,
+	#SliceThickness,
+	#SpacingBetweenSlices,
+	#NumberOfAverages,
+	#PixelSpacingRows,
+	#PixelSpacingColumns)
 
+write_csv(protocol, "protocol.csv")
 
 save(info, demo, protocol, file = "info.rdata")
-write_csv(info, "info.csv")
-write_csv(demo, "demo.csv")
-write_csv(protocol, "protocol.csv")
 
