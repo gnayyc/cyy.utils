@@ -109,10 +109,21 @@ csvfile = os.path.join(sys.argv[2] ,
     "zzz.csv"
         ])) 
 
+
+ifile = os.path.join(csvdir, "info.csv")
+if not os.path.isfile(ifile): 
+    ifd=open(ifile, 'w+')
+    ifd.write(header + "\n")
+else:
+    ifd=open(ifile, 'a')
+ifd.write(data + "\n")
+ifd.close()
+
 try:
     fd=open(csvfile, 'w+')
     fd.write(header + "\n")
     fd.write(data + "\n")
+    fd.close()
 except:
     print("Error creating file (%s)..." % csvfile)
     sys.exit()
