@@ -152,6 +152,8 @@ for root, dirs, files in os.walk(dcm_dir):
     for file in files:
         path = os.path.join(root, file)
         if magic.from_file(path, mime=True) == "application/dicom":
+            print("dcm2niix -b y -t y -m y -o \"%s\" -f %%i_%%t_%%s_%%p_zzz \"%s\"" % (csv_dir, root))
+            os.system("dcm2niix -b y -t y -m y -o \"%s\" -f %%i_%%t_%%s_%%p_zzz \"%s\"" % (csv_dir, root))
             print(path)
             dcm2csv(path, csv_dir)
             break
