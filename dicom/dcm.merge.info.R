@@ -41,6 +41,8 @@ cat("Analyzing demo...\n")
 demo = 
     info %>%
     distinct(PatientID, PatientsBirthDate, PatientSex, StudyDate, StudyTime) %>%
+    group_by(PatientID) %>%
+    mutate(timepoint = row_number(StudyDate)) %>%
     mutate(PatientsBirthDate = ymd(PatientsBirthDate),
 	   StudyDate = ymd(StudyDate)) %>%
     mutate(age = round(interval(PatientsBirthDate, StudyDate)/dyears(1), 1))
