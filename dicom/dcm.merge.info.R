@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 library(tidyverse)
-library(stringr)
+library(lubridate)
 
 ## Collect arguments
 args <- commandArgs(TRUE)
@@ -40,7 +40,11 @@ info =
 cat("Analyzing demo...\n")
 demo = 
     info %>%
-    distinct(PatientID, PatientsBirthDate, PatientSex, StudyDate, StudyTime)
+    distinct(PatientID, PatientsBirthDate, PatientSex, StudyDate, StudyTime) %>%
+    mutate(PatientsBirthDate = ymd(PatientsBirthDate),
+	   StudyDate = ymd(StudyDate)) %>%
+    mutate(age = round(interval(PatientsBirthDate, StudyDate)/dyears(1), 1))
+
 write_csv(demo, file.path(info_dir, "demo.csv"))
 
 cat("Analyzing protocol...\n")
