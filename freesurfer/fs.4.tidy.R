@@ -27,9 +27,10 @@ labels = c(label.frontal, label.parietal, label.temporal, label.occipital, label
 fs.dir = "."
 f.a2009s = dir(fs.dir, ".*a2009s.*.csv")
 f.aparc = dir(fs.dir, ".*aparc.*.csv")
-f.aseg = dir(fs.dir, ".*aseg.*.csv")
-f.wm = dir(fs.dir, ".*wm.*.csv")
+f.aseg = dir(fs.dir, "aseg.*.csv")
+f.wm = dir(fs.dir, ".wm.*.csv")
 f.lobes = dir(fs.dir, ".*h.lobes.csv")
+f.asegs = dir(fs.dir, ".*aseg.csv")
 
 aparc.files = c(f.a2009s, f.aparc)
   #'lh.a2009s.area.csv', 
@@ -128,8 +129,16 @@ lobe =
     gather(key, value, NumVert:CurvInd) %>% 
     unite(key, aparc, key, hemi, Lobe, sep = ".")
 
+asegs = tibble()
+for (.a in f.asegs)
+{
+    aseg = 
+	read_csv(.a) %>%
+	bind_rows(asegs)
+}
+
 #fs = rbind_list(aparc, aseg) %>% 
-fs = bind_rows(aparc, aseg, lobe) %>% 
+fs = bind_rows(aparc, aseg, lobe, asegs) %>% 
   mutate(key = as.character(key)) %>%
   unique 
 
