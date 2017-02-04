@@ -48,7 +48,7 @@ for (s in tps)
 	    read_csv(skip = 13, n_max = 18, col_names = c("desc", "key", "note", "value", "unit")) %>%
 	    mutate(sid = sid) %>%
 	    mutate(key = ifelse(str_detect(key, "lh"), paste0("aseg.vol.lh.", key),
-			 ifelse(str_detect(key, "hh"), paste0("aseg.vol.rh.", key),
+			 ifelse(str_detect(key, "rh"), paste0("aseg.vol.rh.", key),
 				   paste0("aseg.vol.mid.", key)))) %>%
 	    select(sid, key, value) %>%
 	    write_csv(file.path(STATS_DIR,paste0(s,".aseg.csv")))
