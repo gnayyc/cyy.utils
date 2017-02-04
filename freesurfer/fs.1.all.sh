@@ -64,7 +64,7 @@ fi
 #recon-all -sd ${2} -sid $SID -all
 #export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=10
 find ${FROM_DIR} -name "*3D*" | \
-    grep -v C.nii.gz| grep -v TOF |grep -v 3DC | grep -v 3D_C | \
+    grep -v C.nii.gz| grep -v TOF |grep -v 3DC | grep -v 3D_C | grep -v C_ | \
     parallel --will-cite -j10 --linebuffer --colsep ' ' \
 	fs.sh {1} ${SD}
 

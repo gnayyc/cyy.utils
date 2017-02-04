@@ -63,6 +63,7 @@ function fs.stats() {
 	    #fi
 	done
     done
+    fs.aseg.R
     export SUBJECTS_DIR=$S_DIR
 }
 
