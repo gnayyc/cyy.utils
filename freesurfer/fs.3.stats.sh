@@ -73,5 +73,9 @@ alias tksurfer="env SUBJECTS_DIR=. tksurfer"
 alias fs.="export SUBJECTS_DIR=\$PWD"
 alias fv='freeview'
 
-qa
+if [ ! -d QA ]; then
+    qa
+else
+    echo "QA directory exists!! Skipping QA this time!"
+fi
 fs.stats
