@@ -48,13 +48,15 @@ function logCmd() {
 
 IF=`realpath $1`
 SD=`realpath $2`
+IN=`basename $IF`
+
 
 if [ ! -d ${SD} ]; then
     mkdir -p ${SD}
 fi
 
 if [[ -f "$IF" ]]; then
-    SID=`echo ${IF} | awk -F"/" '{print $(NF-3) "_" $(NF-2)}'` 
+    SID=`basename ${IF} | awk -F"_" '{print $1 "_" $2 }'` 
     if [[ -f ${SD}/${SID}/mri/rawavg.mgz ]]; then
 	#logCmd recon-all -all -sd ${SD} -s ${SID}
 	echo ${SD} exists! Skipped!
