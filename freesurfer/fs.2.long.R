@@ -55,12 +55,5 @@ for (s in sid)
 parallel::mclapply(base.cmd, system, mc.cores=10, mc.preschedule=F)
 parallel::mclapply(long.cmd, system, mc.cores=10, mc.preschedule=F)
 
-#parallel::mclapply(base.cmd,
-#		     function(.cmd) system(shQuote(.cmd)),
-#		       mc.cores=10, mc.preschedule=F)
-#parallel::mclapply(long.cmd,
-#		     function(.cmd) system(shQuote(.cmd)),
-#		       mc.cores=10, mc.preschedule=F)
-
 #recon-all -base <templateid> -tp <tp1id> -tp <tp2id> ... -all
 

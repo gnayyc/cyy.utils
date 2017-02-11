@@ -61,7 +61,7 @@ if [[ -f "$IF" ]]; then
 	#logCmd recon-all -all -sd ${SD} -s ${SID}
 	echo ${SD} exists! Skipped!
     else 
-	logCmd recon-all -all -sd ${SD} -s ${SID} -i ${IF}
+	logCmd recon-all -all -sd ${SD} -s ${SID} -i ${IF} #-parallel -openmp 5
     fi
 else
     echo $IF does not exist!!

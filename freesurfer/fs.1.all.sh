@@ -12,7 +12,7 @@ Examples:
 
     `basename $0` ./input ./output
     while ./input contains 
-	./subject/timepoint/MRI/*.nii.gz
+	./*3D*.nii.gz
     ./output will be result subjects directory of FreeSurfer
 
 USAGE
