@@ -33,8 +33,9 @@ tps =
 
 sid = 
     tps %>%
-	str_replace("_.*", "") %>%
-	unique()
+    str_replace("_.*", "") %>%
+    unique() %>%
+    sort()
 
 base.cmd = c()
 long.cmd = c()
