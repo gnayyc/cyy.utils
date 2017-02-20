@@ -43,13 +43,17 @@ long.cmd = c()
 for (s in sid)
 {
     tp = tps[str_detect(tps, s)]
-    arg = paste("-tp", paste(tp, collapse=" "), collpase=" ")
-    base.cmd = c(base.cmd, paste("recon-all -all -sd", SD, "-base", paste0(s, ".base"), arg))
-    #system(cmd)
+    arg = paste(paste("-tp", tp, collpase=" "), collapse=" ")
+    if(!dir.exists(file.path(SD, paste0(s, ".base"))))
+    {
+	base.cmd = c(base.cmd, paste("recon-all -all -sd", SD, "-base", paste0(s, ".base"), arg))
+    }
     for (.tp in tp)
     {
-	long.cmd = c(long.cmd, paste("recon-all -all -sd", SD, "-long", .tp, paste0(s, ".base")))
-	#system(cmd)
+	if(!dir.exists(file.path(SD, paste0(.tp, ".long.", s, ".base"))))
+	{
+	    long.cmd = c(long.cmd, paste("recon-all -all -sd", SD, "-long", .tp, paste0(s, ".base")))
+	}
     }
 }
 
@@ -57,4 +61,5 @@ parallel::mclapply(base.cmd, system, mc.cores=10, mc.preschedule=F)
 parallel::mclapply(long.cmd, system, mc.cores=10, mc.preschedule=F)
 
 #recon-all -base <templateid> -tp <tp1id> -tp <tp2id> ... -all
+#recon-all -long <tpNid> <templateid> -all
 
