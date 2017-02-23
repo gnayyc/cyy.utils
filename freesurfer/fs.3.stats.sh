@@ -38,12 +38,12 @@ function fs.stats() {
     eval aparcstats2table --skip -d comma --hemi=lh -p aparc.a2009s --meas thicknessstd --tablefile ${STATS_DIR}/lh.a2009s.thicknessstd.csv --subjects $SUBJ
     eval aparcstats2table --skip -d comma --hemi=lh -p aparc.a2009s --meas meancurv --tablefile ${STATS_DIR}/lh.a2009s.meancurv.csv --subjects $SUBJ
 
-    eval asegstats2table --skip -d comma --meas volume --tablefile ${STATS_DIR}/aseg.vol.csv --subjects $SUBJ
-    eval asegstats2table --skip -d comma --meas mean --tablefile ${STATS_DIR}/aseg.mean.csv --subjects $SUBJ
-    eval asegstats2table --skip -d comma --meas std --tablefile ${STATS_DIR}/aseg.std.csv --subjects $SUBJ
-    eval asegstats2table --skip -d comma --stats wmparc.stats --meas volume --tablefile ${STATS_DIR}/wm.vol.csv --subjects $SUBJ
-    eval asegstats2table --skip -d comma --stats wmparc.stats --meas mean --tablefile ${STATS_DIR}/wm.mean.csv --subjects $SUBJ
-    eval asegstats2table --skip -d comma --stats wmparc.stats --meas std --tablefile ${STATS_DIR}/wm.std.csv --subjects $SUBJ
+    eval asegstats2table --all-segs --skip -d comma --meas volume --tablefile ${STATS_DIR}/aseg.vol.csv --subjects $SUBJ
+    eval asegstats2table --all-segs --skip -d comma --meas mean --tablefile ${STATS_DIR}/aseg.mean.csv --subjects $SUBJ
+    eval asegstats2table --all-segs --skip -d comma --meas std --tablefile ${STATS_DIR}/aseg.std.csv --subjects $SUBJ
+    eval asegstats2table --all-segs --skip -d comma --stats wmparc.stats --meas volume --tablefile ${STATS_DIR}/wm.vol.csv --subjects $SUBJ
+    eval asegstats2table --all-segs --skip -d comma --stats wmparc.stats --meas mean --tablefile ${STATS_DIR}/wm.mean.csv --subjects $SUBJ
+    eval asegstats2table --all-segs --skip -d comma --stats wmparc.stats --meas std --tablefile ${STATS_DIR}/wm.std.csv --subjects $SUBJ
 
     SUBJ=(`find . -type d -mindepth 1 -maxdepth 1| grep -v fs.stats| grep -v average | grep -v qdec| grep -v QA | sed "s/.\///g"`)
     echo

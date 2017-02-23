@@ -43,16 +43,19 @@ long.cmd = c()
 for (s in sid)
 {
     tp = tps[str_detect(tps, s)]
-    arg = paste(paste("-tp", tp, collpase=" "), collapse=" ")
-    if(!dir.exists(file.path(SD, paste0(s, ".base"))))
+    if (length(tp) > 1)
     {
-	base.cmd = c(base.cmd, paste("recon-all -all -sd", SD, "-base", paste0(s, ".base"), arg))
-    }
-    for (.tp in tp)
-    {
-	if(!dir.exists(file.path(SD, paste0(.tp, ".long.", s, ".base"))))
+	arg = paste(paste("-tp", tp, collpase=" "), collapse=" ")
+	if(!dir.exists(file.path(SD, paste0(s, ".base"))))
 	{
-	    long.cmd = c(long.cmd, paste("recon-all -all -sd", SD, "-long", .tp, paste0(s, ".base")))
+	    base.cmd = c(base.cmd, paste("recon-all -all -sd", SD, "-base", paste0(s, ".base"), arg))
+	}
+	for (.tp in tp)
+	{
+	    if(!dir.exists(file.path(SD, paste0(.tp, ".long.", s, ".base"))))
+	    {
+		long.cmd = c(long.cmd, paste("recon-all -all -sd", SD, "-long", .tp, paste0(s, ".base")))
+	    }
 	}
     }
 }

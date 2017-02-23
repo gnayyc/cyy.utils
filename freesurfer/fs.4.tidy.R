@@ -118,7 +118,7 @@ for (.l in f.lobes)
       str_replace("..h.lobes.csv", "") # %>% str_replace("\\.long\\..*", "")
 
   lobe = 
-      read_fwf(.l, fwf_empty(.l, col_names=cols,comment="#", skip=52), comment="#", skip=52) %>%
+      read.table(file.path(fs.dir, .l), col.names=cols, skip=52) %>%
 	  mutate(sid = .sid, hemi = .hemi) %>%
 	  bind_rows(lobe)
 }
