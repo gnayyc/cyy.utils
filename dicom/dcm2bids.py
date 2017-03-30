@@ -158,8 +158,8 @@ for root, dirs, files in os.walk(dcm_dir):
             dicom.read_file(path, force = True)
             print("")
             print(path)
-            print("dcm2niix -b y -t y -m y -o \"%s\" -f %%i_%%t_%%s_%%p_zzz \"%s\"" % (csv_dir, root))
-            os.system("dcm2niix -b y -t y -m y -o \"%s\" -f %%i_%%t_%%s_%%p_zzz \"%s\"" % (csv_dir, root))
+            print("dcm2niix -b y -t y -m y -z y -o \"%s\" -f %%i_%%t_%%s_%%p_zzz \"%s\"" % (csv_dir, root))
+            os.system("dcm2niix -b y -t y -m y -z y -o \"%s\" -f %%i_%%t_%%s_%%p_zzz \"%s\"" % (csv_dir, root))
             dcm2csv(path, csv_dir)
             break
         except:
