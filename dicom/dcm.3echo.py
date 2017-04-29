@@ -27,114 +27,18 @@ if len(sys.argv) != 2:
     print(__doc__)
     sys.exit()
 
+def do(cmd):
+    print(">>>> %s" % (cmd))
+    os.system(cmd)
+
 path = sys.argv[1]
-
-def dcm2csv(filename, csvdir):
-    dcm = dicom.read_file(filename, force=True)
-
-    header = ",".join([
-        "PatientID",
-        "PatientAge",
-        "PatientSex",
-        "PatientsBirthDate",
-        "PatientName",
-        "InstitutionName",
-        "StudyDate",
-        "StudyTime",
-        "SeriesNumber",
-        "Modality",
-        "ManufacturerModelName",
-        "Manufacturer",
-        "MagneticFieldStrength",
-        "MRAcquisitionType",
-        "SeriesDescription",
-        #"SequenceName",
-        "RepetitionTime",
-        "EchoTime",
-        "InversionTime",
-        "FlipAngle",
-        "Rows",
-        "Columns",
-        "SliceThickness",
-        "SpacingBetweenSlices",
-        "NumberOfAverages",
-        "PixelSpacingRows",
-        "PixelSpacingColumns",
-        "Filename"
-        ])
-
-    data = ",".join(str(x) for x in 
-        [
-        dcm.get("PatientID", "").strip(), 
-        dcm.get("PatientAge", "").strip(), 
-        dcm.get("PatientSex", "").strip(), 
-        dcm.get("PatientsBirthDate", "").strip(),
-        dcm.get("PatientName", "").strip(),
-        dcm.get("InstitutionName", "").strip(),
-        dcm.get("StudyDate", "").strip(),
-        dcm.get("StudyTime", "").strip(),
-        dcm.get("SeriesNumber", ""),
-        dcm.get("Modality", "").strip().strip(),
-        dcm.get("ManufacturerModelName", "").strip(),
-        dcm.get("Manufacturer", "").strip(),
-        dcm.get("MagneticFieldStrength", ""),
-        dcm.get("MRAcquisitionType", "").strip(),
-        dcm.get("SeriesDescription", "").strip(),
-        #dcm.get("SequenceName", "").strip(),
-        dcm.get("RepetitionTime", ""),
-        dcm.get("EchoTime", ""),
-        dcm.get("InversionTime", ""),
-        dcm.get("FlipAngle", ""),
-        dcm.get("Rows", ""),
-        dcm.get("Columns", ""),
-        dcm.get("SliceThickness", ""),
-        dcm.get("SpacingBetweenSlices", ""),
-        dcm.get("NumberOfAverages", ""),
-        dcm.get("PixelSpacing", [0,0])[0],
-        dcm.get("PixelSpacing", [0,0])[1],
-        filename
-        #dcm.PixelSpacing[0],
-        #dcm.PixelSpacing[1]
-        ])
-
-    desc = "_".join(dcm.get("SeriesDescription", "").split()).replace("/","_")
-    desc = desc.replace('\*',"_")
-    desc = ''.join([i if ord(i) < 128 else '_' for i in desc])
-
-    csvfile = os.path.join(sys.argv[2] ,
-        "_".join(str(x) for x in [
-        dcm.get("PatientID", ""), 
-        dcm.get("StudyDate", "") + "%06d" % float(dcm.get("StudyTime", "")),
-        dcm.get("SeriesNumber", ""),
-        desc,
-        "zzz.csv"
-            ])) 
-
-
-    ifile = os.path.join(csvdir, "info.csv")
-    if not os.path.isfile(ifile): 
-        ifd=open(ifile, 'w+')
-        ifd.write(header + "\n")
-    else:
-        ifd=open(ifile, 'a')
-    ifd.write(data + "\n")
-    ifd.close()
-
-    try:
-        fd=open(csvfile, 'w+')
-        fd.write(header + "\n")
-        fd.write(data + "\n")
-        fd.close()
-    except:
-        print("Error creating file (%s)..." % csvfile)
-        #sys.exit()
 
 dicom.read_file(path, force = True)
 print("")
-print(path)
+print("3 echo file path: %s" % (path))
 base = os.path.basename(path).replace(".nii.gz","")
-print("fslsplit \"%s\" \"%s\"" % (path, base))
-os.system("fslsplit \"%s\" \"%s\"" % (path, base))
+do("fslsplit \"%s\" \"%s\"" % (path, base))
+
 f1 = path.replace(".nii.gz", "0000.nii.gz")
 f2 = path.replace(".nii.gz", "0001.nii.gz")
 f3 = path.replace(".nii.gz", "0002.nii.gz")
@@ -145,6 +49,7 @@ op = path.replace(".nii.gz", "_op.nii.gz")
 water = path.replace(".nii.gz", "_water.nii.gz")
 fat = path.replace(".nii.gz", "_fat.nii.gz")
 fat_fraction = path.replace(".nii.gz", "_fat_fraction.nii.gz")
+fat_fraction_thr = path.replace(".nii.gz", "_fat_fraction_thr.nii.gz")
 
 if os.path.exists(f1):
     os.rename(f1, ip1)
@@ -164,16 +69,10 @@ else:
     print("No IP2 file")
     sys.exit()
 
-cmd = "fslmaths %s -mul %s -sqrt %s" % (ip1, ip2, ipc)
-print(cmd)
-os.system(cmd)
-
-cmd = "fslmaths %s -sub %s %s" % (ipc, op, fat)
-print(cmd)
-os.system(cmd)
-
-cmd = "fslmaths %s -sub %s -div 2 -div %s -mul 100 %s" % (ipc, op, ipc, fat_fraction)
-print(cmd)
-os.system(cmd)
+do("fslmaths %s -mul %s -sqrt %s" % (ip1, ip2, ipc))
+do("fslmaths %s -add %s -div 2 %s" % (ipc, op, water))
+do("fslmaths %s -sub %s -abs -div 2 %s" % (ipc, op, fat))
+do("fslmaths %s -sub %s -abs -div 2 -div %s -mul 100 %s" % (ipc, op, ipc, fat_fraction))
+do("fslmaths %s -sub %s -abs -div 2 -div %s -mul 100 -thr 0 -uthr 50 %s" % (ipc, op, ipc, fat_fraction_thr))
 
 
