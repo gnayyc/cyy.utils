@@ -159,7 +159,7 @@ if [[ ! -d ${ODIR} || ${FORCE} -eq 1 ]]; then
     fi
 fi
 
-PAD=0
+PAD=1
 
 if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
     #logCmd antsRegistrationSyNQuick.sh -d 2 -f $hand1 -m $hand2 -o ${OUTPUT_PREFIX} -n 10 -t b -s 256
@@ -169,17 +169,23 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
     #logCmd antsRegistrationSyNQuick.sh -d 2 -f $greenhand1 -m $greenhand2 -o ${OUTPUT_PREFIX}G -n 10 -t b -s 256
     #logCmd antsRegistrationSyNQuick.sh -d 2 -f $bluehand1 -m $greenhand2 -o ${OUTPUT_PREFIX}B -n 10 -t b -s 256
     
-    if [ $PAD -eq 1 ]; then
-	logCmd ImageMath 2 $imask1 PadImage $imask1 +256
-	logCmd ImageMath 2 $redhand1 PadImage $redhand1 +256
-	logCmd ImageMath 2 $greenhand1 PadImage $greenhand1 +256
-	logCmd ImageMath 2 $bluehand1 PadImage $bluehand1 +256
-	logCmd ImageMath 2 $imask2 PadImage $imask2 +256
-	logCmd ImageMath 2 $redhand2 PadImage $redhand2 +256
-	logCmd ImageMath 2 $greenhand2 PadImage $greenhand2 +256
-	logCmd ImageMath 2 $bluehand2 PadImage $bluehand2 +256
-    fi
-    logCmd antsRegistrationSyNQuick.sh -d 2 -f $imask1 -m $imask2 -f $redhand1 -m $redhand2 -f $greenhand1 -m $greenhand2 -f $bluehand1 -m $bluehand2 -o ${OUTPUT_PREFIX} -n 10 -t b -s 256
+#    if [ $PAD -eq 1 ]; then
+#	logCmd ImageMath 2 $imask1 PadImage $imask1 +256
+#	logCmd ImageMath 2 $redhand1 PadImage $redhand1 +256
+#	logCmd ImageMath 2 $greenhand1 PadImage $greenhand1 +256
+#	logCmd ImageMath 2 $bluehand1 PadImage $bluehand1 +256
+#	logCmd ImageMath 2 $imask2 PadImage $imask2 +256
+#	logCmd ImageMath 2 $redhand2 PadImage $redhand2 +256
+#	logCmd ImageMath 2 $greenhand2 PadImage $greenhand2 +256
+#	logCmd ImageMath 2 $bluehand2 PadImage $bluehand2 +256
+#    fi
+    #logCmd antsRegistrationSyNQuick.sh -d 2 -f $imask1 -m $imask2 -f $redhand1 -m $redhand2 -f $greenhand1 -m $greenhand2 -f $bluehand1 -m $bluehand2 -o ${OUTPUT_PREFIX} -n 10 -t b -s 256
+    logCmd antsRegistrationSyNQuick.sh -d 2 \
+	-f $imask1 -m $imask2 \
+	-f $redhand1 -m $redhand2 \
+	-f $greenhand1 -m $greenhand2 \
+	-f $bluehand1 -m $bluehand2 \
+	-o ${OUTPUT_PREFIX} -n 10 -t b -s 256
 
 
     #logCmd ImageMath 2 $hand1 PadImage $_hand1 -100

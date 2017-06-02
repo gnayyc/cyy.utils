@@ -17,6 +17,7 @@ USAGE
 
 KEEP_TMP_IMAGES=0
 CHULL=0
+PAD=1
 
 if [[ $# -lt 1 ]] ; then
   Usage >&2
@@ -145,6 +146,16 @@ fi
 	logCmd convert $greenhand -flatten -fuzz 0% -fill black -opaque white $greenhand
 	logCmd convert $bluehand -flatten -fuzz 0% -fill black -opaque white $bluehand
 	logCmd convert $yellowhand -flatten -fuzz 0% -fill black -opaque white $yellowhand
+
+	if [[ $PAD -eq 1 ]]; then
+	    echo "Start padding..."
+	    logCmd convert -bordercolor black -border 256 $hand $hand 
+	    logCmd convert -bordercolor black -border 256 $redhand $redhand 
+	    logCmd convert -bordercolor black -border 256 $greenhand $greenhand 
+	    logCmd convert -bordercolor black -border 256 $bluehand $bluehand 
+	    logCmd convert -bordercolor black -border 256 $yellowhand $yellowhand 
+	fi
+
 	logCmd ConvertImagePixelType $hand $handnii 1
 	logCmd ConvertImagePixelType $redhand $redhandnii 1
 	logCmd ConvertImagePixelType $greenhand $greenhandnii 1
@@ -159,6 +170,7 @@ fi
 	    logCmd convert $bluehand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $bluehand
 	    logCmd convert $yellowhand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $yellowhand
 	fi
+
 
     fi
 
