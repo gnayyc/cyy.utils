@@ -16,7 +16,7 @@ USAGE
 }
 
 KEEP_TMP_IMAGES=0
-CHULL=0
+CHULL=1
 PAD=1
 
 if [[ $# -lt 1 ]] ; then
@@ -44,6 +44,7 @@ OPRE=${ODIR}/${SID}
 nii=${OPRE}.nii.gz
 hand=${OPRE}_hand.png
 handnii=${OPRE}_hand.nii.gz
+handnii_chull=${OPRE}_hand.nii.gz
 hand_chull=${OPRE}_hand_chull.png
 red=${OPRE}_RGB0.png
 green=${OPRE}_RGB1.png
@@ -61,6 +62,12 @@ yellowhandnii=${OPRE}_hand_RGB3.nii.gz
 redhand_chull=${OPRE}_hand_RGB0_chull.png
 greenhand_chull=${OPRE}_hand_RGB1_chull.png
 bluehand_chull=${OPRE}_hand_RGB2_chull.png
+yellowhand_chull=${OPRE}_hand_RGB3_chull.png
+redhandnii_chull=${OPRE}_hand_RGB0.nii.gz
+greenhandnii_chull=${OPRE}_hand_RGB1.nii.gz
+bluehandnii_chull=${OPRE}_hand_RGB2.nii.gz
+yellowhandnii_chull=${OPRE}_hand_RGB3.nii.gz
+
 blue_=${OPRE}_RGB2-.png
 #r_g=${OPRE}_r-g.png
 r_g=${OPRE}_r-g.nii.gz
@@ -147,6 +154,15 @@ fi
 	logCmd convert $bluehand -flatten -fuzz 0% -fill black -opaque white $bluehand
 	logCmd convert $yellowhand -flatten -fuzz 0% -fill black -opaque white $yellowhand
 
+	# Try convex hull
+	if [ $CHULL -eq 1 ]; then
+	    logCmd convert $hand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $hand_chull
+	    logCmd convert $redhand  -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $redhand_chull
+	    logCmd convert $greenhand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $greenhand_chull
+	    logCmd convert $bluehand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $bluehand_chull
+	    logCmd convert $yellowhand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $yellowhand_chull
+	fi
+
 	if [[ $PAD -eq 1 ]]; then
 	    echo "Start padding..."
 	    logCmd convert -bordercolor black -border 256 $hand $hand 
@@ -154,6 +170,13 @@ fi
 	    logCmd convert -bordercolor black -border 256 $greenhand $greenhand 
 	    logCmd convert -bordercolor black -border 256 $bluehand $bluehand 
 	    logCmd convert -bordercolor black -border 256 $yellowhand $yellowhand 
+	    if [[ $CHULL -eq 1 ]]; then
+		logCmd convert -bordercolor black -border 256 $hand_chull $hand_chull
+		logCmd convert -bordercolor black -border 256 $redhand_chull $redhand_chull
+		logCmd convert -bordercolor black -border 256 $greenhand_chull $greenhand_chull
+		logCmd convert -bordercolor black -border 256 $bluehand_chull $bluehand_chull
+		logCmd convert -bordercolor black -border 256 $yellowhand_chull $yellowhand_chull
+	    fi
 	fi
 
 	logCmd ConvertImagePixelType $hand $handnii 1
@@ -161,15 +184,14 @@ fi
 	logCmd ConvertImagePixelType $greenhand $greenhandnii 1
 	logCmd ConvertImagePixelType $bluehand $bluehandnii 1
 	logCmd ConvertImagePixelType $yellowhand $yellowhandnii 1
+	if [[ $CHULL -eq 1 ]]; then
+	    logCmd ConvertImagePixelType $hand $handnii 1
+	    logCmd ConvertImagePixelType $redhand $redhandnii 1
+	    logCmd ConvertImagePixelType $greenhand $greenhandnii 1
+	    logCmd ConvertImagePixelType $bluehand $bluehandnii 1
+	    logCmd ConvertImagePixelType $yellowhand $yellowhandnii 1
+	fi 
 
-	# Try convex hull
-	if [ $CHULL -eq 1 ]; then
-	    logCmd convert $hand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $hand
-	    logCmd convert $redhand  -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $redhand
-	    logCmd convert $greenhand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $greenhand
-	    logCmd convert $bluehand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $bluehand
-	    logCmd convert $yellowhand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $yellowhand
-	fi
 
 
     fi
