@@ -46,28 +46,33 @@ fi
 
 SID1=${1%.*}
 SID2=${2%.*}
-IDIR1=${SID1}.output
-IDIR2=${SID2}.output
+IDIR1=${SID1}.hand
+IDIR2=${SID2}.hand
 IPRE1=${IDIR1}/${SID1}
 IPRE2=${IDIR2}/${SID2}
 SID=${SID1}_${SID2}
 SIDinv=${SID2}_${SID1}
-ODIR=${SID}.output
+ODIR=${SID}.syn
 OUTPUT_PREFIX=${ODIR}/${SID}
 OUTPUT_PREFIXinv=${ODIR}/${SIDinv}
 
 OPRE1=${ODIR}/${SID1}
 OPRE2=${ODIR}/${SID2}
 
+imask1=${IPRE1}_mask.nii.gz
+imask2=${IPRE2}_mask.nii.gz
+
 CHULL=1
 if [ $CHULL -eq 1 ]; then
-    imask1=${IPRE1}_mask_chull.nii.gz
-    imask2=${IPRE2}_mask_chull.nii.gz
+    affinemask1=${IPRE1}_mask_chull.nii.gz
+    affinemask2=${IPRE2}_mask_chull.nii.gz
+    affinemask2to1=${OUTPUT_PREFIX}_1Affine_mask_chull.nii.gz
+    affinemask2to1png=${OUTPUT_PREFIX}_1Affine_mask_chull.png
     imask_sub1=${IPRE1}_mask_sub255.nii.gz
     imask_sub2=${IPRE2}_mask_sub255.nii.gz
 else
-    imask1=${IPRE1}_mask.nii.gz
-    imask2=${IPRE2}_mask.nii.gz
+    affinemask1=${IPRE1}_mask.nii.gz
+    affinemask2=${IPRE2}_mask.nii.gz
 fi
 ihandpng1=${IPRE1}_hand.png
 ihandpng2=${IPRE2}_hand.png
@@ -161,8 +166,8 @@ if [[ ! -d ${ODIR} || ${FORCE} -eq 1 ]]; then
 	logCmd cp $ihandpng2 ${ODIR}/hand_png_2moving_${SID2}.png
 	logCmd cp $ihandnii1 ${hand1}
 	logCmd cp $ihandnii2 ${hand2}
-	#logCmd ConvertImagePixelType ${ihand1} ${hand1} 1
-	#logCmd ConvertImagePixelType ${ihand2} ${hand2} 1
+	#logCmd ConvertImagePixelType ${ihand1} ${hand1} 1 > /dev/null 2>&1
+	#logCmd ConvertImagePixelType ${ihand2} ${hand2} 1 > /dev/null 2>&1
 	if [ $CHULL -eq 1 ]; then
 	    logCmd ImageMath 2 ${hand1} overadd ${hand1} $imask_sub1
 	    logCmd ImageMath 2 ${hand2} overadd ${hand2} $imask_sub2
@@ -173,188 +178,149 @@ fi
 PAD=1
 
 if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
-    #logCmd antsRegistrationSyNQuick.sh -d 2 -f $hand1 -m $hand2 -o ${OUTPUT_PREFIX} -n 10 -t b -s 256
-    #logCmd antsRegistrationSyNQuick.sh -d 2 -f $redhand1 -m $redhand2 -f $greenhand1 -m $greenhand2 -f $bluehand1 -m $bluehand2 -o ${OUTPUT_PREFIX} -n 10 -t b -s 256
-    #logCmd antsRegistrationSyNQuick.sh -d 2 -f $greenhand1 -m $greenhand2 -f $bluehand1 -m $bluehand2 -f $redhand1 -m $redhand2 -o ${OUTPUT_PREFIX} -n 10 -t b -s 256
-    #logCmd antsRegistrationSyNQuick.sh -d 2 -f $redhand1 -m $redhand2 -o ${OUTPUT_PREFIX}R -n 10 -t b -s 256
-    #logCmd antsRegistrationSyNQuick.sh -d 2 -f $greenhand1 -m $greenhand2 -o ${OUTPUT_PREFIX}G -n 10 -t b -s 256
-    #logCmd antsRegistrationSyNQuick.sh -d 2 -f $bluehand1 -m $greenhand2 -o ${OUTPUT_PREFIX}B -n 10 -t b -s 256
-    
-#    if [ $PAD -eq 1 ]; then
-#	logCmd ImageMath 2 $imask1 PadImage $imask1 +256
-#	logCmd ImageMath 2 $redhand1 PadImage $redhand1 +256
-#	logCmd ImageMath 2 $greenhand1 PadImage $greenhand1 +256
-#	logCmd ImageMath 2 $bluehand1 PadImage $bluehand1 +256
-#	logCmd ImageMath 2 $imask2 PadImage $imask2 +256
-#	logCmd ImageMath 2 $redhand2 PadImage $redhand2 +256
-#	logCmd ImageMath 2 $greenhand2 PadImage $greenhand2 +256
-#	logCmd ImageMath 2 $bluehand2 PadImage $bluehand2 +256
-#    fi
-
-#    logCmd antsRegistrationSyN.sh -d 2 \
-#	-f $imask1 -m $imask2 \
-#	-f $redhand1 -m $redhand2 \
-#	-f $greenhand1 -m $greenhand2 \
-#	-f $bluehand1 -m $bluehand2 \
-#	-o ${OUTPUT_PREFIX} -n 10 -t b -s 256
-# Actual call
-#    /usr/local/ANTs/bin//antsRegistration --verbose 0 \
-#	--dimensionality 2 \
-#	--float 0 \
-#	--output [${OUTPUT_PREFIX},${OUTPUT_PREFIX}Warped.nii.gz,${OUTPUT_PREFIX}InverseWarped.nii.gz] \
-#	--interpolation Linear \
-#	--use-histogram-matching 0 \
-#	--winsorize-image-intensities [0.005,0.995] \
-#	--initial-moving-transform [${imask1},${imask2},1] \
-#	--transform Rigid[0.1] \
-#	--metric MI[${imask1},${imask2},1,32,Regular,0.25] \
-#	--convergence [1000x500x250x100,1e-6,10] \
-#	--shrink-factors 12x8x4x2 \
-#	--smoothing-sigmas 4x3x2x1vox \
-#	--transform Affine[0.1] \
-#	--metric MI[${imask1},${imask2},1,32,Regular,0.25] \
-#	--convergence [1000x500x250x100,1e- 6,10] \
-#	--shrink-factors 12x8x4x2 \
-#	--smoothing-sigmas 4x3x2x1vox \
-#	--transform BSplineSyN[0.1,256,0,3] \
-#	--metric CC[${imask1},${imask2},1,4] \
-#	--metric CC[${redhand1},${redhand2},1,4] \
-#	--metric CC[${greenhand1},${greenhand2},1,4] \
-#	--metric CC[${bluehand1},${bluehand2},1,4] \
-#	--convergence [100x100x70x50x20,1e-6,10] \
-#	--shrink-factors 10x6x4x2x1 \
-#	--smoothing-sigmas 5x3x2x1x0vox
-
-
-
-#    logCmd antsRegistrationSyNQuick.sh -d 2 \
-#	-f $imask1 -m $imask2 \
-#	-f $redhand1 -m $redhand2 \
-#	-f $greenhand1 -m $greenhand2 \
-#	-f $bluehand1 -m $bluehand2 \
-#	-o ${OUTPUT_PREFIX} -n 10 -t b -s 256
-#    Actual call:
-    logCmd /usr/local/ANTs/bin//antsRegistration \
-	--verbose 1 \
-	--dimensionality 2 \
-	--float 0 \
-	--output [${OUTPUT_PREFIX},${OUTPUT_PREFIX}Warped.nii.gz,${OUTPUT_PREFIX}InverseWarped.nii.gz] \
-	--interpolation Linear \
-	--winsorize-image-intensities [0.1,0.9] \
-	--use-histogram-matching 1 \
-	--initial-moving-transform [${imask1},${imask2},1] \
-	--transform Rigid[0.1] \
-	--metric MI[${imask1},${imask2},1,32,Regular,0.25] \
-	--convergence [1000x500x500x0,1e-6,10] \
-	--shrink-factors 12x8x4x2 \
-	--smoothing-sigmas 4x3x2x1vox \
-	--transform Affine[0.2] \
-	--metric MI[${imask1},${imask2},2,32,Regular,0.25] \
-	--convergence [1000x1000x500x250x0,1e-7,10] \
-	--shrink-factors 15x12x8x4x2 \
-	--smoothing-sigmas 5x4x3x2x1vox \
-	--transform BSplineSyN[0.5,256,0,3] \
-	--metric MI[${redhand1},${redhand2},0.2,32] \
-	--metric MI[${greenhand1},${greenhand2},0.2,32] \
-	--metric MI[${bluehand1},${bluehand2},0.2,32] \
-	--convergence [500x500x500x200x100x100x100,1e-6,10] \
-	--shrink-factors 20x16x10x6x4x2x1 \
-	--smoothing-sigmas 10x8x5x3x2x1x0vox \
-	--verbose 1 
-
-	#--metric MI[${imask1},${imask2},0.4,32] \
-
-	#--masks [${imask1},${imask2}] \
-	#--interpolation Linear \
-	#--metric MI[${imask1},${imask2},0.4,32,Regular,0.25] \
-	#--metric MI[${redhand1},${redhand2},0.2,32,Regular,0.25] \
-	#--metric MI[${greenhand1},${greenhand2},0.2,32,Regular,0.25] \
-	#--metric MI[${bluehand1},${bluehand2},0.2,32,Regular,0.25] \
-	#--metric MI[${imask1},${imask2},0.4,32] \
-	#--metric MI[${imask1},${imask2},1,32] \
-	#--metric MI[${redhand1},${redhand2},1,32] \
-	#--metric MI[${greenhand1},${greenhand2},1,32] \
-	#--metric MI[${bluehand1},${bluehand2},1,32] \
-	#--convergence [100x100x70x50x20,1e-6,2] \
-	#--shrink-factors 10x6x4x2x1 \
+    QUICK=0
+    if [[ $QUICK -eq 1 ]]; then
+        logCmd antsRegistrationSyNQuick.sh -d 2 \
+    	-f $imask1 -m $imask2 \
+    	-f $redhand1 -m $redhand2 \
+    	-f $greenhand1 -m $greenhand2 \
+    	-f $bluehand1 -m $bluehand2 \
+    	-o ${OUTPUT_PREFIX} -n 10 -t b -s 256
+	# actual call
+	#/usr/local/ANTs/bin//antsRegistration --verbose 1 --dimensionality 2 --float 0 
+	#--interpolation Linear 
+	#--use-histogram-matching 0 
+	#--winsorize-image-intensities [0.005,0.995] 
+	#--initial-moving-transform [1.output/1_mask_chull.nii.gz,2.output/2_mask_chull.nii.gz,1] 
+	#--transform Rigid[0.1] 
+	#--metric MI[1.output/1_mask_chull.nii.gz,2.output/2_mask_chull.nii.gz,1,32,Regular,0.25] 
+	#--convergence [1000x500x250x0,1e-6,10 ] 
+	#--shrink-factors 12x8x4x2 
+	#--smoothing-sigmas 4x3x2x1vox 
+	#--transform Affine[0.1] 
+	#--metric MI[1.output/1_mask_chull.nii.gz,2.output/2_mask_chull.nii.gz,1,32,Regular,0.25] 
+	#--convergence [1000x500x250x0 ,1e-6,10] 
+	#--shrink-factors 12x8x4x2 
+	#--smoothing-sigmas 4x3x2x1vox 
+	#--transform BSplineSyN[0.1,256,0,3 ] 
+	#--metric MI[1.output/1_mask_chull.nii.gz,2.output/2_mask_chull.nii.gz,1,32] 
+	#--metric MI[1.output/1_hand_RGB0.nii.gz,2.output/2_hand_RGB0.nii.gz,1,32] 
+	#--metric MI[1.output/1_hand_RGB1.nii.gz,2.output /2_hand_RGB1.nii.gz,1,32] 
+	#--metric MI[1.output/1_hand_RGB2.nii.gz,2.output/2_hand_RGB2.nii.gz,1,32] 
+	#--convergence [100x100x70x50x0,1e-6,10] 
+	#--shrink-factors 10x6x4x2x1 
 	#--smoothing-sigmas 5x3x2x1x0vox
-
-
-    #logCmd ImageMath 2 $hand1 PadImage $_hand1 -100
-    #logCmd ImageMath 2 $hand2 PadImage $_hand2 -100
-    #logCmd ImageMath 2 $mask1 PadImage $_mask1 -100
-    #logCmd ImageMath 2 $mask2 PadImage $_mask2 -100
+    else
+	logCmd /usr/local/ANTs/bin//antsRegistration \
+	    --verbose 1 \
+	    --dimensionality 2 \
+	    --float 0 \
+	    --output [${OUTPUT_PREFIX},${OUTPUT_PREFIX}Warped.nii.gz,${OUTPUT_PREFIX}InverseWarped.nii.gz] \
+	    --interpolation Linear \
+	    --winsorize-image-intensities [0.005,0.995] \
+	    --use-histogram-matching 0 \
+	    --initial-moving-transform [${affinemask1},${affinemask2},1] \
+	    --transform Rigid[0.1] \
+	    --metric MI[${affinemask1},${affinemask2},1,32,Regular,0.25] \
+	    --convergence [1000x500x250x100,1e-6,10] \
+	    --shrink-factors 12x8x4x2 \
+	    --smoothing-sigmas 4x3x2x1vox \
+	    --transform Affine[0.1] \
+	    --metric MI[${affinemask1},${affinemask2},1,32,Regular,0.25] \
+	    --convergence [1000x500x250x100,1e-6,10] \
+	    --shrink-factors 12x8x4x2 \
+	    --smoothing-sigmas 4x3x2x1vox \
+	    --transform BSplineSyN[0.1,256,0,3] \
+	    --metric MI[${imask1},${imask2},1,32] \
+	    --metric MI[${redhand1},${redhand2},1,32] \
+	    --metric MI[${greenhand1},${greenhand2},1,32] \
+	    --metric MI[${bluehand1},${bluehand2},1,32] \
+	    --convergence [1000x1000x1000x700x500x100,1e-6,10] \
+	    --shrink-factors 15x10x6x4x2x1 \
+	    --smoothing-sigmas 6x5x3x2x1x0vox \
+	    --verbose 1
+    fi
 
     #if [[ ! -f ${OUTPUT_PREFIX}.png ]]; then
-	logCmd antsApplyTransforms -d 2 -i $redhand2 -o $redhand2nii -r $hand1 \
+	echo "Applying transforms..."
+	antsApplyTransforms -d 2 -i $redhand2 -o $redhand2nii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	logCmd antsApplyTransforms -d 2 -i $greenhand2 -o $greenhand2nii -r $hand1 \
+	antsApplyTransforms -d 2 -i $greenhand2 -o $greenhand2nii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	logCmd antsApplyTransforms -d 2 -i $bluehand2 -o $bluehand2nii -r $hand1 \
+	antsApplyTransforms -d 2 -i $bluehand2 -o $bluehand2nii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	logCmd antsApplyTransforms -d 2 -i $yellowhand2 -o $yellowhand2nii -r $hand1 \
+	antsApplyTransforms -d 2 -i $yellowhand2 -o $yellowhand2nii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
 
-	logCmd antsApplyTransforms -d 2 -i $redhand2 -o $redhand2nii_affine -r $hand1 \
+	antsApplyTransforms -d 2 -i $redhand2 -o $redhand2nii_affine -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	logCmd antsApplyTransforms -d 2 -i $greenhand2 -o $greenhand2nii_affine -r $hand1 \
+	antsApplyTransforms -d 2 -i $greenhand2 -o $greenhand2nii_affine -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	logCmd antsApplyTransforms -d 2 -i $bluehand2 -o $bluehand2nii_affine -r $hand1 \
+	antsApplyTransforms -d 2 -i $bluehand2 -o $bluehand2nii_affine -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	logCmd antsApplyTransforms -d 2 -i $yellowhand2 -o $yellowhand2nii_affine -r $hand1 \
+	antsApplyTransforms -d 2 -i $yellowhand2 -o $yellowhand2nii_affine -r $hand1 \
+	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
+	antsApplyTransforms -d 2 -i $affinemask2 -o $affinemask2to1 -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
 
-	logCmd antsApplyTransforms -d 2 -i $redhand1 -o $redhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -i $redhand1 -o $redhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	logCmd antsApplyTransforms -d 2 -i $greenhand1 -o $greenhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -i $greenhand1 -o $greenhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	logCmd antsApplyTransforms -d 2 -i $bluehand1 -o $bluehand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -i $bluehand1 -o $bluehand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	logCmd antsApplyTransforms -d 2 -i $yellowhand1 -o $yellowhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -i $yellowhand1 -o $yellowhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
 
-	logCmd antsApplyTransforms -d 2 -i $redhand1 -o $redhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -i $redhand1 -o $redhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	logCmd antsApplyTransforms -d 2 -i $greenhand1 -o $greenhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -i $greenhand1 -o $greenhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	logCmd antsApplyTransforms -d 2 -i $bluehand1 -o $bluehand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -i $bluehand1 -o $bluehand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	logCmd antsApplyTransforms -d 2 -i $yellowhand1 -o $yellowhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -i $yellowhand1 -o $yellowhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
 
 
 	#logCmd antsApplyTransforms -d 2 -o Linear[${OUTPUT_PREFIX}1InverseAffine.mat,1] -t ${OUTPUT_PREFIX}0GenericAffine.mat --verbose 1
 
-	logCmd ConvertImagePixelType $redhand2nii $redhand2png 1
-	logCmd ConvertImagePixelType $greenhand2nii $greenhand2png 1
-	logCmd ConvertImagePixelType $bluehand2nii $bluehand2png 1
-	logCmd ConvertImagePixelType $yellowhand2nii $yellowhand2png 1
+	echo "Converting nii to png..."
+	ConvertImagePixelType $redhand2nii $redhand2png 1 > /dev/null 2>&1
+	ConvertImagePixelType $greenhand2nii $greenhand2png 1 > /dev/null 2>&1
+	ConvertImagePixelType $bluehand2nii $bluehand2png 1 > /dev/null 2>&1
+	ConvertImagePixelType $yellowhand2nii $yellowhand2png 1 > /dev/null 2>&1
 
-	logCmd ConvertImagePixelType $redhand2nii_affine $redhand2png_affine 1
-	logCmd ConvertImagePixelType $greenhand2nii_affine $greenhand2png_affine 1
-	logCmd ConvertImagePixelType $bluehand2nii_affine $bluehand2png_affine 1
-	logCmd ConvertImagePixelType $yellowhand2nii_affine $yellowhand2png_affine 1
+	ConvertImagePixelType $redhand2nii_affine $redhand2png_affine 1 > /dev/null 2>&1
+	ConvertImagePixelType $greenhand2nii_affine $greenhand2png_affine 1 > /dev/null 2>&1
+	ConvertImagePixelType $bluehand2nii_affine $bluehand2png_affine 1 > /dev/null 2>&1
+	ConvertImagePixelType $yellowhand2nii_affine $yellowhand2png_affine 1 > /dev/null 2>&1
+	ConvertImagePixelType $affinemask2to1 $affinemask2to1png 1 > /dev/null 2>&1
+	ConvertImagePixelType $redhand1nii $redhand1png 1 > /dev/null 2>&1
+	ConvertImagePixelType $greenhand1nii $greenhand1png 1 > /dev/null 2>&1
+	ConvertImagePixelType $bluehand1nii $bluehand1png 1 > /dev/null 2>&1
+	ConvertImagePixelType $yellowhand1nii $yellowhand1png 1 > /dev/null 2>&1
 
-	logCmd ConvertImagePixelType $redhand1nii $redhand1png 1
-	logCmd ConvertImagePixelType $greenhand1nii $greenhand1png 1
-	logCmd ConvertImagePixelType $bluehand1nii $bluehand1png 1
-	logCmd ConvertImagePixelType $yellowhand1nii $yellowhand1png 1
+	echo "Combining rgb channels to color png..."
+	convert $redhand2png $greenhand2png $bluehand2png -combine $warpedpng
+	convert $redhand2png_affine $greenhand2png_affine $bluehand2png_affine -combine $affinepng
+	convert $redhand1png $greenhand1png $bluehand1png -combine $invwarpedpng
 
-	logCmd convert $redhand2png $greenhand2png $bluehand2png -combine $warpedpng
-	logCmd convert $redhand2png_affine $greenhand2png_affine $bluehand2png_affine -combine $affinepng
-	logCmd convert $redhand1png $greenhand1png $bluehand1png -combine $invwarpedpng
+	echo "Convert Warped.nii to png..."
+	ConvertImagePixelType ${OUTPUT_PREFIX}Warped.nii.gz ${OUTPUT_PREFIX}Warped.png 1 > /dev/null 2>&1
+	ConvertImagePixelType ${OUTPUT_PREFIX}InverseWarped.nii.gz ${OUTPUT_PREFIX}InverseWarped.png 1 > /dev/null 2>&1
 
-	logCmd ConvertImagePixelType ${OUTPUT_PREFIX}Warped.nii.gz ${OUTPUT_PREFIX}Warped.png 1
-	logCmd ConvertImagePixelType ${OUTPUT_PREFIX}InverseWarped.nii.gz ${OUTPUT_PREFIX}InverseWarped.png 1
-
-	logCmd ConvertImagePixelType $warpedpng ${ODIR}/hand_1Warped_${SID2}to${SID1}.nii.gz 1
-	logCmd ConvertImagePixelType $invwarpedpng ${ODIR}/hand_1Warped_${SID1}to${SID2}.nii.gz 1
-	logCmd CreateWarpedGridImage 2 ${OUTPUT_PREFIX}1Warp.nii.gz ${OUTPUT_PREFIX}WarpedGrid.nii.gz
-	logCmd ConvertImage 2 ${OUTPUT_PREFIX}1Warp.nii.gz ${OUTPUT_PREFIX}_ 10
+	echo "Converting warped color png to nii..."
+	ConvertImagePixelType $warpedpng ${ODIR}/hand_1Warped_${SID2}to${SID1}.nii.gz 1 > /dev/null 2>&1
+	ConvertImagePixelType $invwarpedpng ${ODIR}/hand_1Warped_${SID1}to${SID2}.nii.gz 1 > /dev/null 2>&1
+	echo "Creating warped grid image..."
+	CreateWarpedGridImage 2 ${OUTPUT_PREFIX}1Warp.nii.gz ${OUTPUT_PREFIX}WarpedGrid.nii.gz
+	echo "Creating displacement vector image..."
+	ConvertImage 2 ${OUTPUT_PREFIX}1Warp.nii.gz ${OUTPUT_PREFIX}_ 10 > /dev/null 2>&1
 	#logCmd ConvertTransformFile 2 ${OUTPUT_PREFIX}0GenericAffine.mat ${OUTPUT_PREFIX}0GenericAffine.txt
 
     #fi
 fi
+
 if [ $KEEP_TMP_IMAGES -eq "0" ]; then
     echo
     #logCmd rm -f ${OUTPUT_PREFIX}*.nii.gz ${OUTPUT_PREFIX}*.mat
@@ -362,4 +328,5 @@ fi
 
 #logCmd rm -f $r1_png $g1_png $b1_png
 
-#antsMultivariateTemplateConstruction2.sh -d 2 -n 0 -i 4 -r 1 -y 0 -l 0 -o handmask -c 2 -j 10 ?.png
+
+

@@ -38,7 +38,7 @@ else
   done
 fi
 
-ODIR=${1%.*}.output
+ODIR=${1%.*}.hand
 SID=${1%.*}
 OPRE=${ODIR}/${SID}
 nii=${OPRE}.nii.gz
@@ -94,7 +94,7 @@ function logCmd() {
 
 if [[ ! -d ${ODIR} ]]; then
     echo Directory "${ODIR}" not exists. Making it!
-    logCmd mkdir -p ${ODIR}
+    mkdir -p ${ODIR}
     if [[ ! -d ${ODIR} ]]; then
 	echo mkdir ${ODIR} failed! Exiting!
 	exit 0
@@ -103,8 +103,9 @@ fi
 
     # get each RGB channel
     if [[ ! -f ${blue} ]]; then
-	logCmd convert $1 -separate ${OPRE}_RGB%d.png
-	logCmd convert $blue -negate $yellow
+	echo "Separating RGB channels..."
+	convert $1 -separate ${OPRE}_RGB%d.png
+	convert $blue -negate $yellow
     fi
     # get R-G image
     r_g=${OPRE}_r-g.nii.gz
@@ -115,81 +116,85 @@ fi
 #	    -channel B -evaluate multiply 0 \
 #	    +channel -separate -compose add -flatten $r_g
 	# imagemath works better
-	logCmd ImageMath 2 $r_g - $red $green
+	ImageMath 2 $r_g - $red $green
     fi
 
     if [[ ! -f ${maskpng} ]]; then
+	echo "Generating hand mask..."
 	# Using kmeans to get threshold from R-G image
-	logCmd ThresholdImage 2 $r_g $maskrg Kmeans 1
+	ThresholdImage 2 $r_g $maskrg Kmeans 1
 	# Convert value 2 to 1
-	logCmd ThresholdImage 2 $maskrg $mask 2 2 1 0
+	ThresholdImage 2 $maskrg $mask 2 2 1 0
 	# Get largest component (hand)
-	logCmd ImageMath 2 $mask ME $mask 2
-	logCmd ImageMath 2 $mask GetLargestComponent $mask
-	logCmd ImageMath 2 $mask MD $mask 2
-	logCmd ImageMath 2 $mask FillHoles $mask 2
-	logCmd ImageMath 2 $mask MD $mask 4
-	logCmd ImageMath 2 $mask ME $mask 4
-	logCmd ConvertImagePixelType $mask $maskpng 1
+	ImageMath 2 $mask ME $mask 2
+	ImageMath 2 $mask GetLargestComponent $mask
+	ImageMath 2 $mask MD $mask 2
+	ImageMath 2 $mask FillHoles $mask 2
+	ImageMath 2 $mask MD $mask 4
+	ImageMath 2 $mask ME $mask 4
+	ConvertImagePixelType $mask $maskpng 1 > /dev/null 2>&1
 	if [ $CHULL -eq 1 ]; then
-	    logCmd chull.py ${mask} ${mask_chull}
-	    logCmd ImageMath 2 ${mask_sub} - ${mask_chull} ${mask}
-	    logCmd ImageMath 2 ${mask_sub255} m ${mask_sub} 255
+	    echo "Generating convex hull mask..."
+	    chull.py ${mask} ${mask_chull}
+	    ImageMath 2 ${mask_sub} - ${mask_chull} ${mask}
+	    ImageMath 2 ${mask_sub255} m ${mask_sub} 255
 	    #logCmd ImageMath 2 ${mask_chull_sub} - ${mask_chull} ${mask}
 	    # convert mask from nii to png
-	    logCmd ConvertImagePixelType $mask_chull $maskchullpng 1
+	    ConvertImagePixelType $mask_chull $maskchullpng 1 > /dev/null 2>&1
 	fi
     fi
     if [[ ! -f ${hand} ]]; then
-	# extract hand from mask and fill bg with black
-	logCmd convert $1 $maskpng -alpha Off -compose CopyOpacity -composite $hand
-	logCmd convert $red $maskpng -alpha Off -compose CopyOpacity -composite $redhand
-	logCmd convert $green $maskpng -alpha Off -compose CopyOpacity -composite $greenhand
-	logCmd convert $blue $maskpng -alpha Off -compose CopyOpacity -composite $bluehand
-	logCmd convert $yellow $maskpng -alpha Off -compose CopyOpacity -composite $yellowhand
+	echo "Extract hand using mask and fill bg with black..."
+	convert $1 $maskpng -alpha Off -compose CopyOpacity -composite $hand
+	convert $red $maskpng -alpha Off -compose CopyOpacity -composite $redhand
+	convert $green $maskpng -alpha Off -compose CopyOpacity -composite $greenhand
+	convert $blue $maskpng -alpha Off -compose CopyOpacity -composite $bluehand
+	convert $yellow $maskpng -alpha Off -compose CopyOpacity -composite $yellowhand
 
-	logCmd convert $hand -flatten -fuzz 0% -fill black -opaque white $hand
-	logCmd convert $redhand -flatten -fuzz 0% -fill black -opaque white $redhand
-	logCmd convert $greenhand -flatten -fuzz 0% -fill black -opaque white $greenhand
-	logCmd convert $bluehand -flatten -fuzz 0% -fill black -opaque white $bluehand
-	logCmd convert $yellowhand -flatten -fuzz 0% -fill black -opaque white $yellowhand
+	convert $hand -flatten -fuzz 0% -fill black -opaque white $hand
+	convert $redhand -flatten -fuzz 0% -fill black -opaque white $redhand
+	convert $greenhand -flatten -fuzz 0% -fill black -opaque white $greenhand
+	convert $bluehand -flatten -fuzz 0% -fill black -opaque white $bluehand
+	convert $yellowhand -flatten -fuzz 0% -fill black -opaque white $yellowhand
 
-	# Try convex hull
 	if [ $CHULL -eq 1 ]; then
-	    logCmd convert $hand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $hand_chull
-	    logCmd convert $redhand  -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $redhand_chull
-	    logCmd convert $greenhand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $greenhand_chull
-	    logCmd convert $bluehand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $bluehand_chull
-	    logCmd convert $yellowhand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $yellowhand_chull
+	    convert $hand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $hand_chull
+	    convert $redhand  -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $redhand_chull
+	    convert $greenhand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $greenhand_chull
+	    convert $bluehand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $bluehand_chull
+	    convert $yellowhand -fill white -opaque black $maskchullpng -alpha off -compose CopyOpacity -composite $yellowhand_chull
 	fi
 
 	if [[ $PAD -eq 1 ]]; then
 	    echo "Start padding..."
-	    logCmd convert -bordercolor black -border 256 $hand $hand 
-	    logCmd convert -bordercolor black -border 256 $redhand $redhand 
-	    logCmd convert -bordercolor black -border 256 $greenhand $greenhand 
-	    logCmd convert -bordercolor black -border 256 $bluehand $bluehand 
-	    logCmd convert -bordercolor black -border 256 $yellowhand $yellowhand 
+	    convert -bordercolor black -border 256 $hand $hand 
+	    convert -bordercolor black -border 256 $redhand $redhand 
+	    convert -bordercolor black -border 256 $greenhand $greenhand 
+	    convert -bordercolor black -border 256 $bluehand $bluehand 
+	    convert -bordercolor black -border 256 $yellowhand $yellowhand 
 	    if [[ $CHULL -eq 1 ]]; then
-		logCmd convert -bordercolor black -border 256 $hand_chull $hand_chull
-		logCmd convert -bordercolor black -border 256 $redhand_chull $redhand_chull
-		logCmd convert -bordercolor black -border 256 $greenhand_chull $greenhand_chull
-		logCmd convert -bordercolor black -border 256 $bluehand_chull $bluehand_chull
-		logCmd convert -bordercolor black -border 256 $yellowhand_chull $yellowhand_chull
+		convert -bordercolor black -border 256 $hand_chull $hand_chull
+		convert -bordercolor black -border 256 $redhand_chull $redhand_chull
+		convert -bordercolor black -border 256 $greenhand_chull $greenhand_chull
+		convert -bordercolor black -border 256 $bluehand_chull $bluehand_chull
+		convert -bordercolor black -border 256 $yellowhand_chull $yellowhand_chull
+		convert -bordercolor black -border 256 $maskchullpng $maskchullpng 
+		ImageMath 2 $mask_chull PadImage $mask_chull +256
 	    fi
 	fi
 
-	logCmd ConvertImagePixelType $hand $handnii 1
-	logCmd ConvertImagePixelType $redhand $redhandnii 1
-	logCmd ConvertImagePixelType $greenhand $greenhandnii 1
-	logCmd ConvertImagePixelType $bluehand $bluehandnii 1
-	logCmd ConvertImagePixelType $yellowhand $yellowhandnii 1
+	echo "Converting png to nii..."
+	ConvertImagePixelType $hand $handnii 1 > /dev/null 2>&1
+	ConvertImagePixelType $redhand $redhandnii 1 > /dev/null 2>&1
+	ConvertImagePixelType $greenhand $greenhandnii 1 > /dev/null 2>&1
+	ConvertImagePixelType $bluehand $bluehandnii 1 > /dev/null 2>&1
+	ConvertImagePixelType $yellowhand $yellowhandnii 1 > /dev/null 2>&1
 	if [[ $CHULL -eq 1 ]]; then
-	    logCmd ConvertImagePixelType $hand $handnii 1
-	    logCmd ConvertImagePixelType $redhand $redhandnii 1
-	    logCmd ConvertImagePixelType $greenhand $greenhandnii 1
-	    logCmd ConvertImagePixelType $bluehand $bluehandnii 1
-	    logCmd ConvertImagePixelType $yellowhand $yellowhandnii 1
+	    ConvertImagePixelType $hand $handnii 1 > /dev/null 2>&1
+	    ConvertImagePixelType $redhand $redhandnii 1 > /dev/null 2>&1
+	    ConvertImagePixelType $greenhand $greenhandnii 1 > /dev/null 2>&1
+	    ConvertImagePixelType $bluehand $bluehandnii 1 > /dev/null 2>&1
+	    ConvertImagePixelType $yellowhand $yellowhandnii 1 > /dev/null 2>&1
 	fi 
 
 
@@ -200,3 +205,4 @@ fi
 #	#logCmd rm -f ${nii} ${red} ${green} ${blue} ${r_g} ${maskrg} ${mask}
 #	logCmd rm -f ${ODIR}/*.nii.gz
 #    fi
+
