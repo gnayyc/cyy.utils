@@ -104,6 +104,16 @@ else
     yellowhand2=${IPRE2}_hand_RGB3.png
 fi
 
+hand1_chull=${ODIR}/hand_0fixed_${SID1}_chull.nii.gz
+hand2_chull=${ODIR}/hand_2moving_${SID2}_chull.nii.gz
+redhand1_chull=${IPRE1}_hand_RGB0_chull.nii.gz
+greenhand1_chull=${IPRE1}_hand_RGB1_chull.nii.gz
+bluehand1_chull=${IPRE1}_hand_RGB2_chull.nii.gz
+yellowhand1_chull=${IPRE1}_hand_RGB3_chull.nii.gz
+redhand2_chull=${IPRE2}_hand_RGB0_chull.nii.gz
+greenhand2_chull=${IPRE2}_hand_RGB1_chull.nii.gz
+bluehand2_chull=${IPRE2}_hand_RGB2_chull.nii.gz
+yellowhand2_chull=${IPRE2}_hand_RGB3_chull.nii.gz
 
 redhand1png=${OUTPUT_PREFIXinv}_Warped_RGB0.png
 greenhand1png=${OUTPUT_PREFIXinv}_Warped_RGB1.png
@@ -169,8 +179,16 @@ if [[ ! -d ${ODIR} || ${FORCE} -eq 1 ]]; then
 	#logCmd ConvertImagePixelType ${ihand1} ${hand1} 1 > /dev/null 2>&1
 	#logCmd ConvertImagePixelType ${ihand2} ${hand2} 1 > /dev/null 2>&1
 	if [ $CHULL -eq 1 ]; then
-	    logCmd ImageMath 2 ${hand1} overadd ${hand1} $imask_sub1
-	    logCmd ImageMath 2 ${hand2} overadd ${hand2} $imask_sub2
+	    logCmd ImageMath 2 ${hand1_chull} overadd ${hand1} $imask_sub1
+	    logCmd ImageMath 2 ${hand2_chull} overadd ${hand2} $imask_sub2
+	    logCmd ImageMath 2 ${redhand1_chull} overadd ${redhand1} $imask_sub1
+	    logCmd ImageMath 2 ${redhand2_chull} overadd ${redhand2} $imask_sub2
+	    logCmd ImageMath 2 ${greenhand1_chull} overadd ${greenhand1} $imask_sub1
+	    logCmd ImageMath 2 ${greenhand2_chull} overadd ${greenhand2} $imask_sub2
+	    logCmd ImageMath 2 ${bluehand1_chull} overadd ${bluehand1} $imask_sub1
+	    logCmd ImageMath 2 ${bluehand2_chull} overadd ${bluehand2} $imask_sub2
+	    logCmd ImageMath 2 ${yellowhand1_chull} overadd ${yellowhand1} $imask_sub1
+	    logCmd ImageMath 2 ${yellowhand2_chull} overadd ${yellowhand2} $imask_sub2
 	fi
     fi
 fi
@@ -227,17 +245,17 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	    --smoothing-sigmas 4x3x2x1vox \
 	    --transform Affine[0.1] \
 	    --metric MI[${affinemask1},${affinemask2},1,32,Regular,0.25] \
-	    --convergence [1000x500x250x100,1e-6,10] \
-	    --shrink-factors 12x8x4x2 \
-	    --smoothing-sigmas 4x3x2x1vox \
-	    --transform BSplineSyN[0.1,256,0,3] \
+	    --convergence [1000x1000x500x250x100,1e-6,10] \
+	    --shrink-factors 16x12x8x4x2 \
+	    --smoothing-sigmas 5x4x3x2x1vox \
+	    --transform BSplineSyN[0.1,128,0,3] \
 	    --metric MI[${imask1},${imask2},1,32] \
 	    --metric MI[${redhand1},${redhand2},1,32] \
 	    --metric MI[${greenhand1},${greenhand2},1,32] \
 	    --metric MI[${bluehand1},${bluehand2},1,32] \
 	    --convergence [1000x1000x1000x700x500x100,1e-6,10] \
-	    --shrink-factors 15x10x6x4x2x1 \
-	    --smoothing-sigmas 6x5x3x2x1x0vox \
+	    --shrink-factors 16x10x6x4x2x1 \
+	    --smoothing-sigmas 8x5x3x2x1x0vox \
 	    --verbose 1
     fi
 
@@ -252,6 +270,8 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	antsApplyTransforms -d 2 -i $yellowhand2 -o $yellowhand2nii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
 
+	antsApplyTransforms -d 2 -i $hand2 -o $affinenii -r $hand1 \
+	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
 	antsApplyTransforms -d 2 -i $redhand2 -o $redhand2nii_affine -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
 	antsApplyTransforms -d 2 -i $greenhand2 -o $greenhand2nii_affine -r $hand1 \
@@ -310,8 +330,8 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	ConvertImagePixelType ${OUTPUT_PREFIX}InverseWarped.nii.gz ${OUTPUT_PREFIX}InverseWarped.png 1 > /dev/null 2>&1
 
 	echo "Converting warped color png to nii..."
-	ConvertImagePixelType $warpedpng ${ODIR}/hand_1Warped_${SID2}to${SID1}.nii.gz 1 > /dev/null 2>&1
-	ConvertImagePixelType $invwarpedpng ${ODIR}/hand_1Warped_${SID1}to${SID2}.nii.gz 1 > /dev/null 2>&1
+	ConvertImagePixelType $warpedpng $warpednii 1 > /dev/null 2>&1
+	ConvertImagePixelType $invwarpedpng $invwarpednii 1 > /dev/null 2>&1
 	echo "Creating warped grid image..."
 	CreateWarpedGridImage 2 ${OUTPUT_PREFIX}1Warp.nii.gz ${OUTPUT_PREFIX}WarpedGrid.nii.gz
 	echo "Creating displacement vector image..."

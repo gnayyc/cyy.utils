@@ -38,6 +38,7 @@ else
   done
 fi
 
+
 ODIR=${1%.*}.hand
 SID=${1%.*}
 OPRE=${ODIR}/${SID}
@@ -132,7 +133,29 @@ fi
 	ImageMath 2 $mask FillHoles $mask 2
 	ImageMath 2 $mask MD $mask 4
 	ImageMath 2 $mask ME $mask 4
+	# try remove wrist
+	W=`convert $1 -format "%w" info:`
+	H=`convert $1 -format "%h" info:`
+	if [[ $W -gt $H ]]; then
+	    ((F=W/10))
+	    ((F2=W/8))
+	else
+	    ((F=H/10))
+	    ((F2=H/8))
+	fi
+	ImageMath 2 ${OPRE}tmp.nii.gz ME $mask $F
+	ImageMath 2 ${OPRE}tmp.nii.gz MD ${OPRE}tmp.nii.gz $F # remove fingers
+	ImageMath 2 ${OPRE}tmp2.nii.gz ME $mask $F2
+	ImageMath 2 ${OPRE}tmp2.nii.gz MD ${OPRE}tmp2.nii.gz $F2 # palm
+	ImageMath 2 ${OPRE}tmp.nii.gz - ${OPRE}tmp.nii.gz ${OPRE}tmp2.nii.gz
+	ImageMath 2 ${OPRE}tmp.nii.gz GetLargestComponent ${OPRE}tmp.nii.gz
+	ImageMath 2 ${OPRE}_hand_stripped.nii.gz - $mask ${OPRE}tmp.nii.gz
+	#ImageMath 2 ${OPRE}_hand_stripped.nii.gz GetLargestComponent ${OPRE}_hand_stripped.nii.gz 
+	ImageMath 2 $mask GetLargestComponent ${OPRE}_hand_stripped.nii.gz 
+
 	ConvertImagePixelType $mask $maskpng 1 > /dev/null 2>&1
+
+
 	if [ $CHULL -eq 1 ]; then
 	    echo "Generating convex hull mask..."
 	    chull.py ${mask} ${mask_chull}
@@ -172,14 +195,19 @@ fi
 	    convert -bordercolor black -border 256 $greenhand $greenhand 
 	    convert -bordercolor black -border 256 $bluehand $bluehand 
 	    convert -bordercolor black -border 256 $yellowhand $yellowhand 
+	    ImageMath 2 $mask PadImage $mask +256
+	    ImageMath 2 $maskrg PadImage $maskrg +256
 	    if [[ $CHULL -eq 1 ]]; then
 		convert -bordercolor black -border 256 $hand_chull $hand_chull
 		convert -bordercolor black -border 256 $redhand_chull $redhand_chull
 		convert -bordercolor black -border 256 $greenhand_chull $greenhand_chull
 		convert -bordercolor black -border 256 $bluehand_chull $bluehand_chull
 		convert -bordercolor black -border 256 $yellowhand_chull $yellowhand_chull
+		convert -bordercolor black -border 256 $maskpng $maskpng 
 		convert -bordercolor black -border 256 $maskchullpng $maskchullpng 
 		ImageMath 2 $mask_chull PadImage $mask_chull +256
+		ImageMath 2 $mask_sub PadImage $mask_sub +256
+		ImageMath 2 $mask_sub255 PadImage $mask_sub255 +256
 	    fi
 	fi
 
