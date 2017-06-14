@@ -78,7 +78,6 @@ blue_=${OPRE}_RGB2-.png
 r_g=${OPRE}_r-g.nii.gz
 maskrg=${OPRE}_mask.r-g.nii.gz
 mask=${OPRE}_mask.nii.gz
-mask0=${OPRE}_mask0.nii.gz
 mask_chull=${OPRE}_mask_chull.nii.gz
 mask_sub=${OPRE}_mask_sub.nii.gz
 mask_sub255=${OPRE}_mask_sub255.nii.gz
@@ -98,7 +97,6 @@ function logCmd() {
   echo
 }
 
-echo "Start extracting hand (${SID}) from green background..."
 if [[ ! -d ${ODIR} ]]; then
     echo Directory "${ODIR}" not exists. Making it!
     mkdir -p ${ODIR}
@@ -139,48 +137,42 @@ fi
 	ImageMath 2 $mask FillHoles $mask 2
 	ImageMath 2 $mask MD $mask 4
 	ImageMath 2 $mask ME $mask 4
-	cp $mask $mask0
 	# try remove wrist
 	W=`convert $1 -format "%w" info:`
 	H=`convert $1 -format "%h" info:`
 	if [[ $W -gt $H ]]; then
-	    ((F1=W/10))
+	    ((F=W/10))
 	    ((F2=W/8))
-	    ((F3=W/20))
+	    ((F2=W/20))
 	else
-	    ((F1=H/10))
+	    ((F=H/10))
 	    ((F2=H/8))
 	    ((F3=H/20))
 	fi
+	ImageMath 2 ${OPRE}1palmwrist.nii.gz ME $mask $F
+	ImageMath 2 ${OPRE}1palmwrist.nii.gz MD ${OPRE}1palmwrist.nii.gz $F # remove fingers
+	ImageMath 2 ${OPRE}1palmwrist.nii.gz * $mask ${OPRE}1palmwrist.nii.gz # in mask
 
-	echo "Stripping palm/fingers..."
-	#echo ImageMath 2 ${OPRE}1palmwrist.nii.gz ME $mask0 $F1
-	ImageMath 2 ${OPRE}1palmwrist.nii.gz ME $mask0 $F1
-	ImageMath 2 ${OPRE}1palmwrist.nii.gz MD ${OPRE}1palmwrist.nii.gz $F1 # remove fingers
-	ImageMath 2 ${OPRE}1palmwrist.nii.gz m $mask0 ${OPRE}1palmwrist.nii.gz # in mask
-
-	#echo ImageMath 2 ${OPRE}2palm.nii.gz ME $mask0 $F2
-	ImageMath 2 ${OPRE}2palm.nii.gz ME $mask0 $F2
+	ImageMath 2 ${OPRE}2palm.nii.gz ME $mask $F2
 	ImageMath 2 ${OPRE}2palm.nii.gz MD ${OPRE}2palm.nii.gz $F2 # palm
-	ImageMath 2 ${OPRE}2palm.nii.gz m $mask0 ${OPRE}2palm.nii.gz # in mask
+	ImageMath 2 ${OPRE}2palm.nii.gz * $mask ${OPRE}2palm.nii.gz # in mask
 
-	ImageMath 2 ${OPRE}3wrist.nii.gz - $mask0 ${OPRE}2palm.nii.gz
-	ImageMath 2 ${OPRE}3wrist.nii.gz m ${OPRE}3wrist.nii.gz ${OPRE}1palmwrist.nii.gz
-	ImageMath 2 ${OPRE}3wrist.nii.gz GetLargestComponent ${OPRE}3wrist.nii.gz
+	ImageMath 2 ${OPRE}3wrist.nii.gz - $mask ${OPRE}2palm.nii.gz
+	ImageMath 2 ${OPRE}4wrist.nii.gz * ${OPRE}3wrist.nii.gz ${OPRE}1palmwrist.nii.gz
+	#ImageMath 2 ${OPRE}3wrist.nii.gz - ${OPRE}1palmwrist.nii.gz ${OPRE}2palm.nii.gz
+	#ImageMath 2 ${OPRE}3wrist.nii.gz GetLargestComponent ${OPRE}3wrist.nii.gz
 	#ImageMath 2 ${OPRE}3wrist.nii.gz ME ${OPRE}3wrist.nii.gz $F3
 	#ImageMath 2 ${OPRE}3wrist.nii.gz MD ${OPRE}3wrist.nii.gz $F3
 	#ImageMath 2 ${OPRE}3wrist.nii.gz * ${OPRE}1palmwrist.nii.gz ${OPRE}2palm.nii.gz
-	ImageMath 2 ${OPRE}_hand_stripped.nii.gz - $mask0 ${OPRE}3wrist.nii.gz
+	ImageMath 2 ${OPRE}_hand_stripped.nii.gz - $mask ${OPRE}4wrist.nii.gz
 	ImageMath 2 $mask GetLargestComponent ${OPRE}_hand_stripped.nii.gz 
-	ImageMath 2 $mask MD $mask 50
-	ImageMath 2 $mask ME $mask 50
-	ImageMath 2 $mask m $mask0 $mask
+	ImageMath 2 $mask FillHoles $mask 2
 
 	ConvertImagePixelType $mask $maskpng 1 > /dev/null 2>&1
 	ConvertImagePixelType $mask $maskpng 1 > /dev/null 2>&1
-	#ConvertImagePixelType ${OPRE}1palmwrist.nii.gz ${OPRE}1palmwrist.png 1 > /dev/null 2>&1
-	#ConvertImagePixelType ${OPRE}2palm.nii.gz ${OPRE}2palm.png 1 > /dev/null 2>&1
-	#ConvertImagePixelType ${OPRE}3wrist.nii.gz ${OPRE}3wrist.png 1 > /dev/null 2>&1
+	ConvertImagePixelType ${OPRE}1palmwrist.nii.gz ${OPRE}1palmwrist.png 1 > /dev/null 2>&1
+	ConvertImagePixelType ${OPRE}2palm.nii.gz ${OPRE}2palm.png 1 > /dev/null 2>&1
+	ConvertImagePixelType ${OPRE}3wrist.nii.gz ${OPRE}3wrist.png 1 > /dev/null 2>&1
 
 
 	if [ $CHULL -eq 1 ]; then

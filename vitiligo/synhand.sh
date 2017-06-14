@@ -253,7 +253,7 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	    --metric MI[${redhand1},${redhand2},1,32] \
 	    --metric MI[${greenhand1},${greenhand2},1,32] \
 	    --metric MI[${bluehand1},${bluehand2},1,32] \
-	    --convergence [1000x1000x1000x700x500x100,1e-6,10] \
+	    --convergence [1000x1000x1000x700x0x0,1e-6,10] \
 	    --shrink-factors 16x10x6x4x2x1 \
 	    --smoothing-sigmas 8x5x3x2x1x0vox \
 	    --verbose 1
