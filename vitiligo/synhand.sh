@@ -80,6 +80,7 @@ ihandnii1=${IPRE1}_hand.nii.gz
 ihandnii2=${IPRE2}_hand.nii.gz
 
 USE_NII=1
+SMOOTH=1
 if [ $USE_NII -eq 1 ]; then
     hand1=${ODIR}/hand_0fixed_${SID1}.nii.gz
     hand2=${ODIR}/hand_2moving_${SID2}.nii.gz
@@ -91,6 +92,16 @@ if [ $USE_NII -eq 1 ]; then
     greenhand2=${IPRE2}_hand_RGB1.nii.gz
     bluehand2=${IPRE2}_hand_RGB2.nii.gz
     yellowhand2=${IPRE2}_hand_RGB3.nii.gz
+    if [[ $SMOOTH -eq 1 ]]; then
+	redhand1_smooth=${IPRE1}_hand_RGB0_smooth.nii.gz
+	greenhand1_smooth=${IPRE1}_hand_RGB1_smooth.nii.gz
+	bluehand1_smooth=${IPRE1}_hand_RGB2_smooth.nii.gz
+	yellowhand1_smooth=${IPRE1}_hand_RGB3_smooth.nii.gz
+	redhand2_smooth=${IPRE2}_hand_RGB0_smooth.nii.gz
+	greenhand2_smooth=${IPRE2}_hand_RGB1_smooth.nii.gz
+	bluehand2_smooth=${IPRE2}_hand_RGB2_smooth.nii.gz
+	yellowhand2_smooth=${IPRE2}_hand_RGB3_smooth.nii.gz
+    fi
 else
     hand1=${OPRE1}_hand.png
     hand2=${OPRE2}_hand.png
@@ -165,8 +176,10 @@ logCmd ehand.sh $1
 logCmd ehand.sh $2
 
 if [[ ! -d ${ODIR} || ${FORCE} -eq 1 ]]; then
-    echo ${ODIR} not exists. Making it!
-    logCmd mkdir -p ${ODIR}
+    if [[ ! -d ${ODIR} ]]; then
+	echo ${ODIR} not exists. Making it!
+	logCmd mkdir -p ${ODIR}
+    fi
     if [[ ! -d ${ODIR} ]]; then
 	echo mkdir ${ODIR} failed! Exiting!
 	exit
@@ -257,6 +270,9 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	    --shrink-factors 16x10x6x4x2x1 \
 	    --smoothing-sigmas 8x5x3x2x1x0vox \
 	    --verbose 1
+	    #--metric MI[${redhand1_smooth},${redhand2_smooth},1,32] \
+	    #--metric MI[${greenhand1_smooth},${greenhand2_smooth},1,32] \
+	    #--metric MI[${bluehand1_smooth},${bluehand2_smooth},1,32] \
     fi
 
     #if [[ ! -f ${OUTPUT_PREFIX}.png ]]; then

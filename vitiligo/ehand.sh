@@ -18,6 +18,7 @@ USAGE
 KEEP_TMP_IMAGES=0
 CHULL=1
 PAD=1
+SMOOTH=1
 
 if [[ $# -lt 1 ]] ; then
   Usage >&2
@@ -68,10 +69,15 @@ redhand_chull=${OPRE}_hand_RGB0_chull.png
 greenhand_chull=${OPRE}_hand_RGB1_chull.png
 bluehand_chull=${OPRE}_hand_RGB2_chull.png
 yellowhand_chull=${OPRE}_hand_RGB3_chull.png
-redhandnii_chull=${OPRE}_hand_RGB0.nii.gz
-greenhandnii_chull=${OPRE}_hand_RGB1.nii.gz
-bluehandnii_chull=${OPRE}_hand_RGB2.nii.gz
-yellowhandnii_chull=${OPRE}_hand_RGB3.nii.gz
+redhandnii_chull=${OPRE}_hand_RGB0_chull.nii.gz
+greenhandnii_chull=${OPRE}_hand_RGB1_chull.nii.gz
+bluehandnii_chull=${OPRE}_hand_RGB2_chull.nii.gz
+yellowhandnii_chull=${OPRE}_hand_RGB3_chull.nii.gz
+hand_smooth=${OPRE}_hand_smooth.nii.gz
+redhand_smooth=${OPRE}_hand_RGB0_smooth.nii.gz
+greenhand_smooth=${OPRE}_hand_RGB1_smooth.nii.gz
+bluehand_smooth=${OPRE}_hand_RGB2_smooth.nii.gz
+yellowhand_smooth=${OPRE}_hand_RGB3_smooth.nii.gz
 
 blue_=${OPRE}_RGB2-.png
 #r_g=${OPRE}_r-g.png
@@ -245,6 +251,17 @@ fi
 	ConvertImagePixelType $greenhand $greenhandnii 1 > /dev/null 2>&1
 	ConvertImagePixelType $bluehand $bluehandnii 1 > /dev/null 2>&1
 	ConvertImagePixelType $yellowhand $yellowhandnii 1 > /dev/null 2>&1
+
+	if [[ $SMOOTH -eq 1 ]]; then
+	    echo "  Smoothing..."
+	    R=10
+	    SmoothImage 2 $handnii $R $hand_smooth
+	    SmoothImage 2 $redhandnii $R $redhand_smooth
+	    SmoothImage 2 $greenhandnii $R $greenhand_smooth
+	    SmoothImage 2 $bluehandnii $R $bluehand_smooth
+	    SmoothImage 2 $yellowhandnii $R $yellowhand_smooth
+
+	fi
 
 	#SmoothImage 2 $hand
 
