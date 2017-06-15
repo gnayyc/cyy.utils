@@ -19,6 +19,8 @@ KEEP_TMP_IMAGES=0
 CHULL=1
 PAD=1
 SMOOTH=1
+GRAD=1 # Gradient image
+CANNY=1 # Canny edge image
 
 if [[ $# -lt 1 ]] ; then
   Usage >&2
@@ -78,6 +80,16 @@ redhand_smooth=${OPRE}_hand_RGB0_smooth.nii.gz
 greenhand_smooth=${OPRE}_hand_RGB1_smooth.nii.gz
 bluehand_smooth=${OPRE}_hand_RGB2_smooth.nii.gz
 yellowhand_smooth=${OPRE}_hand_RGB3_smooth.nii.gz
+hand_grad=${OPRE}_hand_grad.nii.gz
+redhand_grad=${OPRE}_hand_RGB0_grad.nii.gz
+greenhand_grad=${OPRE}_hand_RGB1_grad.nii.gz
+bluehand_grad=${OPRE}_hand_RGB2_grad.nii.gz
+yellowhand_grad=${OPRE}_hand_RGB3_grad.nii.gz
+hand_canny=${OPRE}_hand_canny.nii.gz
+redhand_canny=${OPRE}_hand_RGB0_canny.nii.gz
+greenhand_canny=${OPRE}_hand_RGB1_canny.nii.gz
+bluehand_canny=${OPRE}_hand_RGB2_canny.nii.gz
+yellowhand_canny=${OPRE}_hand_RGB3_canny.nii.gz
 
 blue_=${OPRE}_RGB2-.png
 #r_g=${OPRE}_r-g.png
@@ -260,7 +272,26 @@ fi
 	    SmoothImage 2 $greenhandnii $R $greenhand_smooth
 	    SmoothImage 2 $bluehandnii $R $bluehand_smooth
 	    SmoothImage 2 $yellowhandnii $R $yellowhand_smooth
+	fi
 
+	if [[ $GRAD -eq 1 ]]; then
+	    echo "  Calculating gradient..."
+	    R=20
+	    ImageMath 2 $hand_grad Grad $handnii $R
+	    ImageMath 2 $redhand_grad Grad $redhandnii $R
+	    ImageMath 2 $greenhand_grad Grad $greenhandnii $R
+	    ImageMath 2 $bluehand_grad Grad $bluehandnii $R
+	    ImageMath 2 $yellowhand_grad Grad $yellowhandnii $R
+	fi
+
+	if [[ $CANNY -eq 1 ]]; then
+	    echo "  Calculating Canny edge..."
+	    R=20
+	    ImageMath 2 $hand_canny Canny $handnii $R
+	    ImageMath 2 $redhand_canny Canny $redhandnii $R
+	    ImageMath 2 $greenhand_canny Canny $greenhandnii $R
+	    ImageMath 2 $bluehand_canny Canny $bluehandnii $R
+	    ImageMath 2 $yellowhand_canny Canny $yellowhandnii $R
 	fi
 
 	#SmoothImage 2 $hand
