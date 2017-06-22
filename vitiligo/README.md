@@ -15,3 +15,5 @@
       + use B-spline SyN # much better than SyN
 3. build hand template
   + `antsMultivariateTemplateConstruction2.sh -d 2 -i 4 -o hand -t BSplineSyN -z handtemplate0.nii.gz -m MI *_hand.png`
+4. Note
+  + 

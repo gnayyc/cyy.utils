@@ -261,7 +261,7 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	    --convergence [1000x1000x500x250x100,1e-6,10] \
 	    --shrink-factors 16x12x8x4x2 \
 	    --smoothing-sigmas 5x4x3x2x1vox \
-	    --transform BSplineSyN[0.1,128,0,3] \
+	    --transform BSplineSyN[0.1,256,0,3] \
 	    --metric MI[${imask1},${imask2},1,32] \
 	    --metric MI[${redhand1},${redhand2},1,32] \
 	    --metric MI[${greenhand1},${greenhand2},1,32] \
@@ -277,44 +277,44 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 
     #if [[ ! -f ${OUTPUT_PREFIX}.png ]]; then
 	echo "Applying transforms..."
-	antsApplyTransforms -d 2 -i $redhand2 -o $redhand2nii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $redhand2 -o $redhand2nii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -i $greenhand2 -o $greenhand2nii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $greenhand2 -o $greenhand2nii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -i $bluehand2 -o $bluehand2nii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $bluehand2 -o $bluehand2nii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -i $yellowhand2 -o $yellowhand2nii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $yellowhand2 -o $yellowhand2nii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
 
-	antsApplyTransforms -d 2 -i $hand2 -o $affinenii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $hand2 -o $affinenii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -i $redhand2 -o $redhand2nii_affine -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $redhand2 -o $redhand2nii_affine -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -i $greenhand2 -o $greenhand2nii_affine -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $greenhand2 -o $greenhand2nii_affine -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -i $bluehand2 -o $bluehand2nii_affine -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $bluehand2 -o $bluehand2nii_affine -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -i $yellowhand2 -o $yellowhand2nii_affine -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $yellowhand2 -o $yellowhand2nii_affine -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -i $affinemask2 -o $affinemask2to1 -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $affinemask2 -o $affinemask2to1 -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
 
-	antsApplyTransforms -d 2 -i $redhand1 -o $redhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $redhand1 -o $redhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	antsApplyTransforms -d 2 -i $greenhand1 -o $greenhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $greenhand1 -o $greenhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	antsApplyTransforms -d 2 -i $bluehand1 -o $bluehand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $bluehand1 -o $bluehand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	antsApplyTransforms -d 2 -i $yellowhand1 -o $yellowhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $yellowhand1 -o $yellowhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
 
-	antsApplyTransforms -d 2 -i $redhand1 -o $redhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $redhand1 -o $redhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	antsApplyTransforms -d 2 -i $greenhand1 -o $greenhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $greenhand1 -o $greenhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	antsApplyTransforms -d 2 -i $bluehand1 -o $bluehand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $bluehand1 -o $bluehand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	antsApplyTransforms -d 2 -i $yellowhand1 -o $yellowhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n NearestNeighbor -i $yellowhand1 -o $yellowhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
 
 

@@ -54,6 +54,7 @@ hand=${OPRE}_hand.png
 handnii=${OPRE}_hand.nii.gz
 handnii_chull=${OPRE}_hand.nii.gz
 hand_chull=${OPRE}_hand_chull.png
+hand_phase=${OPRE}_hand_phase.png
 red=${OPRE}_RGB0.png
 green=${OPRE}_RGB1.png
 blue=${OPRE}_RGB2.png
@@ -116,9 +117,9 @@ function logCmd() {
   echo
 }
 
-echo "Start extracting hand (${SID}) from green background..."
+echo ">>>>>>>> Extracting hand (${SID}) from green background <<<<<<<<"
 if [[ ! -d ${ODIR} ]]; then
-    echo Directory "${ODIR}" not exists. Making it!
+    echo "  - Directory \"${ODIR}\" not exists. Making it!"
     mkdir -p ${ODIR}
     if [[ ! -d ${ODIR} ]]; then
 	echo mkdir ${ODIR} failed! Exiting!
@@ -127,14 +128,17 @@ if [[ ! -d ${ODIR} ]]; then
 fi
 
     # get each RGB channel
-    if [[ ! -f ${blue} ]]; then
-	echo "Separating RGB channels..."
-	convert $1 -separate ${OPRE}_RGB%d.png
+    if [[ ! -f ${blue} || ${FORCE} -eq 1 ]]; then
+	echo "  - Separating RGB/LAB/LUV/CMYK channels..."
+	convert $1 -colorspace RGB -separate ${OPRE}_RGB%d.png
+	convert $1 -colorspace LAB -separate ${OPRE}_LAB%d.png
+	convert $1 -colorspace LUV -separate ${OPRE}_LUV%d.png
+	convert $1 -colorspace CMYK -separate ${OPRE}_CMYK%d.png
 	convert $blue -negate $yellow
     fi
     # get R-G image
     r_g=${OPRE}_r-g.nii.gz
-    if [[ ! -f ${r_g} ]]; then
+    if [[ ! -f ${r_g} || ! -f ${OPRE}_CMYK4.nii.gz ]]; then
 #	logCmd convert $1 \
 #	    -channel R -evaluate multiply 1 \
 #	    -channel G -evaluate multiply -1 \
@@ -142,14 +146,19 @@ fi
 #	    +channel -separate -compose add -flatten $r_g
 	# imagemath works better
 	ImageMath 2 $r_g - $red $green
+	ImageMath 2 ${OPRE}_CMYK4.nii.gz Neg ${OPRE}_CMYK0.png
     fi
 
     if [[ ! -f ${maskpng} || ${FORCE} -eq 1 ]]; then
-	echo "Generating hand mask..."
+	echo "  - Generating hand mask..."
 	# Using kmeans to get threshold from R-G image
-	ThresholdImage 2 $r_g $maskrg Kmeans 1
+	ThresholdImage 2 $r_g $maskrg Kmeans 1 1 > /dev/null 2>&1
+	ThresholdImage 2 ${OPRE}_CMYK4.nii.gz ${OPRE}_th_CMYK.nii.gz Kmeans 1 1 > /dev/null 2>&1
 	# Convert value 2 to 1
 	ThresholdImage 2 $maskrg $mask 2 2 1 0
+	# Try use CMYK
+	#ThresholdImage 2 ${OPRE}_th_CMYK.nii.gz ${OPRE}_mask_CMYK.nii.gz 2 2 1 0
+	ThresholdImage 2 ${OPRE}_th_CMYK.nii.gz $mask 2 2 1 0
 	# Get largest component (hand)
 	ImageMath 2 $mask ME $mask 2
 	ImageMath 2 $mask GetLargestComponent $mask
@@ -171,7 +180,7 @@ fi
 	    ((F3=H/20))
 	fi
 
-	echo "Stripping palm/fingers..."
+	echo "  - Stripping palm/fingers..."
 	#echo ImageMath 2 ${OPRE}1palmwrist.nii.gz ME $mask0 $F1
 	ImageMath 2 ${OPRE}1palmwrist.nii.gz ME $mask0 $F1
 	ImageMath 2 ${OPRE}1palmwrist.nii.gz MD ${OPRE}1palmwrist.nii.gz $F1 # remove fingers
@@ -202,7 +211,7 @@ fi
 
 
 	if [ $CHULL -eq 1 ]; then
-	    echo "Generating convex hull mask..."
+	    echo "  - Generating convex hull mask..."
 	    chull.py ${mask} ${mask_chull}
 	    ImageMath 2 ${mask_sub} - ${mask_chull} ${mask}
 	    ImageMath 2 ${mask_sub255} m ${mask_sub} 255
@@ -212,7 +221,7 @@ fi
 	fi
     fi
     if [[ ! -f ${hand} || ${FORCE} -eq 1 ]]; then
-	echo "Extract hand using mask and fill bg with black..."
+	echo "  - Extract hand using mask and fill bg with black..."
 	convert $1 $maskpng -alpha Off -compose CopyOpacity -composite $hand
 	convert $red $maskpng -alpha Off -compose CopyOpacity -composite $redhand
 	convert $green $maskpng -alpha Off -compose CopyOpacity -composite $greenhand
@@ -234,7 +243,7 @@ fi
 	fi
 
 	if [[ $PAD -eq 1 ]]; then
-	    echo "Start padding..."
+	    echo "  - Start padding..."
 	    convert -bordercolor black -border 256 $hand $hand 
 	    convert -bordercolor black -border 256 $redhand $redhand 
 	    convert -bordercolor black -border 256 $greenhand $greenhand 
@@ -257,15 +266,15 @@ fi
 	fi
 
 
-	echo "Converting png to nii..."
+	echo "  - Converting png to nii..."
 	ConvertImagePixelType $hand $handnii 1 > /dev/null 2>&1
 	ConvertImagePixelType $redhand $redhandnii 1 > /dev/null 2>&1
 	ConvertImagePixelType $greenhand $greenhandnii 1 > /dev/null 2>&1
 	ConvertImagePixelType $bluehand $bluehandnii 1 > /dev/null 2>&1
 	ConvertImagePixelType $yellowhand $yellowhandnii 1 > /dev/null 2>&1
 
-	if [[ $SMOOTH -eq 1 ]]; then
-	    echo "  Smoothing..."
+	if [[ ! -f $hand_smooth || $FORCE -eq 1 ]]; then
+	    echo "  - Smoothing..."
 	    R=10
 	    SmoothImage 2 $handnii $R $hand_smooth
 	    SmoothImage 2 $redhandnii $R $redhand_smooth
@@ -274,8 +283,8 @@ fi
 	    SmoothImage 2 $yellowhandnii $R $yellowhand_smooth
 	fi
 
-	if [[ $GRAD -eq 1 ]]; then
-	    echo "  Calculating gradient..."
+	if [[ ! -f $hand_grad || $FORCE -eq 1 ]]; then
+	    echo "  - Calculating gradient..."
 	    R=20
 	    ImageMath 2 $hand_grad Grad $handnii $R
 	    ImageMath 2 $redhand_grad Grad $redhandnii $R
@@ -284,14 +293,22 @@ fi
 	    ImageMath 2 $yellowhand_grad Grad $yellowhandnii $R
 	fi
 
-	if [[ $CANNY -eq 1 ]]; then
-	    echo "  Calculating Canny edge..."
+	if [[ ! -f $hand_canny || $FORCE -eq 1 ]]; then
+	    echo "  - Calculating Canny edge..."
 	    R=20
 	    ImageMath 2 $hand_canny Canny $handnii $R
 	    ImageMath 2 $redhand_canny Canny $redhandnii $R
 	    ImageMath 2 $greenhand_canny Canny $greenhandnii $R
 	    ImageMath 2 $bluehand_canny Canny $bluehandnii $R
 	    ImageMath 2 $yellowhand_canny Canny $yellowhandnii $R
+	fi
+
+	if [[ ! -f $hand_phase || $FORCE -eq 1 ]]; then
+	    echo "  - Producing FFT phase image..."
+	    #echo "convert $hand -fft +depth \( -clone 1 -write png:- \) NULL: | convert -size `identify -format "%wx%h" $hand` xc:gray1 - -ift $hand_phase"
+	    convert $hand -fft +depth \( -clone 1 -write png:- \) NULL: |\
+		convert -size `identify -format "%wx%h" $hand` xc:gray1 - -ift png:- |\
+		convert - $maskpng -alpha Off -compose CopyOpacity -composite $hand_phase
 	fi
 
 	#SmoothImage 2 $hand
@@ -307,6 +324,7 @@ fi
 
 
     fi
+    echo ">>>>>>>> END <<<<<<<<" 
 
 #    if [ $KEEP_TMP_IMAGES -eq "0" ]; then
 #	#logCmd rm -f ${nii} ${red} ${green} ${blue} ${r_g} ${maskrg} ${mask}
