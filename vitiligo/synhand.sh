@@ -61,6 +61,8 @@ OPRE2=${ODIR}/${SID2}
 
 imask1=${IPRE1}_mask.nii.gz
 imask2=${IPRE2}_mask.nii.gz
+imask1_canny=${IPRE1}_mask_canny.nii.gz
+imask2_canny=${IPRE2}_mask_canny.nii.gz
 
 CHULL=1
 if [ $CHULL -eq 1 ]; then
@@ -78,80 +80,90 @@ ihandpng1=${IPRE1}_hand.png
 ihandpng2=${IPRE2}_hand.png
 ihandnii1=${IPRE1}_hand.nii.gz
 ihandnii2=${IPRE2}_hand.nii.gz
+hand1_canny=${IPRE1}_hand_canny.nii.gz
+hand2_canny=${IPRE2}_hand_canny.nii.gz
+hand1_phase=${IPRE1}_hand_phase.png
+hand2_phase=${IPRE2}_hand_phase.png
+hand1_phase_smooth=${IPRE1}_hand_phase_smooth.nii.gz
+hand2_phase_smooth=${IPRE2}_hand_phase_smooth.nii.gz
+hand1_lab1=${IPRE1}_hand_LAB1.png
+hand2_lab1=${IPRE2}_hand_LAB1.png
+hand1_wavelet=${IPRE1}_hand_wavelet.png
+hand2_wavelet=${IPRE2}_hand_wavelet.png
 
 USE_NII=1
 SMOOTH=1
 if [ $USE_NII -eq 1 ]; then
     hand1=${ODIR}/hand_0fixed_${SID1}.nii.gz
     hand2=${ODIR}/hand_2moving_${SID2}.nii.gz
-    redhand1=${IPRE1}_hand_RGB0.nii.gz
-    greenhand1=${IPRE1}_hand_RGB1.nii.gz
-    bluehand1=${IPRE1}_hand_RGB2.nii.gz
-    yellowhand1=${IPRE1}_hand_RGB3.nii.gz
-    redhand2=${IPRE2}_hand_RGB0.nii.gz
-    greenhand2=${IPRE2}_hand_RGB1.nii.gz
-    bluehand2=${IPRE2}_hand_RGB2.nii.gz
-    yellowhand2=${IPRE2}_hand_RGB3.nii.gz
+    redhand1=${IPRE1}_hand_sRGB0.nii.gz
+    greenhand1=${IPRE1}_hand_sRGB1.nii.gz
+    bluehand1=${IPRE1}_hand_sRGB2.nii.gz
+    #yellowhand1=${IPRE1}_hand_sRGB3.nii.gz
+    redhand2=${IPRE2}_hand_sRGB0.nii.gz
+    greenhand2=${IPRE2}_hand_sRGB1.nii.gz
+    bluehand2=${IPRE2}_hand_sRGB2.nii.gz
+    #yellowhand2=${IPRE2}_hand_sRGB3.nii.gz
     if [[ $SMOOTH -eq 1 ]]; then
-	redhand1_smooth=${IPRE1}_hand_RGB0_smooth.nii.gz
-	greenhand1_smooth=${IPRE1}_hand_RGB1_smooth.nii.gz
-	bluehand1_smooth=${IPRE1}_hand_RGB2_smooth.nii.gz
-	yellowhand1_smooth=${IPRE1}_hand_RGB3_smooth.nii.gz
-	redhand2_smooth=${IPRE2}_hand_RGB0_smooth.nii.gz
-	greenhand2_smooth=${IPRE2}_hand_RGB1_smooth.nii.gz
-	bluehand2_smooth=${IPRE2}_hand_RGB2_smooth.nii.gz
-	yellowhand2_smooth=${IPRE2}_hand_RGB3_smooth.nii.gz
+	redhand1_smooth=${IPRE1}_hand_sRGB0_smooth.nii.gz
+	greenhand1_smooth=${IPRE1}_hand_sRGB1_smooth.nii.gz
+	bluehand1_smooth=${IPRE1}_hand_sRGB2_smooth.nii.gz
+	#yellowhand1_smooth=${IPRE1}_hand_sRGB3_smooth.nii.gz
+	redhand2_smooth=${IPRE2}_hand_sRGB0_smooth.nii.gz
+	greenhand2_smooth=${IPRE2}_hand_sRGB1_smooth.nii.gz
+	bluehand2_smooth=${IPRE2}_hand_sRGB2_smooth.nii.gz
+	#yellowhand2_smooth=${IPRE2}_hand_sRGB3_smooth.nii.gz
     fi
 else
     hand1=${OPRE1}_hand.png
     hand2=${OPRE2}_hand.png
-    redhand1=${IPRE1}_hand_RGB0.png
-    greenhand1=${IPRE1}_hand_RGB1.png
-    bluehand1=${IPRE1}_hand_RGB2.png
-    yellowhand1=${IPRE1}_hand_RGB3.png
-    redhand2=${IPRE2}_hand_RGB0.png
-    greenhand2=${IPRE2}_hand_RGB1.png
-    bluehand2=${IPRE2}_hand_RGB2.png
-    yellowhand2=${IPRE2}_hand_RGB3.png
+    redhand1=${IPRE1}_hand_sRGB0.png
+    greenhand1=${IPRE1}_hand_sRGB1.png
+    bluehand1=${IPRE1}_hand_sRGB2.png
+    #yellowhand1=${IPRE1}_hand_sRGB3.png
+    redhand2=${IPRE2}_hand_sRGB0.png
+    greenhand2=${IPRE2}_hand_sRGB1.png
+    bluehand2=${IPRE2}_hand_sRGB2.png
+    #yellowhand2=${IPRE2}_hand_sRGB3.png
 fi
 
 hand1_chull=${ODIR}/hand_0fixed_${SID1}_chull.nii.gz
 hand2_chull=${ODIR}/hand_2moving_${SID2}_chull.nii.gz
-redhand1_chull=${IPRE1}_hand_RGB0_chull.nii.gz
-greenhand1_chull=${IPRE1}_hand_RGB1_chull.nii.gz
-bluehand1_chull=${IPRE1}_hand_RGB2_chull.nii.gz
-yellowhand1_chull=${IPRE1}_hand_RGB3_chull.nii.gz
-redhand2_chull=${IPRE2}_hand_RGB0_chull.nii.gz
-greenhand2_chull=${IPRE2}_hand_RGB1_chull.nii.gz
-bluehand2_chull=${IPRE2}_hand_RGB2_chull.nii.gz
-yellowhand2_chull=${IPRE2}_hand_RGB3_chull.nii.gz
+redhand1_chull=${IPRE1}_hand_sRGB0_chull.nii.gz
+greenhand1_chull=${IPRE1}_hand_sRGB1_chull.nii.gz
+bluehand1_chull=${IPRE1}_hand_sRGB2_chull.nii.gz
+#yellowhand1_chull=${IPRE1}_hand_sRGB3_chull.nii.gz
+redhand2_chull=${IPRE2}_hand_sRGB0_chull.nii.gz
+greenhand2_chull=${IPRE2}_hand_sRGB1_chull.nii.gz
+bluehand2_chull=${IPRE2}_hand_sRGB2_chull.nii.gz
+#yellowhand2_chull=${IPRE2}_hand_sRGB3_chull.nii.gz
 
-redhand1png=${OUTPUT_PREFIXinv}_Warped_RGB0.png
-greenhand1png=${OUTPUT_PREFIXinv}_Warped_RGB1.png
-bluehand1png=${OUTPUT_PREFIXinv}_Warped_RGB2.png
-yellowhand1png=${OUTPUT_PREFIXinv}_Warped_RGB3.png
-redhand1nii=${OUTPUT_PREFIXinv}_Warped_RGB0.nii.gz
-greenhand1nii=${OUTPUT_PREFIXinv}_Warped_RGB1.nii.gz
-bluehand1nii=${OUTPUT_PREFIXinv}_Warped_RGB2.nii.gz
-yellowhand1nii=${OUTPUT_PREFIXinv}_Warped_RGB3.nii.gz
+redhand1png=${OUTPUT_PREFIXinv}_Warped_sRGB0.png
+greenhand1png=${OUTPUT_PREFIXinv}_Warped_sRGB1.png
+bluehand1png=${OUTPUT_PREFIXinv}_Warped_sRGB2.png
+#yellowhand1png=${OUTPUT_PREFIXinv}_Warped_sRGB3.png
+redhand1nii=${OUTPUT_PREFIXinv}_Warped_sRGB0.nii.gz
+greenhand1nii=${OUTPUT_PREFIXinv}_Warped_sRGB1.nii.gz
+bluehand1nii=${OUTPUT_PREFIXinv}_Warped_sRGB2.nii.gz
+#yellowhand1nii=${OUTPUT_PREFIXinv}_Warped_sRGB3.nii.gz
 
-redhand2png=${OUTPUT_PREFIX}_Warped_RGB0.png
-greenhand2png=${OUTPUT_PREFIX}_Warped_RGB1.png
-bluehand2png=${OUTPUT_PREFIX}_Warped_RGB2.png
-yellowhand2png=${OUTPUT_PREFIX}_Warped_RGB3.png
-redhand2nii=${OUTPUT_PREFIX}_Warped_RGB0.nii.gz
-greenhand2nii=${OUTPUT_PREFIX}_Warped_RGB1.nii.gz
-bluehand2nii=${OUTPUT_PREFIX}_Warped_RGB2.nii.gz
-yellowhand2nii=${OUTPUT_PREFIX}_Warped_RGB3.nii.gz
+redhand2png=${OUTPUT_PREFIX}_Warped_sRGB0.png
+greenhand2png=${OUTPUT_PREFIX}_Warped_sRGB1.png
+bluehand2png=${OUTPUT_PREFIX}_Warped_sRGB2.png
+#yellowhand2png=${OUTPUT_PREFIX}_Warped_sRGB3.png
+redhand2nii=${OUTPUT_PREFIX}_Warped_sRGB0.nii.gz
+greenhand2nii=${OUTPUT_PREFIX}_Warped_sRGB1.nii.gz
+bluehand2nii=${OUTPUT_PREFIX}_Warped_sRGB2.nii.gz
+#yellowhand2nii=${OUTPUT_PREFIX}_Warped_sRGB3.nii.gz
 
-redhand2png_affine=${OUTPUT_PREFIX}_Affine_RGB0.png
-greenhand2png_affine=${OUTPUT_PREFIX}_Affine_RGB1.png
-bluehand2png_affine=${OUTPUT_PREFIX}_Affine_RGB2.png
-yellowhand2png_affine=${OUTPUT_PREFIX}_Affine_RGB3.png
-redhand2nii_affine=${OUTPUT_PREFIX}_Affine_RGB0.nii.gz
-greenhand2nii_affine=${OUTPUT_PREFIX}_Affine_RGB1.nii.gz
-bluehand2nii_affine=${OUTPUT_PREFIX}_Affine_RGB2.nii.gz
-yellowhand2nii_affine=${OUTPUT_PREFIX}_Affine_RGB3.nii.gz
+redhand2png_affine=${OUTPUT_PREFIX}_Affine_sRGB0.png
+greenhand2png_affine=${OUTPUT_PREFIX}_Affine_sRGB1.png
+bluehand2png_affine=${OUTPUT_PREFIX}_Affine_sRGB2.png
+#yellowhand2png_affine=${OUTPUT_PREFIX}_Affine_sRGB3.png
+redhand2nii_affine=${OUTPUT_PREFIX}_Affine_sRGB0.nii.gz
+greenhand2nii_affine=${OUTPUT_PREFIX}_Affine_sRGB1.nii.gz
+bluehand2nii_affine=${OUTPUT_PREFIX}_Affine_sRGB2.nii.gz
+#yellowhand2nii_affine=${OUTPUT_PREFIX}_Affine_sRGB3.nii.gz
 
 warpedpng=${ODIR}/hand_png_1Warped_${SID2}to${SID1}.png
 warpednii=${ODIR}/hand_1Warped_${SID2}to${SID1}.nii.gz
@@ -178,30 +190,33 @@ logCmd ehand.sh $2
 if [[ ! -d ${ODIR} || ${FORCE} -eq 1 ]]; then
     if [[ ! -d ${ODIR} ]]; then
 	echo ${ODIR} not exists. Making it!
-	logCmd mkdir -p ${ODIR}
+	mkdir -p ${ODIR}
     fi
     if [[ ! -d ${ODIR} ]]; then
 	echo mkdir ${ODIR} failed! Exiting!
 	exit
     else
-	logCmd cp $1 $2 $imask1 $imask2 ${ODIR}
-	logCmd cp $ihandpng1 ${ODIR}/hand_png_0fixed_${SID1}.png
-	logCmd cp $ihandpng2 ${ODIR}/hand_png_2moving_${SID2}.png
-	logCmd cp $ihandnii1 ${hand1}
-	logCmd cp $ihandnii2 ${hand2}
+	echo "  Copying original files..."
+	cp $1 $2 $imask1 $imask2 ${ODIR}
+	cp $ihandpng1 ${ODIR}/hand_png_0fixed_${SID1}.png
+	cp $ihandpng2 ${ODIR}/hand_png_2moving_${SID2}.png
+	cp $ihandnii1 ${hand1}
+	cp $ihandnii2 ${hand2}
 	#logCmd ConvertImagePixelType ${ihand1} ${hand1} 1 > /dev/null 2>&1
 	#logCmd ConvertImagePixelType ${ihand2} ${hand2} 1 > /dev/null 2>&1
 	if [ $CHULL -eq 1 ]; then
-	    logCmd ImageMath 2 ${hand1_chull} overadd ${hand1} $imask_sub1
-	    logCmd ImageMath 2 ${hand2_chull} overadd ${hand2} $imask_sub2
-	    logCmd ImageMath 2 ${redhand1_chull} overadd ${redhand1} $imask_sub1
-	    logCmd ImageMath 2 ${redhand2_chull} overadd ${redhand2} $imask_sub2
-	    logCmd ImageMath 2 ${greenhand1_chull} overadd ${greenhand1} $imask_sub1
-	    logCmd ImageMath 2 ${greenhand2_chull} overadd ${greenhand2} $imask_sub2
-	    logCmd ImageMath 2 ${bluehand1_chull} overadd ${bluehand1} $imask_sub1
-	    logCmd ImageMath 2 ${bluehand2_chull} overadd ${bluehand2} $imask_sub2
-	    logCmd ImageMath 2 ${yellowhand1_chull} overadd ${yellowhand1} $imask_sub1
-	    logCmd ImageMath 2 ${yellowhand2_chull} overadd ${yellowhand2} $imask_sub2
+	    echo "  Overadd convex hull...."
+
+	    ImageMath 2 ${hand1_chull} overadd ${hand1} $imask_sub1
+	    ImageMath 2 ${hand2_chull} overadd ${hand2} $imask_sub2
+	    ImageMath 2 ${redhand1_chull} overadd ${redhand1} $imask_sub1
+	    ImageMath 2 ${redhand2_chull} overadd ${redhand2} $imask_sub2
+	    ImageMath 2 ${greenhand1_chull} overadd ${greenhand1} $imask_sub1
+	    ImageMath 2 ${greenhand2_chull} overadd ${greenhand2} $imask_sub2
+	    ImageMath 2 ${bluehand1_chull} overadd ${bluehand1} $imask_sub1
+	    ImageMath 2 ${bluehand2_chull} overadd ${bluehand2} $imask_sub2
+	    #ImageMath 2 ${yellowhand1_chull} overadd ${yellowhand1} $imask_sub1
+	    #ImageMath 2 ${yellowhand2_chull} overadd ${yellowhand2} $imask_sub2
 	fi
     fi
 fi
@@ -235,9 +250,9 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	#--smoothing-sigmas 4x3x2x1vox 
 	#--transform BSplineSyN[0.1,256,0,3 ] 
 	#--metric MI[1.output/1_mask_chull.nii.gz,2.output/2_mask_chull.nii.gz,1,32] 
-	#--metric MI[1.output/1_hand_RGB0.nii.gz,2.output/2_hand_RGB0.nii.gz,1,32] 
-	#--metric MI[1.output/1_hand_RGB1.nii.gz,2.output /2_hand_RGB1.nii.gz,1,32] 
-	#--metric MI[1.output/1_hand_RGB2.nii.gz,2.output/2_hand_RGB2.nii.gz,1,32] 
+	#--metric MI[1.output/1_hand_sRGB0.nii.gz,2.output/2_hand_sRGB0.nii.gz,1,32] 
+	#--metric MI[1.output/1_hand_sRGB1.nii.gz,2.output /2_hand_sRGB1.nii.gz,1,32] 
+	#--metric MI[1.output/1_hand_sRGB2.nii.gz,2.output/2_hand_sRGB2.nii.gz,1,32] 
 	#--convergence [100x100x70x50x0,1e-6,10] 
 	#--shrink-factors 10x6x4x2x1 
 	#--smoothing-sigmas 5x3x2x1x0vox
@@ -248,7 +263,7 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	    --float 0 \
 	    --output [${OUTPUT_PREFIX},${OUTPUT_PREFIX}Warped.nii.gz,${OUTPUT_PREFIX}InverseWarped.nii.gz] \
 	    --interpolation Linear \
-	    --winsorize-image-intensities [0.005,0.995] \
+	    --winsorize-image-intensities [0.001,0.999] \
 	    --use-histogram-matching 0 \
 	    --initial-moving-transform [${affinemask1},${affinemask2},1] \
 	    --transform Rigid[0.1] \
@@ -262,14 +277,29 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	    --shrink-factors 16x12x8x4x2 \
 	    --smoothing-sigmas 5x4x3x2x1vox \
 	    --transform BSplineSyN[0.1,256,0,3] \
-	    --metric MI[${imask1},${imask2},1,32] \
-	    --metric MI[${redhand1},${redhand2},1,32] \
-	    --metric MI[${greenhand1},${greenhand2},1,32] \
-	    --metric MI[${bluehand1},${bluehand2},1,32] \
-	    --convergence [1000x1000x1000x700x0x0,1e-6,10] \
+	    --metric Mattes[${imask1},${imask2},1,32] \
+	    --metric MI[${hand1_wavelet},${hand2_wavelet},1,32] \
+	    --metric MI[${hand1_phase},${hand2_phase},1,32] \
+	    --metric MI[${hand1_lab1},${hand2_lab1},1,32] \
+	    --convergence [200x200x100x100x100x0,1e-8,10] \
 	    --shrink-factors 16x10x6x4x2x1 \
 	    --smoothing-sigmas 8x5x3x2x1x0vox \
 	    --verbose 1
+
+	    --masks [${imask1},${imask2}] \
+	    --transform BSplineSyN[0.1,256,0,3] \
+	    --metric MI[${imask1},${imask2},1,32] \
+	    --metric Mattes[${hand1_canny},${hand2_canny},1,32] \
+	    --convergence [1000x1000x1000x700x100x0,1e-6,10] \
+	    --shrink-factors 16x10x6x4x2x1 \
+	    --smoothing-sigmas 8x5x3x2x1x0vox \
+
+	    # mask_canny will cause malalignment
+	    --metric Mattes[${imask1_canny},${imask2_canny},1,32] \
+
+	    --metric MI[${redhand1},${redhand2},1,32] \
+	    --metric MI[${greenhand1},${greenhand2},1,32] \
+	    --metric MI[${bluehand1},${bluehand2},1,32] \
 	    #--metric MI[${redhand1_smooth},${redhand2_smooth},1,32] \
 	    #--metric MI[${greenhand1_smooth},${greenhand2_smooth},1,32] \
 	    #--metric MI[${bluehand1_smooth},${bluehand2_smooth},1,32] \
@@ -277,45 +307,48 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 
     #if [[ ! -f ${OUTPUT_PREFIX}.png ]]; then
 	echo "Applying transforms..."
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $redhand2 -o $redhand2nii -r $hand1 \
+	#INTER=Linear
+	#INTER=BSpline
+	INTER=NearestNeighbor
+	antsApplyTransforms -d 2 -n ${INTER} -i $redhand2 -o $redhand2nii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $greenhand2 -o $greenhand2nii -r $hand1 \
+	antsApplyTransforms -d 2 -n ${INTER} -i $greenhand2 -o $greenhand2nii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $bluehand2 -o $bluehand2nii -r $hand1 \
+	antsApplyTransforms -d 2 -n ${INTER} -i $bluehand2 -o $bluehand2nii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $yellowhand2 -o $yellowhand2nii -r $hand1 \
-	    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
+	#antsApplyTransforms -d 2 -n ${INTER} -i $yellowhand2 -o $yellowhand2nii -r $hand1 \
+	#    -t ${OUTPUT_PREFIX}1Warp.nii.gz -t ${OUTPUT_PREFIX}0GenericAffine.mat
 
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $hand2 -o $affinenii -r $hand1 \
+	antsApplyTransforms -d 2 -n ${INTER} -i $hand2 -o $affinenii -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $redhand2 -o $redhand2nii_affine -r $hand1 \
+	antsApplyTransforms -d 2 -n ${INTER} -i $redhand2 -o $redhand2nii_affine -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $greenhand2 -o $greenhand2nii_affine -r $hand1 \
+	antsApplyTransforms -d 2 -n ${INTER} -i $greenhand2 -o $greenhand2nii_affine -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $bluehand2 -o $bluehand2nii_affine -r $hand1 \
+	antsApplyTransforms -d 2 -n ${INTER} -i $bluehand2 -o $bluehand2nii_affine -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $yellowhand2 -o $yellowhand2nii_affine -r $hand1 \
-	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $affinemask2 -o $affinemask2to1 -r $hand1 \
+	#antsApplyTransforms -d 2 -n ${INTER} -i $yellowhand2 -o $yellowhand2nii_affine -r $hand1 \
+	#    -t ${OUTPUT_PREFIX}0GenericAffine.mat
+	antsApplyTransforms -d 2 -n ${INTER} -i $affinemask2 -o $affinemask2to1 -r $hand1 \
 	    -t ${OUTPUT_PREFIX}0GenericAffine.mat
 
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $redhand1 -o $redhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n ${INTER} -i $redhand1 -o $redhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $greenhand1 -o $greenhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n ${INTER} -i $greenhand1 -o $greenhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $bluehand1 -o $bluehand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n ${INTER} -i $bluehand1 -o $bluehand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $yellowhand1 -o $yellowhand1nii -r $hand1 \
-	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
+	#antsApplyTransforms -d 2 -n ${INTER} -i $yellowhand1 -o $yellowhand1nii -r $hand1 \
+	#    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
 
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $redhand1 -o $redhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n ${INTER} -i $redhand1 -o $redhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $greenhand1 -o $greenhand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n ${INTER} -i $greenhand1 -o $greenhand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $bluehand1 -o $bluehand1nii -r $hand1 \
+	antsApplyTransforms -d 2 -n ${INTER} -i $bluehand1 -o $bluehand1nii -r $hand1 \
 	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
-	antsApplyTransforms -d 2 -n NearestNeighbor -i $yellowhand1 -o $yellowhand1nii -r $hand1 \
-	    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
+	#antsApplyTransforms -d 2 -n ${INTER} -i $yellowhand1 -o $yellowhand1nii -r $hand1 \
+	#    -t [${OUTPUT_PREFIX}0GenericAffine.mat,1] -t ${OUTPUT_PREFIX}1InverseWarp.nii.gz 
 
 
 	#logCmd antsApplyTransforms -d 2 -o Linear[${OUTPUT_PREFIX}1InverseAffine.mat,1] -t ${OUTPUT_PREFIX}0GenericAffine.mat --verbose 1
@@ -324,22 +357,22 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	ConvertImagePixelType $redhand2nii $redhand2png 1 > /dev/null 2>&1
 	ConvertImagePixelType $greenhand2nii $greenhand2png 1 > /dev/null 2>&1
 	ConvertImagePixelType $bluehand2nii $bluehand2png 1 > /dev/null 2>&1
-	ConvertImagePixelType $yellowhand2nii $yellowhand2png 1 > /dev/null 2>&1
+	#ConvertImagePixelType $yellowhand2nii $yellowhand2png 1 > /dev/null 2>&1
 
 	ConvertImagePixelType $redhand2nii_affine $redhand2png_affine 1 > /dev/null 2>&1
 	ConvertImagePixelType $greenhand2nii_affine $greenhand2png_affine 1 > /dev/null 2>&1
 	ConvertImagePixelType $bluehand2nii_affine $bluehand2png_affine 1 > /dev/null 2>&1
-	ConvertImagePixelType $yellowhand2nii_affine $yellowhand2png_affine 1 > /dev/null 2>&1
+	#ConvertImagePixelType $yellowhand2nii_affine $yellowhand2png_affine 1 > /dev/null 2>&1
 	ConvertImagePixelType $affinemask2to1 $affinemask2to1png 1 > /dev/null 2>&1
 	ConvertImagePixelType $redhand1nii $redhand1png 1 > /dev/null 2>&1
 	ConvertImagePixelType $greenhand1nii $greenhand1png 1 > /dev/null 2>&1
 	ConvertImagePixelType $bluehand1nii $bluehand1png 1 > /dev/null 2>&1
-	ConvertImagePixelType $yellowhand1nii $yellowhand1png 1 > /dev/null 2>&1
+	#ConvertImagePixelType $yellowhand1nii $yellowhand1png 1 > /dev/null 2>&1
 
 	echo "Combining rgb channels to color png..."
-	convert $redhand2png $greenhand2png $bluehand2png -combine $warpedpng
-	convert $redhand2png_affine $greenhand2png_affine $bluehand2png_affine -combine $affinepng
-	convert $redhand1png $greenhand1png $bluehand1png -combine $invwarpedpng
+	convert $redhand2png $greenhand2png $bluehand2png -set colorspace sRGB -combine $warpedpng
+	convert $redhand2png_affine $greenhand2png_affine $bluehand2png_affine -set colorspace sRGB -combine $affinepng
+	convert $redhand1png $greenhand1png $bluehand1png -set colorspace sRGB -combine $invwarpedpng
 
 	echo "Convert Warped.nii to png..."
 	ConvertImagePixelType ${OUTPUT_PREFIX}Warped.nii.gz ${OUTPUT_PREFIX}Warped.png 1 > /dev/null 2>&1
