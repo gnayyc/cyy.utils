@@ -290,6 +290,11 @@ var AortaLogfile = "";
 var AortaImgDir = "";
 var CaLogfile = "";
 var CaImgDir = "";
+var f_title = "";
+var fat_title = "";
+var wvfat_title = "";
+var vfat_title = "";
+var pfat_title = "";
 
 //------------------------------------ Fat related macros
 // # Press [f] to set fat mask
@@ -306,6 +311,7 @@ macro "AutoThreshold [a]" {
 */
 
 macro "Set Fat Mask [f]" {
+  f_title = getTitle();
   id = getTag("0010,0020");
   studyid = getTag("0020,0010");
   series = getTag("0020,0011");
@@ -319,11 +325,17 @@ macro "Set Fat Mask [f]" {
   if (slices > 1)
       ipath = getDirectory("image") + getInfo("slice.label"); 
   else
-      ipath = getDirectory("image") + getTitle();
+      ipath = getDirectory("image") + f_title;
+
+  fat_title = title+"_fat1";
+  wvfat_title = title+"_wvfat2";
+  vfat_title = title+"_vfat3";
+  pfat_title = title+"_pfat4";
+
 
   run("Select None");
   run("View 100%");
-  run("Duplicate...", "title="+getTitle());
+  run("Duplicate...", "title="+fat_title);
   run("View 100%");
   if (FatImgDir == "")
     setDir();
@@ -349,6 +361,10 @@ macro "Set Fat Mask [f]" {
   else
     setThreshold(-250, -50);
   run("Convert to Mask");
+  run("Create Selection");
+  selectWindow(f_title);
+  run("Restore Selection");
+  selectWindow(fat_title);
   showStatus("Next Step: Total Fat then press [1]");
 }
 
@@ -378,7 +394,13 @@ macro "TotalFat [1]" {
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
   save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-fat.png");
-  run("Duplicate...", "title="+getTitle());
+  run("Out [-]");
+  run("Out [-]");
+  run("Duplicate...", "title="+wvfat_title);
+  run("Create Selection");
+  selectWindow(f_title);
+  run("Restore Selection");
+  selectWindow(wvfat_title);
   showStatus("Next Step: Remove Subcutaneous Fat then press [2]");
 }
 
@@ -407,7 +429,13 @@ macro "WallVisceralFat [2]" { // Get Subcutaneous Fat
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
   save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-wvfat.png");
-  run("Duplicate...", "title="+getTitle());
+  run("Out [-]");
+  run("Out [-]");
+  run("Duplicate...", "title="+vfat_title);
+  run("Create Selection");
+  selectWindow(f_title);
+  run("Restore Selection");
+  selectWindow(vfat_title);
   showStatus("Next Step: Remove Wall Fat then press [3]");
 
 }
@@ -437,7 +465,13 @@ macro "VisceralFat [3]" { // Get wall fat
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
   save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-vfat.png");
-  run("Duplicate...", "title="+getTitle());
+  run("Out [-]");
+  run("Out [-]");
+  run("Duplicate...", "title="+pfat_title);
+  run("Create Selection");
+  selectWindow(f_title);
+  run("Restore Selection");
+  selectWindow(pfat_title);
   showStatus("Next Step: Remove Retroperitoneal Fat then press [4]");
 }
 
@@ -464,6 +498,10 @@ macro "PeritonealFat [4]" {
   ImgDir = FatImgDir + id + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
+  run("Create Selection");
+  selectWindow(f_title);
+  run("Restore Selection");
+  selectWindow(pfat_title);
   save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-pfat.png");
 }
 
@@ -477,13 +515,16 @@ macro "SaveResult [5]" {
   colnames = 0;
   if (FatImgDir == "")
     setDir();
+  ImgDir = FatImgDir + id + File.separator;
+  if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
+
   if (TF*SF*VF*PF*RF == 0)
   {
 	showMessage("Measurement not completed!");
   }
   else
   {
-	FatLogfile = ImgDir + id + ".csv");
+	FatLogfile = ImgDir + id + "_fat.csv";
 	if(!File.exists(FatLogfile)) 
 	    File.append("filename,date,id,name,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,Peritoneal.Fat,Extraperitoneal.Fat", FatLogfile);
 	File.append(getTitle()+","+date+","+id+","+name+","+TF+","+SF+","+VF+","+WF+","+PF+","+RF, FatLogfile);
@@ -495,7 +536,8 @@ macro "SaveResult [5]" {
 macro "SaveErrorFOV [6]" {
   if (DataDir == "")
     setDir();
-  FatLogfile = ImgDir + id + ".csv");
+  ImgDir = FatImgDir + id + File.separator;
+  FatLogfile = ImgDir + id + "_fat.csv");
   if(!File.exists(FatLogfile)) 
     File.append("filename,date,id,name,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,Peritoneal.Fat,Extraperitoneal.Fat", FatLogfile);
   File.append(getTitle()+","+date+","+id+","+name+",0,0,0,0,0,out of FOV", FatLogfile);
@@ -834,8 +876,18 @@ macro "TTT [v]" {
 }
 
 macro "Reload [R]" {
-    autoRunDirectory = getDirectory("imagej") + "/macros/";
-    //runMacro(autoRunDirectory+"StartupMacros.fiji.ijm");
+    run("Install...", "install="+getDirectory("imagej") + "/macros/StartupMacros.fiji.ijm");
+    //runMacro(;
 }
 
+macro "Create Selection [s]" {
+    run("Create Selection");
+}
 
+macro "Close All Windows [Q]" {
+    
+    while (nImages>0) { 
+	selectImage(nImages); 
+	close(); 
+    } 
+}
