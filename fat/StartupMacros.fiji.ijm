@@ -283,14 +283,16 @@ var PF = 0;
 var RF = 0;
 var WVF = 0;
 var WF = 0;
+var id = "";
+var tp = "";
 var Title = "";
+var DataDir = "";
 var FatLogfile = "";
 var FatImgDir = "";
 var AortaLogfile = "";
 var AortaImgDir = "";
 var CaLogfile = "";
 var CaImgDir = "";
-var f_title = "";
 var fat_title = "";
 var wvfat_title = "";
 var vfat_title = "";
@@ -311,47 +313,75 @@ macro "AutoThreshold [a]" {
 */
 
 macro "Set Fat Mask [f]" {
-  f_title = getTitle();
+  Title = getTitle();
+
   id = getTag("0010,0020");
   studyid = getTag("0020,0010");
   series = getTag("0020,0011");
   image = getTag("0020,0013");
   modality = getTag("0008,0060");
+
   id = replace(id, " ", "");
   studyid = replace(studyid, " ", "");
   series = replace(series, " ", "");
   image = replace(image, " ", "");
+
+  date = replace(getTag("0008,0020"), " ", "");
+  tp = id + "_" + date;
+
   getDimensions(width, height, channels, slices, frames);
   if (slices > 1)
       ipath = getDirectory("image") + getInfo("slice.label"); 
   else
-      ipath = getDirectory("image") + f_title;
+      ipath = getDirectory("image") + Title;
 
-  fat_title = title+"_fat1";
-  wvfat_title = title+"_wvfat2";
-  vfat_title = title+"_vfat3";
-  pfat_title = title+"_pfat4";
+  fat_title = Title+"_1fat";
+  wvfat_title = Title+"_2wvfat";
+  vfat_title = Title+"_3vfat";
+  pfat_title = Title+"_4pfat";
 
 
   run("Select None");
   run("View 100%");
   run("Duplicate...", "title="+fat_title);
   run("View 100%");
-  if (FatImgDir == "")
-    setDir();
 
   time = replace(getTime,"E12","");
   time = replace(time, "\\\.", "");
 
+  setDir();
   ImgDir = FatImgDir + id + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
   
   if(File.exists(ipath)) 
-	File.copy(ipath, ImgDir + id + "-S" + studyid + "s" + series + "i" + image + ".dcm");
+	File.copy(ipath, ImgDir + tp + "_" + tp + "-S" + studyid + "s" + series + "i" + image + ".dcm");
   else
-	File.copy(ipath + ".dcm", ImgDir + id + "-S" + studyid + "s" + series + "i" + image + ".dcm");
+	File.copy(ipath + ".dcm", ImgDir + tp + "_" + tp + "-S" + studyid + "s" + series + "i" + image + ".dcm");
 
-  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+ time + "-0.png");
+/*
+  // here to save original png
+  run("Duplicate...", "title="+fat_title+".dup0");
+  run("Duplicate...", "title="+fat_title+".dup1");
+  if (matches(modality, ".*MR.*"))
+	setThreshold(300, 1000);
+  else
+    setThreshold(-300, 100);
+  run("Convert to Mask");
+  run("Create Selection");
+  close();
+  selectWindow(fat_title+".dup0");
+  run("Restore Selection");
+  run("Clear Outside");
+  newMax = 2^8;
+  getRawStatistics(nPixels, mean, min, max); 
+  run("Subtract...", "value=&min"); 
+  scale = newMax/(max-min); 
+  run("Multiply...", "value=&scale"); 
+  setMinAndMax(0, newMax); 
+  save(ImgDir + tp + "-S"+studyid+"s"+series+"i"+image + "-"+ time + "-0soft.png");
+  close();
+*/
+
   run("Options...", "iterations=1 white count=1"); //set black background
   run("Colors...", "foreground=black background=white selection=red"); //set colors
   run("Display...", " "); //do not use Inverting LUT
@@ -362,9 +392,11 @@ macro "Set Fat Mask [f]" {
     setThreshold(-250, -50);
   run("Convert to Mask");
   run("Create Selection");
-  selectWindow(f_title);
+  selectWindow(Title);
   run("Restore Selection");
   selectWindow(fat_title);
+  run("Select None");
+  run("Add Image...", "image="+Title+" x=0 y=0 opacity=80");
   showStatus("Next Step: Total Fat then press [1]");
 }
 
@@ -389,18 +421,24 @@ macro "TotalFat [1]" {
   image = replace(image, " ", "");
   time = replace(getTime,"E12","");
   time = replace(time, "\\\.", "");
+  date = replace(getTag("0008,0020"), " ", "");
+  tp = id + "_" + date;
+
 
   ImgDir = FatImgDir + id + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
-  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-fat.png");
+  run("Hide Overlay");
+  save(ImgDir + tp + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-1fat.png");
+  run("Show Overlay");
   run("Out [-]");
   run("Out [-]");
   run("Duplicate...", "title="+wvfat_title);
   run("Create Selection");
-  selectWindow(f_title);
+  selectWindow(Title);
   run("Restore Selection");
   selectWindow(wvfat_title);
+  run("Select None");
   showStatus("Next Step: Remove Subcutaneous Fat then press [2]");
 }
 
@@ -425,17 +463,23 @@ macro "WallVisceralFat [2]" { // Get Subcutaneous Fat
   time = replace(getTime,"E12","");
   time = replace(time, "\\\.", "");
 
+  date = replace(getTag("0008,0020"), " ", "");
+  tp = id + "_" + date;
+
   ImgDir = FatImgDir + id + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
-  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-wvfat.png");
+  run("Hide Overlay");
+  save(ImgDir + tp + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-2wvfat.png");
+  run("Show Overlay");
   run("Out [-]");
   run("Out [-]");
   run("Duplicate...", "title="+vfat_title);
   run("Create Selection");
-  selectWindow(f_title);
+  selectWindow(Title);
   run("Restore Selection");
   selectWindow(vfat_title);
+  run("Select None");
   showStatus("Next Step: Remove Wall Fat then press [3]");
 
 }
@@ -464,14 +508,20 @@ macro "VisceralFat [3]" { // Get wall fat
   ImgDir = FatImgDir + id + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
-  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-vfat.png");
+  date = replace(getTag("0008,0020"), " ", "");
+  tp = id + "_" + date;
+
+  run("Hide Overlay");
+  save(ImgDir + tp + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-3vfat.png");
+  run("Show Overlay");
   run("Out [-]");
   run("Out [-]");
   run("Duplicate...", "title="+pfat_title);
   run("Create Selection");
-  selectWindow(f_title);
+  selectWindow(Title);
   run("Restore Selection");
   selectWindow(pfat_title);
+  run("Select None");
   showStatus("Next Step: Remove Retroperitoneal Fat then press [4]");
 }
 
@@ -499,22 +549,33 @@ macro "PeritonealFat [4]" {
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
   run("Create Selection");
-  selectWindow(f_title);
+  selectWindow(Title);
   run("Restore Selection");
   selectWindow(pfat_title);
-  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-pfat.png");
+
+  date = replace(getTag("0008,0020"), " ", "");
+  tp = id + "_" + date;
+
+  run("Hide Overlay");
+  save(ImgDir + tp + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-4pfat.png");
+  run("Show Overlay");
+  saveResult();
 }
 
 macro "SaveResult [5]" {
+  saveResult();
+}
+
+function saveResult() {
   name = replace(getTag("0010,0010"), " ", "");
   id = replace(getTag("0010,0020"), " ", "");
   date = replace(getTag("0008,0020"), " ", "");
+  tp = id + "_" + date;
 
   SF = TF - VF;
   RF = VF - PF;
   colnames = 0;
-  if (FatImgDir == "")
-    setDir();
+  setDir();
   ImgDir = FatImgDir + id + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
@@ -524,7 +585,7 @@ macro "SaveResult [5]" {
   }
   else
   {
-	FatLogfile = ImgDir + id + "_fat.csv";
+	FatLogfile = ImgDir + tp + "_fat.csv";
 	if(!File.exists(FatLogfile)) 
 	    File.append("filename,date,id,name,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,Peritoneal.Fat,Extraperitoneal.Fat", FatLogfile);
 	File.append(getTitle()+","+date+","+id+","+name+","+TF+","+SF+","+VF+","+WF+","+PF+","+RF, FatLogfile);
@@ -532,9 +593,8 @@ macro "SaveResult [5]" {
   }
 }
 
-
 macro "SaveErrorFOV [6]" {
-  if (DataDir == "")
+  // if (DataDir == "")
     setDir();
   ImgDir = FatImgDir + id + File.separator;
   FatLogfile = ImgDir + id + "_fat.csv");
@@ -542,8 +602,8 @@ macro "SaveErrorFOV [6]" {
     File.append("filename,date,id,name,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,Peritoneal.Fat,Extraperitoneal.Fat", FatLogfile);
   File.append(getTitle()+","+date+","+id+","+name+",0,0,0,0,0,out of FOV", FatLogfile);
   showMessage(getTitle+" out of FOV saved!");
-  if (FatImgDir == "")
-    setDir();
+  // if (FatImgDir == "")
+  //  setDir();
   id = getTag("0010,0020");
   studyid = getTag("0020,0010");
   series = getTag("0020,0011");
@@ -578,7 +638,7 @@ macro "Calculate Aorta Calcification Ratio base [a]" {
   series = replace(series, " ", "");
   image = replace(image, " ", "");
 
-  if (AortaImgDir == "")
+  // if (AortaImgDir == "")
     setDir();
   ImgDir = AortaImgDir + id + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
@@ -605,7 +665,7 @@ macro "Calculate Aorta Calcification Ratio [9]" {
   image = replace(image, " ", "");
 
   Iid = getImageID();
-  if (AortaImgDir == "")
+  // if (AortaImgDir == "")
     setDir();
   ImgDir = AortaImgDir + id + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
@@ -651,8 +711,7 @@ macro "Calculate Aorta Calcification Ratio [9]" {
   //close();
 
   // log
-  if (AortaLogfile == "")
-    setDir();
+  setDir();
   if (Ao == 0 && Ca == 0)
   {
     showMessage("Selection error!");
@@ -795,9 +854,13 @@ macro "Clear Outside [X]" {
 macro "Show Info [I]" {
   name = getTag("0010,0010");
   id = getTag("0010,0020");
+  date = getTag("0008,0020");
   //l = getInfo("slice.label");
   getDimensions(width, height, channels, slices, frames);
-  showMessage("  id: " + id + "\nname: " + name + "\nslices: ", slices);
+  // showMessage("  id: " + id + "\nname: " + name + "\nslices: "+ slices);
+  // showMessage("  id: " + id + "\nname: " + name + "\nslices: "+ slices+ "\ndate: "+date);
+  // showMessage("  id: " + id + "\nname: " + name + "\nslices: ", slices);
+  showMessage(date);
 }
 
 function wandSelect(mode) {
@@ -852,15 +915,11 @@ function FatResults() {
 
 function setDir ()
 {
-  DataDir = getDirectory("Choose a Directory for Data Saving");
+  if (DataDir == "")
+      DataDir = getDirectory("Choose a Directory for Data Saving");
 
   FatImgDir = DataDir + "Fat" + File.separator;
   if(!File.exists(FatImgDir)) File.makeDirectory(FatImgDir);
-  // FatLogfile = DataDir + "fat.csv";
-  // if(!File.exists(FatLogfile)) 
-  //    File.append("filename,date,id,name,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,Peritoneal.Fat,Extraperitoneal.Fat", FatLogfile);
-
-
   AortaImgDir = DataDir + "Aorta" + File.separator;
   if(!File.exists(AortaImgDir)) File.makeDirectory(AortaImgDir);
   AortaLogfile = DataDir + "aorta.csv";
