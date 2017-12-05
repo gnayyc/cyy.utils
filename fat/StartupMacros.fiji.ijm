@@ -943,6 +943,12 @@ macro "Create Selection [s]" {
     run("Create Selection");
 }
 
+macro "Scale Bar [B]" {
+    run("Scale Bar...");
+}
+
+
+
 macro "Close All Windows [Q]" {
     
     while (nImages>0) { 
