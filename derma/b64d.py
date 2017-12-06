@@ -35,12 +35,13 @@ if os.path.isdir(d1):
             if os.path.splitext(f)[1].lower() in ('.jpg','.jpeg'):
                 f1 = os.path.join(root, f)
                 f2 = os.path.join(d2, 
-                    "".join(base64.urlsafe_base64encode(os.path.splitext(f)[0]), os.path.splitext(f)[1]))
+                    "".join((base64.urlsafe_b64decode(os.path.splitext(f)[0]),
+                    os.path.splitext(f)[1])))
                 copyfile(f1, f2)
 
-                ex = piexit.load(f1)
-                ex['0th'][piexif.ImageIFD.Artist] = ""
-                piexif.insert(piexif.dump(ex), f2)
+                #ex = piexif.load(f1)
+                #ex['0th'][piexif.ImageIFD.Artist] = ""
+                #piexif.insert(piexif.dump(ex), f2)
 
 else:
     print("%s not exists!" % d1)
