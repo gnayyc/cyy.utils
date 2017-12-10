@@ -2,6 +2,7 @@
 
 library(tidyverse)
 library(lubridate)
+Sys.setenv(TZ = "Asia/Taipei")
 
 ## Collect arguments
 args <- commandArgs(TRUE)

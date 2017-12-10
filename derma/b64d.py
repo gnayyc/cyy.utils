@@ -30,6 +30,8 @@ if os.path.isdir(d1):
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
+    print("%s,%s" % ("file1","file2"))
+
     for root, dirs, files in os.walk(d1, topdown=False):
         for f in files:
             if os.path.splitext(f)[1].lower() in ('.jpg','.jpeg'):
@@ -38,6 +40,7 @@ if os.path.isdir(d1):
                     "".join((base64.urlsafe_b64decode(os.path.splitext(f)[0]),
                     os.path.splitext(f)[1])))
                 copyfile(f1, f2)
+                print("%s,%s" % (f1,f2))
 
                 #ex = piexif.load(f1)
                 #ex['0th'][piexif.ImageIFD.Artist] = ""
