@@ -23,24 +23,27 @@ if [ $# -ne 2 ]; then #  must be two
 fi
 
 #export T_DIR=/Users/cyyang/work/ants_templates/MICCAI2012-Multi-Atlas-Challenge-Data
-. `which battery.rc.sh`
 
 export FROM_DIR=${1}
 export TO_DIR=${2}
+. `which battery.rc.sh`
 
 echo "FROM_DIR=${FROM_DIR}"
 echo "TO_DIR=${TO_DIR}"
 
 # building study specific tempalte
-echo 
-echo "Building study specific tempalte..."
-echo 
+if [[ ! -f ${T_T1} ]]; then
+    echo 
+    echo "Building study specific tempalte..."
+    echo 
 
-battery.tempalte.sh ${FROM_DIR} ${TO_DIR}
-export T_DIR=${TO_DIR}/T/template0
+    battery.tempalte.sh ${FROM_DIR} ${TO_DIR}
+    export T_DIR=${TO_DIR}/T/template0
+fi
 
 echo paralleling...
 #export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=10
+export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
 find ${FROM_DIR} -d 2 | \
     grep -v T/template0 | \
     awk -F"/" '{print $(NF-1) " " $(NF)}' | \

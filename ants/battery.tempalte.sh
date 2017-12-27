@@ -26,32 +26,32 @@ CWD=`pwd`
 
 . `which battery.rc.sh`
 
-export FROM_DIR=`realpath ${1}`
+export FROM_DIR=`grealpath ${1}`
+export TO_DIR=`grealpath ${2}`
 export GROUP=`basename ${1}`
-T0_DIR=~/mnt/Data/Brain.MRI.templates/ADNI
+T_DIR=~/mnt/Data/Brain.MRI.templates/ADNI
+T_DIR=${TO_DIR}/T/template0
 
-
-T_DIR=`realpath ${TO_DIR}/T/template0`
 echo "FROM_DIR=${FROM_DIR}"
+echo "TO_DIR=${TO_DIR}"
 echo "T_DIR=${T_DIR}"
 
-mkdir -p ${T_DIR}/build
-mkdir -p ${T_DIR}/MRI
-mkdir -p ${T_DIR}/Priors
-
-
-echo "Linking T1 images..."
-find `realpath ${FROM_DIR}` -d 4 -name \*T1\*.nii.gz | \
-    grep -v T/template0 | \
-    parallel --will-cite -j1 --linebuffer --colsep ' ' ln -sf "{1}" ${T_DIR}/build
-
-if [ ! -f "${T_DIR}/build/T_template0.nii.gz" ]; then
-    cd ${T_DIR}/build
-    antsMultivariateTemplateConstruction.sh -d 3 -m 30x50x20 -t GR -s CC -c 2 -j 10 -i 10 -b 1 -o T_ *T1*.nii.gz 
-    cd ${CWD}
-fi
-
 if [ ! -f "${T_DIR}/T_template0.nii.gz" ]; then
+    echo "Building template..."
+    echo "Linking T1 images..."
+    mkdir -p ${T_DIR}/build
+    mkdir -p ${T_DIR}/MRI
+    mkdir -p ${T_DIR}/Priors
+    find `grealpath ${FROM_DIR}` -d 4 -name \*T1\*.nii.gz | \
+	grep -v T/template0 | \
+	parallel --will-cite -j1 --linebuffer --colsep ' ' ln -sf "{1}" ${T_DIR}/build
+
+    if [ ! -f "${T_DIR}/build/T_template0.nii.gz" ]; then
+	cd ${T_DIR}/build
+	#antsMultivariateTemplateConstruction.sh -d 3 -m 30x50x20 -t GR -s CC -c 2 -j 10 -i 10 -b 1 -o T_ *T1*.nii.gz 
+	antsMultivariateTemplateConstruction2.sh -d 3 -i 1 -r 1 -o T_ *T1*.nii.gz
+	cd ${CWD}
+    fi
     cd "${CWD}"
     cp "${T_DIR}/build/T_template0.nii.gz" "${T_DIR}/MRI/T_template0_T1.nii.gz"
     cp "${T_DIR}/build/T_template0.nii.gz" "${T_DIR}"
