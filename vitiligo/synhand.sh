@@ -64,7 +64,10 @@ imask2=${IPRE2}_mask.nii.gz
 imask1_canny=${IPRE1}_mask_canny.nii.gz
 imask2_canny=${IPRE2}_mask_canny.nii.gz
 
-CHULL=1
+ilabel1=${IPRE1}_label.nii.gz
+ilabel2=${IPRE2}_label.nii.gz
+
+CHULL=0
 if [ $CHULL -eq 1 ]; then
     affinemask1=${IPRE1}_mask_chull.nii.gz
     affinemask2=${IPRE2}_mask_chull.nii.gz
@@ -80,16 +83,28 @@ ihandpng1=${IPRE1}_hand.png
 ihandpng2=${IPRE2}_hand.png
 ihandnii1=${IPRE1}_hand.nii.gz
 ihandnii2=${IPRE2}_hand.nii.gz
+hand1_b=${IPRE1}_hand_sRGB2.nii.gz
+hand2_b=${IPRE2}_hand_sRGB2.nii.gz
+hand1_n4=${IPRE1}_hand_N4.nii.gz
+hand2_n4=${IPRE2}_hand_N4.nii.gz
 hand1_canny=${IPRE1}_hand_canny.nii.gz
 hand2_canny=${IPRE2}_hand_canny.nii.gz
 hand1_phase=${IPRE1}_hand_phase.png
 hand2_phase=${IPRE2}_hand_phase.png
 hand1_phase_smooth=${IPRE1}_hand_phase_smooth.nii.gz
 hand2_phase_smooth=${IPRE2}_hand_phase_smooth.nii.gz
+hand1_lab0=${IPRE1}_hand_LAB0.png
+hand2_lab0=${IPRE2}_hand_LAB0.png
 hand1_lab1=${IPRE1}_hand_LAB1.png
 hand2_lab1=${IPRE2}_hand_LAB1.png
+hand1_cmyk=${IPRE1}_hand_CMYK2.png
+hand2_cmyk=${IPRE2}_hand_CMYK2.png
 hand1_wavelet=${IPRE1}_hand_wavelet.png
 hand2_wavelet=${IPRE2}_hand_wavelet.png
+hand1_wavelet_n4=${IPRE1}_hand_wavelet_N4.nii.gz
+hand2_wavelet_n4=${IPRE2}_hand_wavelet_N4.nii.gz
+hand1_wavelet_n4n=${IPRE1}_hand_wavelet_N4_neg.nii.gz
+hand2_wavelet_n4n=${IPRE2}_hand_wavelet_N4_neg.nii.gz
 
 USE_NII=1
 SMOOTH=1
@@ -265,26 +280,41 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	    --interpolation Linear \
 	    --winsorize-image-intensities [0.001,0.999] \
 	    --use-histogram-matching 0 \
-	    --initial-moving-transform [${affinemask1},${affinemask2},1] \
+	    --initial-moving-transform [${ilabel1},${ilabel2},1] \
 	    --transform Rigid[0.1] \
-	    --metric MI[${affinemask1},${affinemask2},1,32,Regular,0.25] \
+	    --metric MI[${ilabel1},${ilabel2},1,32,Regular,0.25] \
 	    --convergence [1000x500x250x100,1e-6,10] \
 	    --shrink-factors 12x8x4x2 \
 	    --smoothing-sigmas 4x3x2x1vox \
 	    --transform Affine[0.1] \
-	    --metric MI[${affinemask1},${affinemask2},1,32,Regular,0.25] \
+	    --metric MI[${ilabel1},${ilabel2},1,32,Regular,0.25] \
 	    --convergence [1000x1000x500x250x100,1e-6,10] \
 	    --shrink-factors 16x12x8x4x2 \
 	    --smoothing-sigmas 5x4x3x2x1vox \
-	    --transform BSplineSyN[0.1,256,0,3] \
-	    --metric Mattes[${imask1},${imask2},1,32] \
+	    --transform BSplineSyN[0.1,128,0,3] \
+	    --metric MI[${hand1_lab0},${hand2_lab0},1,32,Regular,0.5] \
+	    --convergence [200x200x200x0x0,1e-8,20] \
+	    --shrink-factors 16x8x4x2x1 \
+	    --smoothing-sigmas 6x3x2x1x0vox \
+	    --verbose 1
+
+	    --initial-moving-transform [${affinemask1},${affinemask2},1] \
+
+	    --metric MI[${affinemask1},${affinemask2},1,32,Regular,0.25] \
+
+	    --metric Mattes[${imask1},${imask2},1,16] \
+	    --metric Mattes[${ilabel1},${ilabel2},1,16] \
+	    --metric MI[${hand1_n4},${hand2_n4},1,32,Regular,0.5] \
+	    --metric MI[${hand1_b},${hand2_b},1,32,Regular,0.5] \
+	    --metric MI[${hand1_lab0},${hand2_lab0},1,32,Regular,0.5] \
+	    --metric MI[${hand1_wavelet_n4n},${hand2_wavelet_n4n},1,32,Regular,0.5] \
+	    --metric MI[${hand1_cmyk},${hand2_cmyk},1,32,Regular,0.5] \
+
+	    --metric Mattes[${imask1},${imask2},1,16] \
 	    --metric MI[${hand1_wavelet},${hand2_wavelet},1,32] \
 	    --metric MI[${hand1_phase},${hand2_phase},1,32] \
-	    --metric MI[${hand1_lab1},${hand2_lab1},1,32] \
-	    --convergence [200x200x100x100x100x0,1e-8,10] \
-	    --shrink-factors 16x10x6x4x2x1 \
-	    --smoothing-sigmas 8x5x3x2x1x0vox \
-	    --verbose 1
+	    --metric MI[${hand1_lab1},${hand2_lab1},1,32,Regular,0.5] \
+
 
 	    --masks [${imask1},${imask2}] \
 	    --transform BSplineSyN[0.1,256,0,3] \
@@ -383,6 +413,9 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	ConvertImagePixelType $invwarpedpng $invwarpednii 1 > /dev/null 2>&1
 	echo "Creating warped grid image..."
 	CreateWarpedGridImage 2 ${OUTPUT_PREFIX}1Warp.nii.gz ${OUTPUT_PREFIX}WarpedGrid.nii.gz
+	echo "Creating Jacobian image..."
+	CreateJacobianDeterminantImage 2 ${OUTPUT_PREFIX}1Warp.nii.gz ${OUTPUT_PREFIX}1WarpJ.nii.gz 0 1
+
 	echo "Creating displacement vector image..."
 	ConvertImage 2 ${OUTPUT_PREFIX}1Warp.nii.gz ${OUTPUT_PREFIX}_ 10 > /dev/null 2>&1
 	#logCmd ConvertTransformFile 2 ${OUTPUT_PREFIX}0GenericAffine.mat ${OUTPUT_PREFIX}0GenericAffine.txt

@@ -16,14 +16,16 @@ USAGE
 }
 
 KEEP_TMP_IMAGES=0
-CHULL=1
+CHULL=0
 PAD=1
 SMOOTH=1
-GRAD=1 # Gradient image
-CANNY=1 # Canny edge image
+GRAD=0 # Gradient image
+CANNY=0 # Canny edge image
+FFT=1
+WAVE=1
 #CH_all=( 'sRGB' 'LAB' 'LUV' 'YUV' 'XYZ' 'HSV' 'HSL' 'CMYK' )
 CH_all=( 'sRGB' 'LAB' 'XYZ' 'HSV' 'HSL' 'CMYK' )
-CHs=( 'sRGB' 'LAB' )
+CHs=( 'sRGB' 'LAB' 'CMYK')
 
 if [[ $# -lt 1 ]] ; then
   Usage >&2
@@ -59,6 +61,7 @@ handnii_chull=${OPRE}_hand.nii.gz
 hand_chull=${OPRE}_hand_chull.png
 hand_phase=${OPRE}_hand_phase.png
 hand_phase_smooth=${OPRE}_hand_phase_smooth.nii.gz
+hand_canny=${OPRE}_hand_canny.nii.gz
 mask=${OPRE}_mask.nii.gz
 mask0=${OPRE}_mask0.nii.gz
 mask_chull=${OPRE}_mask_chull.nii.gz
@@ -67,6 +70,7 @@ mask_sub255=${OPRE}_mask_sub255.nii.gz
 mask_canny=${OPRE}_mask_canny.nii.gz
 maskpng=${OPRE}_mask.png
 maskchullpng=${OPRE}_mask_chull.png
+
 
 tmps=( ${nii} ${red} ${green} ${r_g} ${maskrg} ${mask} )
 
@@ -161,6 +165,17 @@ fi
 	ImageMath 2 $mask MD $mask 50
 	ImageMath 2 $mask ME $mask 50
 	ImageMath 2 $mask m $mask0 $mask
+	ImageMath 2 ${OPRE}4digits.nii.gz - $mask ${OPRE}2palm.nii.gz
+	ImageMath 2 ${OPRE}4digits.nii.gz m $mask ${OPRE}4digits.nii.gz
+	ImageMath 2 ${OPRE}4digits.nii.gz ME ${OPRE}4digits.nii.gz 4
+	ImageMath 2 ${OPRE}4digits.nii.gz MD ${OPRE}4digits.nii.gz 4
+
+	ImageMath 2 ${OPRE}4digits_me.nii.gz ME ${OPRE}4digits.nii.gz 20
+	ImageMath 2 ${OPRE}2palm_me.nii.gz ME ${OPRE}2palm.nii.gz 20 
+	ImageMath 2 ${OPRE}5label.nii.gz + $mask ${OPRE}2palm_me.nii.gz
+	ImageMath 2 ${OPRE}5label.nii.gz + ${OPRE}5label.nii.gz ${OPRE}4digits.nii.gz
+	ImageMath 2 ${OPRE}5label.nii.gz + ${OPRE}5label.nii.gz ${OPRE}4digits_me.nii.gz
+
 
 	ConvertImagePixelType $mask $maskpng 1 > /dev/null 2>&1
 	ConvertImagePixelType $mask $maskpng 1 > /dev/null 2>&1
@@ -216,6 +231,7 @@ fi
 		done
 	    done
 	    ImageMath 2 $mask PadImage $mask +256
+	    ImageMath 2 ${OPRE}_label.nii.gz PadImage ${OPRE}5label.nii.gz +256
 	    #ImageMath 2 $maskrg PadImage $maskrg +256
 	    if [[ $CHULL -eq 1 ]]; then
 		convert -bordercolor black -border 256 ${OPRE}_hand_chull.png ${OPRE}_hand_chull.png
@@ -237,6 +253,8 @@ fi
 
 	echo "  - Converting png to nii..."
 	ConvertImagePixelType ${OPRE}_hand.png ${OPRE}_hand.nii.gz 1 > /dev/null 2>&1
+	CopyImageHeaderInformation ${OPRE}_hand.nii.gz $mask $mask 1 1 1
+	CopyImageHeaderInformation ${OPRE}_hand.nii.gz ${OPRE}_label.nii.gz ${OPRE}_label.nii.gz 1 1 1
 	for CH in ${CHs[@]}; do
 	    for i in 0 1 2 3; do
 		if [[ -f ${OPRE}_hand_${CH}${i}.png ]]; then
@@ -244,7 +262,13 @@ fi
 		fi
 	    done
 	done
+	echo "  - N4 Bias Field Correction hand.nii.gz..."
+	N4BiasFieldCorrection -d 2 -b [200] -c [50x50x40x30,0.00000001] -i ${OPRE}_hand.nii.gz -o ${OPRE}_hand_N4.nii.gz \
+	    -r 0 -s 4 --verbose 1 > /dev/null 2>&1
+	ImageMath 2 ${OPRE}_hand_N4_neg.nii.gz Neg ${OPRE}_hand_N4.nii.gz
+	ImageMath 2 ${OPRE}_hand_N4_neg.nii.gz m ${OPRE}_hand_N4_neg.nii.gz ${mask}
 
+    fi
 	#if [[ ! -f $hand_smooth || $FORCE -eq 1 ]]; then
 	#    echo "  - Smoothing..."
 	#    R=10
@@ -256,45 +280,60 @@ fi
 	#fi
 
 	GRAD=0
-	if [[ $GRAD -eq 1 && ! -f $hand_grad || $FORCE -eq 1 ]]; then
-	    echo "  - Calculating gradient..."
-	    R=20
-	    ImageMath 2 ${OPRE}_hand_grad.nii.gz Grade ${OPRE}_hand.nii.gz 1 > /dev/null 2>&1
-	    for CH in ${CHs[@]}; do
-		for i in 0 1 2 3; do
-		    if [[ -f ${OPRE}_hand_${CH}${i}.png ]]; then
-			ImageMath 2 ${OPRE}_hand_${CH}${i}_grad.nii.gz Grade ${OPRE}_hand_${CH}${i}.nii.gz 1 > /dev/null 2>&1
-		    fi
+	if [[ $GRAD -eq 1 ]]; then
+	    if [[ ! -f $hand_grad || $FORCE -eq 1 ]]; then
+		echo "  - Calculating gradient..."
+		R=20
+		ImageMath 2 ${OPRE}_hand_grad.nii.gz Grade ${OPRE}_hand.nii.gz 1 > /dev/null 2>&1
+		for CH in ${CHs[@]}; do
+		    for i in 0 1 2 3; do
+			if [[ -f ${OPRE}_hand_${CH}${i}.png ]]; then
+			    ImageMath 2 ${OPRE}_hand_${CH}${i}_grad.nii.gz Grade ${OPRE}_hand_${CH}${i}.nii.gz 1 > /dev/null 2>&1
+			fi
+		    done
 		done
-	    done
+	    fi
 	fi
 
-	if [[ ! -f $hand_canny || $FORCE -eq 1 ]]; then
-	    echo "  - Calculating Canny edge..."
-	    R=20
-	    ImageMath 2 ${OPRE}_hand_canny.nii.gz Canny ${OPRE}_hand.nii.gz $R
-	    for CH in ${CHs[@]}; do
-		for i in 0 1 2 3; do
-		    if [[ -f ${OPRE}_hand_${CH}${i}.png ]]; then
-			ImageMath 2 ${OPRE}_hand_${CH}${i}_canny.nii.gz Canny ${OPRE}_hand_${CH}${i}.nii.gz 1 > /dev/null 2>&1
-		    fi
+	CANNY=1
+	if [[ $CANNY -eq 1 ]]; then
+	    if [[ ! -f $hand_canny || $FORCE -eq 1 ]]; then
+		echo "  - Calculating Canny edge..."
+		R=20
+		ImageMath 2 ${OPRE}_hand_canny.nii.gz Canny ${OPRE}_hand.nii.gz $R
+		for CH in ${CHs[@]}; do
+		    for i in 0 1 2 3; do
+			if [[ -f ${OPRE}_hand_${CH}${i}.png ]]; then
+			    ImageMath 2 ${OPRE}_hand_${CH}${i}_canny.nii.gz Canny ${OPRE}_hand_${CH}${i}.nii.gz $R > /dev/null 2>&1
+			fi
+		    done
 		done
-	    done
+	    fi
 	fi
 
-	if [[ ! -f $hand_phase || $FORCE -eq 1 ]]; then
-	    echo "  - Producing FFT phase image..."
-	    #echo "convert $hand -fft +depth \( -clone 1 -write png:- \) NULL: | convert -size `identify -format "%wx%h" $hand` xc:gray1 - -ift $hand_phase"
-	    convert $hand -fft +depth \( -clone 1 -write png:- \) NULL: |\
-		convert -size `identify -format "%wx%h" $hand` xc:gray1 - -ift png:- |\
-		convert - $maskpng -alpha Off -compose CopyOpacity -composite png:- |\
-		convert - -flatten -fuzz 0% -fill black -opaque white $hand_phase
-	    SmoothImage 2 $hand_phase 10 $hand_phase_smooth
+	if [[ $FFT -eq 1 ]]; then
+	    if [[ ! -f $hand_phase || $FORCE -eq 1 ]]; then
+		echo "  - Producing FFT phase image..."
+		#echo "convert $hand -fft +depth \( -clone 1 -write png:- \) NULL: | convert -size `identify -format "%wx%h" $hand` xc:gray1 - -ift $hand_phase"
+		convert $hand -fft +depth \( -clone 1 -write png:- \) NULL: |\
+		    convert -size `identify -format "%wx%h" $hand` xc:gray1 - -ift png:- |\
+		    convert - $maskpng -alpha Off -compose CopyOpacity -composite png:- |\
+		    convert - -flatten -fuzz 0% -fill black -opaque white $hand_phase
+		SmoothImage 2 $hand_phase 10 $hand_phase_smooth
+	    fi
 	fi
 
-	if [[ ! -f ${OPRE}_hand_wavelet.png || $FORCE -eq 1 ]]; then
-	    echo "  - Producing Wavelet Denoise image..."
-	    convert $hand -wavelet-denoise 5%x.5 ${OPRE}_hand_wavelet.png
+	WAVE=1
+	if [[ $WAVE -eq 1 ]]; then
+	    if [[ ! -f ${OPRE}_hand_wavelet.png || $FORCE -eq 1 ]]; then
+		echo "  - Producing Wavelet Denoise image..."
+		convert $hand -wavelet-denoise 5%x.5 ${OPRE}_hand_wavelet.png
+		echo "  - N4 Bias Field Correction wavelet..."
+		N4BiasFieldCorrection -d 2 -b [200] -c [50x50x40x30,0.00000001] -i ${OPRE}_hand_wavelet.png -o ${OPRE}_hand_wavelet_N4.nii.gz \
+		    -r 0 -s 4 --verbose 1 > /dev/null 2>&1
+		ImageMath 2 ${OPRE}_hand_wavelet_N4_neg.nii.gz Neg ${OPRE}_hand_wavelet_N4.nii.gz
+		ImageMath 2 ${OPRE}_hand_wavelet_N4_neg.nii.gz m ${OPRE}_hand_wavelet_N4_neg.nii.gz ${mask}
+	    fi
 	fi
 
 	#SmoothImage 2 $hand
@@ -309,11 +348,11 @@ fi
 
 
 
-    fi
     echo ">>>>>>>> END <<<<<<<<" 
 
 #    if [ $KEEP_TMP_IMAGES -eq "0" ]; then
 #	#logCmd rm -f ${nii} ${red} ${green} ${blue} ${r_g} ${maskrg} ${mask}
 #	logCmd rm -f ${ODIR}/*.nii.gz
 #    fi
+
 
