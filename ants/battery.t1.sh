@@ -32,6 +32,7 @@ else
 	head -1`
 
     if [ -f ${T1} ]; then
+	mkdir -p ${O_DIR}
 	${ANTSPATH}/antsCorticalThickness.sh -d 3 \
 	    -a ${T1} \
 	    -e ${T_T1} \
@@ -42,7 +43,7 @@ else
 	    -n 3 \
 	    -w 0.25 \
 	    -q 1 \
-	    -o ${O_DIR}/${SID}_
+	    -o ${O_DIR}/${SID}_ > ${O_DIR}/${SID}_antsCT.log
 	    #-f ${T_MASK} \
     fi
 fi

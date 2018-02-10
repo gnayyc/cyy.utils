@@ -48,7 +48,7 @@ index 494fae8..60dc08a 100755
   + [Mindboggle Label](http://www.mindboggle.info/faq/labels.html)
 6. Registration
   + `antsRegistrationSyN.sh -d 3 -o <ID> -f <fixed_img.nii.gz> -m <moving_img.nii.gz> -t bo -s 26`
-  + antsRegistrationSyN.sh will take much more time to register than antsRegistrationSyNQuick.sh will
+  + antsRegistrationSyN.sh uses CC metric (slower) and antsRegistrationSyNQuick.sh uses MI
 7. rsfMRI
   + `melodic --report -v -i BOLD_rsbold.nii.gz -m BOLD_brainmask.nii.gz`
   + rsbold = ANTsR::antsBOLDNetworkAnalysis()
@@ -67,6 +67,7 @@ index 494fae8..60dc08a 100755
     + Summary: Do stats in (FA -> template) space
   + camino
     + dt.nii.gz: contains the 8 components normally produced by dtfit
+  + mrtrix 3
   + [ANTS](https://sourceforge.net/p/advants/discussion/840261/thread/e6fc9a8c/?limit=25)
     + [Local circularity in VBA](http://www.ncbi.nlm.nih.gov/pubmed/23151955)
       + FA_i -> T1_i normalization
@@ -110,11 +111,12 @@ then call skel.sh on averageFA.nii.gz
 
 9. Building Template
   + `antsMultivariateTemplateConstruction.sh` to build template image. (about 2+ days for 100+ subjects with 10 cores)
+  + `antsMultivariateTemplateConstruction.sh` uses `ANTS`; `antsMultivariateTemplateConstruction2.sh` uses `antsRegistration`
   + `antsJointLabelFusion.sh` to jointly fuse the labels into template space.
     + template image T1<sub>n</sub> from T1<sub>i</sub> (produced by `antsMultivariateTemplateConstruction.sh`)
     + labels in each T1<sub>i</sub>
 10. VBM pipeline
-  + `antsMultivariateTemplateConstruction.sh`: Build study specific template
+  + `antsMultivariateTemplateConstruction2.sh`: Build study specific template
   + `antsCorticalThickness.sh`: T1/MM normalization
   + Use warped images for VBM
 11. Jacobian

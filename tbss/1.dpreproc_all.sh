@@ -1,7 +1,7 @@
 #!/bin/sh
 
 __pwd="`pwd`"
-T=/usr/local/tractor/bin/tractor
+T=/usr/local/bin/tractor
 
 touch .process.log
 L=".process.log"

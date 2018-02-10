@@ -1,6 +1,6 @@
 #!/bin/sh
 
-T=/usr/local/tractor/bin/tractor
+T=/usr/local/bin/tractor
 
 if [ "$#" -eq 1 ]; then
     # BetIntensityThreshold:0.3 MaskingMethod:bet 

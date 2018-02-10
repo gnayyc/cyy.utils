@@ -39,19 +39,21 @@ echo "T_DIR=${T_DIR}"
 if [ ! -f "${T_DIR}/T_template0.nii.gz" ]; then
     echo "Building template..."
     echo "Linking T1 images..."
-    mkdir -p ${T_DIR}/build
     mkdir -p ${T_DIR}/MRI
     mkdir -p ${T_DIR}/Priors
+    mkdir -p ${T_DIR}/misc
+    if [ -f "${T_DIR}/build/T_template0.nii.gz" ]; then
+	mv "${T_DIR}/build/T_template0.nii.gz" ${T_DIR}/misc
+	rm -rf ${T_DIR}/build
+    fi
+    mkdir -p ${T_DIR}/build
     find `grealpath ${FROM_DIR}` -d 4 -name \*T1\*.nii.gz | \
 	grep -v T/template0 | \
 	parallel --will-cite -j1 --linebuffer --colsep ' ' ln -sf "{1}" ${T_DIR}/build
 
-    if [ ! -f "${T_DIR}/build/T_template0.nii.gz" ]; then
-	cd ${T_DIR}/build
-	#antsMultivariateTemplateConstruction.sh -d 3 -m 30x50x20 -t GR -s CC -c 2 -j 10 -i 10 -b 1 -o T_ *T1*.nii.gz 
-	antsMultivariateTemplateConstruction2.sh -d 3 -i 1 -r 1 -o T_ *T1*.nii.gz
-	cd ${CWD}
-    fi
+    cd "${T_DIR}/build"
+    #env ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1 antsMultivariateTemplateConstruction2.sh -d 3 -i 4 -z "${T_DIR}/misc/T_template0.nii.gz" -o T_ -c 2 -j 10 *T1*.nii.gz
+    env ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=10 antsMultivariateTemplateConstruction2.sh -d 3 -i 4 -z "${T_DIR}/misc/T_template0.nii.gz" -o T_ *T1*.nii.gz
     cd "${CWD}"
     cp "${T_DIR}/build/T_template0.nii.gz" "${T_DIR}/MRI/T_template0_T1.nii.gz"
     cp "${T_DIR}/build/T_template0.nii.gz" "${T_DIR}"

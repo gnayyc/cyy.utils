@@ -292,7 +292,7 @@ if [[ ! -f ${OUTPUT_PREFIX}0GenericAffine.mat || ${FORCE} -eq 1 ]]; then
 	    --shrink-factors 16x12x8x4x2 \
 	    --smoothing-sigmas 5x4x3x2x1vox \
 	    --transform BSplineSyN[0.1,128,0,3] \
-	    --metric MI[${hand1_lab0},${hand2_lab0},1,32,Regular,0.5] \
+	    --metric MI[${hand1_b},${hand2_b},1,32,Regular,0.5] \
 	    --convergence [200x200x200x0x0,1e-8,20] \
 	    --shrink-factors 16x8x4x2x1 \
 	    --smoothing-sigmas 6x3x2x1x0vox \

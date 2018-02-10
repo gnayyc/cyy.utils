@@ -17,7 +17,7 @@ USAGE
 
 KEEP_TMP_IMAGES=0
 CHULL=0
-PAD=1
+PAD=0
 SMOOTH=1
 GRAD=0 # Gradient image
 CANNY=0 # Canny edge image
@@ -175,6 +175,7 @@ fi
 	ImageMath 2 ${OPRE}5label.nii.gz + $mask ${OPRE}2palm_me.nii.gz
 	ImageMath 2 ${OPRE}5label.nii.gz + ${OPRE}5label.nii.gz ${OPRE}4digits.nii.gz
 	ImageMath 2 ${OPRE}5label.nii.gz + ${OPRE}5label.nii.gz ${OPRE}4digits_me.nii.gz
+	cp ${OPRE}5label.nii.gz ${OPRE}_label.nii.gz
 
 
 	ConvertImagePixelType $mask $maskpng 1 > /dev/null 2>&1
@@ -284,11 +285,11 @@ fi
 	    if [[ ! -f $hand_grad || $FORCE -eq 1 ]]; then
 		echo "  - Calculating gradient..."
 		R=20
-		ImageMath 2 ${OPRE}_hand_grad.nii.gz Grade ${OPRE}_hand.nii.gz 1 > /dev/null 2>&1
+		ImageMath 2 ${OPRE}_hand_grad.nii.gz Grad ${OPRE}_hand.nii.gz 1 > /dev/null 2>&1
 		for CH in ${CHs[@]}; do
 		    for i in 0 1 2 3; do
 			if [[ -f ${OPRE}_hand_${CH}${i}.png ]]; then
-			    ImageMath 2 ${OPRE}_hand_${CH}${i}_grad.nii.gz Grade ${OPRE}_hand_${CH}${i}.nii.gz 1 > /dev/null 2>&1
+			    ImageMath 2 ${OPRE}_hand_${CH}${i}_grad.nii.gz Grad ${OPRE}_hand_${CH}${i}.nii.gz 1 > /dev/null 2>&1
 			fi
 		    done
 		done
