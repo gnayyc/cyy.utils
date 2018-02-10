@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 
 local({r <- getOption("repos"); 
     r["CRAN"] <- "https://cloud.r-project.org/";
