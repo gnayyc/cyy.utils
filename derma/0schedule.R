@@ -12,8 +12,12 @@ if(!require(rmarkdown))
 }
 
 library(lubridate)
+
 ofile = paste0("schedule-", today(),".html")
+
+
 rmarkdown::render('0schedule.Rmd', 
     output_format = "html_document",
     output_file = ofile)
-shell(ofile)
+
+	shell(ofile)
