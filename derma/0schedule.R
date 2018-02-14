@@ -21,5 +21,11 @@ rmarkdown::render('0schedule.Rmd',
     output_format = "html_document",
     output_file = ofile)
 
-shell(str_replace(ofile, "/", "\\\\"))
+if (.Platform$OS.type == "unix")
+{
+    system(paste0("open ", ofile))
+} else
+{
+    shell(str_replace(ofile, "/", "\\\\"))
+}
 
