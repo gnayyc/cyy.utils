@@ -60,7 +60,7 @@ d =
       is.na(date) ~ paste0(lesion, " (",date,")"),
       i30 >= 6 ~ paste0(lesion, " (",date,")"),
       T ~ as.character(NA))
-  ) %>%
+  )  %>%
   group_by(CID, date_last, lesion_last) %>% 
   summarise(lesions0 = paste(show0[!is.na(show0)], collapse="<br> "),
             lesions7 = paste(show7[!is.na(show7)], collapse="<br> "),
@@ -70,9 +70,11 @@ d =
   ungroup() %>%
   left_join(derm.name) %>%
   select(CID, name, last, lesions0, lesions7, lesions30) %>%
-  set_names(c("Chart Number", "Name", "Last", "Today", "Next Week", "Next Month")) 
+  set_names(c("Chart_Number", "Name", "Last", "Today", "Next_Week", "Next_Month")) 
+
+d0 = d %>% filter(Today != "" | Next_Week != "" | Next_Month != "") 
 
 ```
 ```{r list, echo=F, message=F}
-d %>% knitr::kable()
+d0 %>% knitr::kable()
 ```
