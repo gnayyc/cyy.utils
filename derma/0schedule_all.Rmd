@@ -120,8 +120,23 @@ d %>%
   mutate(last_lesion = paste0(last_lesion, " (", last_registry_date, ")")) %>%
   select(CID, last_lesion, lesion, interval, photo_date, registry_date, next_photo_date, next_registry_date) %>%
   arrange(CID, next_photo_date) %>%
+  DT::datatable()
+
+d %>% 
+  mutate(CID = paste0(CID, " (", name, ")"),
+         next_photo_date = photo_date + months(interval),
+         next_registry_date = case_when(
+	    lesion == last_lesion ~ registry_date + months(6),
+	    registry_date + months(6) > last_registry_date + months(1) ~ registry_date + months(6),
+	    T ~ last_registry_date + months(1)
+        )
+  ) %>%
+  mutate(last_lesion = paste0(last_lesion, " (", last_registry_date, ")")) %>%
+  select(CID, last_lesion, lesion, interval, photo_date, registry_date, next_photo_date, next_registry_date) %>%
+  arrange(CID, next_photo_date) %>%
   kable(format = "html") %>%
   kable_styling(full_width = F) %>%
   column_spec(1, bold = T) %>%
   collapse_rows(columns=1:2)
+
 ```

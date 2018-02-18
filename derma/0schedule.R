@@ -3,7 +3,7 @@
 local({r <- getOption("repos"); 
     r["CRAN"] <- "https://cloud.r-project.org/";
     options(repos = r)})
-list.of.packages <- c("tidyverse", "lubridate", "knitr", "devtools", "stringr", "googlesheets", "kableExtra")
+list.of.packages <- c("tidyverse", "lubridate", "knitr", "devtools", "stringr", "googlesheets", "kableExtra", "DT")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 if(!require(rmarkdown)) 
