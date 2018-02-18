@@ -7,8 +7,7 @@ output:
   pdf_document: default
 ---
 
-[Schedule Link](https://docs.google.com/spreadsheets/d/18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd)  
-[Registry Link](https://goo.gl/forms/jltRvjPFhYYvqme82)  
+[Schedule Link](https://docs.google.com/spreadsheets/d/18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd) | [Registration Link](https://goo.gl/forms/jltRvjPFhYYvqme82)  
 
 ```{r setup, echo=F, results='hide', message=F, warning=F}
 
@@ -112,7 +111,6 @@ d %>%
   mutate(CID = paste0(CID, " (", name, ")"),
          next_photo_date = photo_date + months(interval),
          next_registry_date = case_when(
-	    lesion == last_lesion ~ registry_date + months(6),
 	    registry_date + months(6) > last_registry_date + months(1) ~ registry_date + months(6),
 	    T ~ last_registry_date + months(1)
         )
