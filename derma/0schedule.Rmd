@@ -7,88 +7,22 @@ output:
   pdf_document: default
 ---
 
-[Schedule Link](https://docs.google.com/spreadsheets/d/18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd) | [Registration Link](https://goo.gl/forms/jltRvjPFhYYvqme82)  
+[Schedule Link](https://docs.google.com/spreadsheets/d/18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8) | [Registration Link](https://goo.gl/forms/jltRvjPFhYYvqme82)  
 
 ```{r setup, echo=F, results='hide', message=F, warning=F}
 
 library(tidyverse)
 library(lubridate)
-#library(readxl)
-library(googlesheets)
-#library(writexl)
 
-#derm = read_xlsx("0schedule.xlsx") %>% 
-#  mutate(date = ymd(date), # register date 
-#         lesion = as.character(lesion)) %>%
-#  arrange(CID, lesion, date) %>%
-#  group_by(CID, lesion) %>%
-#  filter(row_number() == ifelse(length(which.max(date)), which.max(date), n())) %>%
-#  ungroup()
-
-derm = 
-    gs_key("18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8") %>%
-    gs_read() %>%
-    set_names(c("time","CID","name","lesion","photo_date","registry_date","interval")) %>%
-    mutate(photo_date = ymd(photo_date), # register date 
-           registry_date = ymd(registry_date), # register date 
-	   lesion = as.character(lesion)) %>%
-    arrange(CID, lesion, registry_date) %>%
-    group_by(CID, lesion) %>%
-    filter(row_number() == which.max(photo_date)) %>%
-    ungroup()
-
-  
-derm.name = 
-  derm %>% 
-  distinct(CID, name) %>%
-  group_by(CID) %>%
-  filter(row_number() == 1) %>% # make unique name
-  ungroup()
-
-d = 
-  derm %>% 
-  group_by(CID) %>% 
-  summarise(
-    last_registry_date = max(registry_date, na.rm=T),
-    last_lesion = lesion[which(registry_date == max(registry_date, na.rm=T))]) %>% 
-  right_join(derm) %>%
-  mutate(
-    i        = interval(ymd(registry_date),      ymd(today()-1            )) %/% months(1),
-    i7       = interval(ymd(registry_date),      ymd(today()-1 + weeks(1) )) %/% months(1),
-    i30      = interval(ymd(registry_date),      ymd(today()-1 + months(1))) %/% months(1),
-    i_last   = interval(ymd(last_registry_date), ymd(today()-1            )) %/% months(1),
-    i7_last  = interval(ymd(last_registry_date), ymd(today()-1 +  weeks(1))) %/% months(1),
-    i30_last = interval(ymd(last_registry_date), ymd(today()-1 + months(1))) %/% months(1)
-  ) %>% 
-  mutate(
-    show0 = case_when(
-      i_last < 1 ~ F, 
-      is.na(registry_date) ~ T,
-      i >= 6 ~ T,
-      T ~ F),
-    show7 = case_when(
-      i7_last < 1 ~ F, 
-      is.na(registry_date) ~ T,
-      i7 >= 6 ~ T,
-      T ~ F),
-    show30 = case_when(
-      i30_last < 1 ~ F,
-      is.na(registry_date) ~ T,
-      i30 >= 6 ~ T,
-      T ~ F)
-  )  %>%
-  mutate(
-    l0 = ifelse(show0, paste0(lesion, " (",registry_date,")"), NA),
-    l7 = ifelse(show7, paste0(lesion, " (",registry_date,")"), NA),
-    l30 = ifelse(show30, paste0(lesion, " (",registry_date,")"), NA),
-  ) 
+dfile = "schedule/schedule.Rdata"
+load(dfile)
 
 d0 =
   d %>%
   group_by(CID, last_registry_date, last_lesion) %>% 
-  summarise(lesions0 = paste(l0[show0], collapse="<br> "),
-            lesions7 = paste(l7[show7], collapse="<br> "),
-            lesions30 = paste(l30[show30], collapse="<br> ")
+  summarise(lesions0 = paste(l0[!is.na(l0)], collapse="<br> "),
+            lesions7 = paste(l7[!is.na(l7)], collapse="<br> "),
+            lesions30 = paste(l30[!is.na(l30)], collapse="<br> ")
   ) %>%
   mutate(last = paste0(last_lesion, "(", last_registry_date, ")")) %>%
   ungroup() %>%
@@ -99,28 +33,16 @@ d0 =
   filter(Today != "" | Next_Week != "" | Next_Month != "") 
 
 ```
-```{r list, echo=F, message=F}
+```{r DT, echo=F, message=F}
 
-library(kableExtra)
-library(knitr)
+d0 %>% DT::datatable(escape = F)
 
-d0 %>% kable()
+```
 
-#d %>% 
-#  mutate(CID = paste0(CID, " (", name, ")"),
-#	 last_lesion = paste0(last_lesion, " (", last_registry_date, ")"),
-#         next_photo_date = photo_date + months(interval),
-#         next_registry_date = case_when(
-#	    is.na(registry_date)  ~ last_registry_date + months(1),
-#	    lesion == last_lesion ~ max(registry_date + months(6), last_registry_date + months(1), na.rm=T), 
-#	    T ~ last_registry_date + months(1)
-#                                 )
-#  ) %>%
-#  select(CID, last_lesion, lesion, registry_date, photo_date, registry_date, interval, next_photo_date, next_registry_date) %>%
-#  arrange(CID, next_photo_date) %>%
-#  kable(format = "html") %>%
-#  kable_styling(full_width = F) %>%
-#  column_spec(1, bold = T) %>%
-#  collapse_rows(columns=1:2)
+***
+
+```{r kable, echo=F, message=F}
+
+d0 %>% knitr::kable()
 
 ```
