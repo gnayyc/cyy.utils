@@ -19,10 +19,7 @@ dir.create("schedule")
 # https://docs.google.com/spreadsheets/d/18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8
 # https://docs.google.com/spreadsheets/d/e/2PACX-1vTEAIEr8YVek24JYDSHFdueJ_cOclaSQWLA8IgpXLJT1a-RkQdifhmB1nEMAMb1LKzCbfs8aM09S4lQ/pubhtml
 
-if (!file.exists(".httr-oauth") || file.info(".httr-oauth")$size == 0)
-{
-  gs_ls()
-}
+gs_auth()
 
 derm = 
     gs_key("18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8") %>%
