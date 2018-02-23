@@ -23,9 +23,8 @@ library(kableExtra)
 library(knitr)
 
 d %>% 
-  mutate(CID = paste0(CID, " (", name, ")"),
-         last_lesion = paste0(last_lesion, " (", last_registry_date, ")")) %>%
-  select(CID, last_lesion, lesion, interval, photo_date, registry_date, next_photo_date, next_registry_date) %>%
+  mutate(CID = paste0(CID, " (", name, ")")) %>%
+  select(CID, lesion, interval, photo_date, registry_date, next_photo_date, next_registry_date) %>%
   arrange(CID, next_photo_date) %>%
   DT::datatable()
 
@@ -41,13 +40,17 @@ library(knitr)
 #d0 %>% kable()
 
 d %>% 
-  mutate(CID = paste0(CID, " (", name, ")"),
-         last_lesion = paste0(last_lesion, " (", last_registry_date, ")")) %>%
-  select(CID, last_lesion, lesion, interval, photo_date, registry_date, next_photo_date, next_registry_date) %>%
+  mutate(CID = paste0(CID, " (", name, ")")) %>%
+  mutate(
+    lesion = cell_spec(lesion, "html", color = ifelse(is_last_registry, "red", "black"))
+    ,registry_date = cell_spec(registry_date, "html", color = ifelse(is_last_registry, "red", "black"))
+    ) %>%
+  select(CID, lesion, interval, photo_date, registry_date, next_photo_date, next_registry_date) %>%
   arrange(CID, next_photo_date) %>%
-  kable(format = "html") %>%
+  kable(format = "html", escape = F) %>%
   kable_styling(full_width = F) %>%
   column_spec(1, bold = T) %>%
-  collapse_rows(columns=1:2)
+  collapse_rows(columns=1)
 
 ```
+
