@@ -19,17 +19,17 @@ load(dfile)
 
 d0 =
   d %>%
-  group_by(CID, last_registry_date, last_lesion) %>% 
+  group_by(CID, last_registry_date) %>% 
   summarise(lesions0 = paste(l0[!is.na(l0)], collapse="<br> "),
             lesions7 = paste(l7[!is.na(l7)], collapse="<br> "),
-            lesions30 = paste(l30[!is.na(l30)], collapse="<br> ")
+            lesions30 = paste(l30[!is.na(l30)], collapse="<br> "),
+            lesions180 = paste(l180[!is.na(l180)], collapse="<br> ")
   ) %>%
-  mutate(last = paste0(last_lesion, "(", last_registry_date, ")")) %>%
   ungroup() %>%
   left_join(derm.name) %>%
   mutate(CID = paste0(CID, " (", name, ")")) %>%
-  select(CID, last, lesions0, lesions7, lesions30) %>%
-  set_names(c("Chart_Number", "Last", "Today", "Next_Week", "Next_Month")) %>%
+  select(CID, last_registry_date, lesions0, lesions7, lesions30, lesions180) %>%
+  set_names(c("Chart_Number", "Last", "Today", "Next_Week", "Next_Month", "Others")) %>%
   filter(Today != "" | Next_Week != "" | Next_Month != "") 
 
 ```
