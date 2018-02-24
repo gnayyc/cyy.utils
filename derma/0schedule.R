@@ -73,24 +73,38 @@ dfile = "schedule/schedule.Rdata"
 save(d, derm, file = dfile)
 
 ofile = paste0("schedule/schedule-", format(Sys.time(), "%Y-%m-%d"),".html")
+ofiledt = paste0("schedule/schedule_dt-", format(Sys.time(), "%Y-%m-%d"),".html")
 afile = paste0("schedule/schedule_all-", format(Sys.time(), "%Y-%m-%d"),".html")
+afiledt = paste0("schedule/schedule_all_dt-", format(Sys.time(), "%Y-%m-%d"),".html")
 
 
 rmarkdown::render('0schedule.Rmd', 
     output_format = "html_document",
     output_file = ofile)
 
+rmarkdown::render('0schedule_dt.Rmd', 
+    output_format = "html_document",
+    output_file = ofiledt)
+
 rmarkdown::render('0schedule_all.Rmd', 
     output_format = "html_document",
     output_file = afile)
 
+rmarkdown::render('0schedule_all_dt.Rmd', 
+    output_format = "html_document",
+    output_file = afiledt)
+
 if (.Platform$OS.type == "unix")
 {
     system(paste0("open ", ofile))
+    system(paste0("open ", ofiledt))
     system(paste0("open ", afile))
+    system(paste0("open ", afiledt))
 } else
 {
     shell(str_replace(ofile, "/", "\\\\"))
+    shell(str_replace(ofiledt, "/", "\\\\"))
     shell(str_replace(afile, "/", "\\\\"))
+    shell(str_replace(afiledt, "/", "\\\\"))
 }
 

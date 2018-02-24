@@ -9,8 +9,6 @@ output:
 
 [Schedule Link](https://docs.google.com/spreadsheets/d/18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8) | [Registration Link](https://goo.gl/forms/jltRvjPFhYYvqme82)  
 
-***
-
 ```{r setup, echo=F, results='hide', message=F, warning=F}
 
 library(tidyverse)
@@ -35,9 +33,11 @@ d0 =
   filter(Today != "" | Next_Week != "" | Next_Month != "") 
 
 ```
+***
 
-```{r kable, echo=F, message=F}
+```{r DT, echo=F, message=F}
 
-d0 %>% knitr::kable()
+d0 %>% DT::datatable(escape = F)
 
 ```
+
