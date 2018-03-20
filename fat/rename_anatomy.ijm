@@ -313,6 +313,15 @@ macro "Umbilical [r]" {
   showStatus("Umbilical saved!");
 }
 
+macro "Next Slice [f]" {
+    run("Next Slice [>]");
+
+}
+
+macro "Next Slice [d]" {
+    run("Previous Slice [<]");
+}
+
 // This function returns the value of the specified 
 // tag  (e.g., "0010,0010") as a string. Returns "" 
 // if the tag is not found.
