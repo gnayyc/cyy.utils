@@ -26,7 +26,7 @@ library(knitr)
 
 d %>% 
   mutate(CID = paste0(CID, " (", name, ")")) %>%
-  select(CID, lesion, interval, photo_date, registry_date, next_photo_date, next_registry_date) %>%
+  select(CID, lesion, interval, photo_date, registry_date, next_photo_date, next_registry_date, note) %>%
   arrange(CID, next_photo_date) %>%
   DT::datatable()
 

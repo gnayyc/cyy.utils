@@ -33,7 +33,7 @@ d %>%
     lesion = cell_spec(lesion, "html", color = ifelse(is_last_registry, "red", "black"))
     ,registry_date = cell_spec(registry_date, "html", color = ifelse(is_last_registry, "red", "black"))
     ) %>%
-  select(CID, lesion, interval, photo_date, registry_date, next_photo_date, next_registry_date) %>%
+  select(CID, lesion, interval, photo_date, registry_date, next_photo_date, next_registry_date, note) %>%
   arrange(CID, next_photo_date) %>%
   kable(format = "html", escape = F) %>%
   kable_styling(full_width = F) %>%

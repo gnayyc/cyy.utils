@@ -23,13 +23,15 @@ derm =
     #gs_key("18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8") %>%
     gs_url("https://docs.google.com/spreadsheets/d/18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8") %>%
     gs_read() %>%
-    set_names(c("time","CID","name","lesion","photo_date","registry_date","interval")) %>%
+    #gs_read(range = cell_cols("B:H")) %>%
+    #set_names(c("CID","name","lesion","photo_date","registry_date","interval","Note")) %>%
     group_by(CID) %>%
     mutate(photo_date = ymd(photo_date), # register date 
            registry_date = ymd(registry_date), # register date 
 	   lesion = as.character(lesion),
 	   is_last_registry = ifelse(registry_date %in% ymd(max(registry_date, na.rm=T)), T, F),
-	   interval = ifelse(is.na(interval), 6, interval)) %>%
+	   interval = ifelse(is.na(interval), 6, interval),
+	   note = ifelse(is.na(note), "", note)) %>%
     arrange(CID, lesion, registry_date) %>%
     group_by(CID, lesion) %>%
     filter(row_number() == which.max(photo_date)) %>%
