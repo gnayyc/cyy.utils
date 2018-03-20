@@ -350,7 +350,8 @@ macro "Set Fat Mask [f]" {
   time = replace(time, "\\\.", "");
 
   setDir();
-  ImgDir = FatImgDir + id + File.separator;
+  // ImgDir = FatImgDir + id + File.separator;
+  ImgDir = getDirectory("image") + "work" + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
   
   if(File.exists(ipath)) 
@@ -409,8 +410,10 @@ macro "TotalFat [1]" {
   SF = VF = PF = RF = WVF = WF = 0;
   run("Convert to Mask");
   FatResults();
+/*
   if (FatImgDir == "")
     setDir();
+*/
   id = getTag("0010,0020");
   studyid = getTag("0020,0010");
   series = getTag("0020,0011");
@@ -425,7 +428,8 @@ macro "TotalFat [1]" {
   tp = id + "_" + date;
 
 
-  ImgDir = FatImgDir + id + File.separator;
+  // ImgDir = FatImgDir + id + File.separator;
+  ImgDir = getDirectory("image") + "work" + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
   run("Hide Overlay");
@@ -450,8 +454,10 @@ macro "WallVisceralFat [2]" { // Get Subcutaneous Fat
   SF = TF - WVF;
   run("Convert to Mask");
   FatResults();
+/*
   if (FatImgDir == "")
     setDir();
+*/
   id = getTag("0010,0020");
   studyid = getTag("0020,0010");
   series = getTag("0020,0011");
@@ -466,7 +472,8 @@ macro "WallVisceralFat [2]" { // Get Subcutaneous Fat
   date = replace(getTag("0008,0020"), " ", "");
   tp = id + "_" + date;
 
-  ImgDir = FatImgDir + id + File.separator;
+  // ImgDir = FatImgDir + id + File.separator;
+  ImgDir = getDirectory("image") + "work" + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
   run("Hide Overlay");
@@ -492,8 +499,10 @@ macro "VisceralFat [3]" { // Get wall fat
   WF = WVF - VF;
   run("Convert to Mask");
   FatResults();
+/*
   if (FatImgDir == "")
     setDir();
+*/
   id = getTag("0010,0020");
   studyid = getTag("0020,0010");
   series = getTag("0020,0011");
@@ -505,7 +514,8 @@ macro "VisceralFat [3]" { // Get wall fat
   time = replace(getTime,"E12","");
   time = replace(time, "\\\.", "");
 
-  ImgDir = FatImgDir + id + File.separator;
+  // ImgDir = FatImgDir + id + File.separator;
+  ImgDir = getDirectory("image") + "work" + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
   date = replace(getTag("0008,0020"), " ", "");
@@ -533,8 +543,10 @@ macro "PeritonealFat [4]" {
   RF = VF - PF;
   run("Convert to Mask");
   FatResults();
+/*
   if (FatImgDir == "")
     setDir();
+*/
   id = getTag("0010,0020");
   studyid = getTag("0020,0010");
   series = getTag("0020,0011");
@@ -545,7 +557,8 @@ macro "PeritonealFat [4]" {
   image = replace(image, " ", "");
   time = replace(getTime,"E12","");
   time = replace(time, "\\\.", "");
-  ImgDir = FatImgDir + id + File.separator;
+  // ImgDir = FatImgDir + id + File.separator;
+  ImgDir = getDirectory("image") + "work" + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
   run("Create Selection");
@@ -575,8 +588,9 @@ function saveResult() {
   SF = TF - VF;
   RF = VF - PF;
   colnames = 0;
-  setDir();
-  ImgDir = FatImgDir + id + File.separator;
+  // setDir();
+  // ImgDir = FatImgDir + id + File.separator;
+  ImgDir = getDirectory("image") + "work" + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
   if (TF*SF*VF*PF*RF == 0)
@@ -595,8 +609,9 @@ function saveResult() {
 
 macro "SaveErrorFOV [6]" {
   // if (DataDir == "")
-    setDir();
-  ImgDir = FatImgDir + id + File.separator;
+  //  setDir();
+  // ImgDir = FatImgDir + id + File.separator;
+  ImgDir = getDirectory("image") + "work" + File.separator;
   FatLogfile = ImgDir + id + "_fat.csv");
   if(!File.exists(FatLogfile)) 
     File.append("filename,date,id,name,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,Peritoneal.Fat,Extraperitoneal.Fat", FatLogfile);
@@ -612,7 +627,7 @@ macro "SaveErrorFOV [6]" {
   studyid = replace(studyid, " ", "");
   series = replace(series, " ", "");
   image = replace(image, " ", "");
-  ImgDir = FatImgDir + id + File.separator;
+  ImgDir = getDirectory("image") + "work" + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
   save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-error.png");
@@ -639,11 +654,12 @@ macro "Calculate Aorta Calcification Ratio base [a]" {
   image = replace(image, " ", "");
 
   // if (AortaImgDir == "")
-    setDir();
-  ImgDir = AortaImgDir + id + File.separator;
+  //  setDir();
+  // ImgDir = AortaImgDir + id + File.separator;
+  ImgDir = getDirectory("image") + "work" + File.separator;
   if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
-  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-0.png");
+  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-0Aorta.png");
 }
 
 
@@ -672,7 +688,7 @@ macro "Calculate Aorta Calcification Ratio [9]" {
 
   time = replace(getTime,"E12","");
   time = replace(time, "\\\.", "");
-  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-1.png");
+  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-1Aorta.png");
   t = getTitle();
   run("Duplicate...", "title="+t+"-Ao");
   Aoid = getImageID();
@@ -686,7 +702,7 @@ macro "Calculate Aorta Calcification Ratio [9]" {
   run("View 100%");
   setThreshold(-25, 100);
   run("Convert to Mask");
-  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-2.png");
+  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-2Aorta.png");
   setThreshold(255, 255);
   run("Create Selection");
   run("Measure");
@@ -698,7 +714,7 @@ macro "Calculate Aorta Calcification Ratio [9]" {
   setThreshold(100,1500);
   run("Convert to Mask");
 
-  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-3.png");
+  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-3Aorta.png");
   if (max < 100) // in case there's no calficication at all
     Ca = 0;
   else
