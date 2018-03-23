@@ -52,7 +52,7 @@ macro "L1 [1]" {
   else
 	File.copy(ipath + ".dcm", ImgDir + tp + "_" + mod + "_L1.dcm");
 
-  showStatus("L1 saved!");
+  showStatus("L1 (" + id + ") saved!");
 }
 
 macro "L2 [2]" {
@@ -95,7 +95,7 @@ macro "L2 [2]" {
   else
 	File.copy(ipath + ".dcm", ImgDir + tp + "_" + mod + "_L2.dcm");
 
-  showStatus("L2 saved!");
+  showStatus("L2 (" + id + ") saved!");
 }
 
 macro "L3 [3]" {
@@ -138,7 +138,7 @@ macro "L3 [3]" {
   else
 	File.copy(ipath + ".dcm", ImgDir + tp + "_" + mod + "_L3.dcm");
 
-  showStatus("L3 saved!");
+  showStatus("L3 (" + id + ") saved!");
 }
 
 macro "L4 [4]" {
@@ -181,7 +181,7 @@ macro "L4 [4]" {
   else
 	File.copy(ipath + ".dcm", ImgDir + tp + "_" + mod + "_L4.dcm");
 
-  showStatus("L4 saved!");
+  showStatus("L4 (" + id + ") saved!");
 }
 
 macro "L5 [5]" {
@@ -224,7 +224,7 @@ macro "L5 [5]" {
   else
 	File.copy(ipath + ".dcm", ImgDir + tp + "_" + mod + "_L5.dcm");
 
-  showStatus("L5 saved!");
+  showStatus("L5 (" + id + ") saved!");
 }
 
 macro "T12 [q]" {
@@ -267,7 +267,7 @@ macro "T12 [q]" {
   else
 	File.copy(ipath + ".dcm", ImgDir + tp + "_" + mod + "_T12.dcm");
 
-  showStatus("T12 saved!");
+  showStatus("T12 (" + id + ") saved!");
 }
 
 macro "Umbilical [r]" {
@@ -310,7 +310,7 @@ macro "Umbilical [r]" {
   else
 	File.copy(ipath + ".dcm", ImgDir + tp + "_" + mod + "_U.dcm");
 
-  showStatus("Umbilical saved!");
+  showStatus("Umbilical (" + id + ") saved!");
 }
 
 macro "Next Slice [f]" {
