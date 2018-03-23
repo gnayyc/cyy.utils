@@ -3,7 +3,7 @@
 local({r <- getOption("repos"); 
     r["CRAN"] <- "https://cloud.r-project.org/";
     options(repos = r)})
-list.of.packages <- c("tidyverse", "lubridate", "knitr", "devtools", "stringr", "googlesheets", "kableExtra", "DT")
+list.of.packages <- c("tidyverse", "lubridate", "knitr", "devtools", "stringr", "googlesheets", "googledrive", "kableExtra", "DT", "readxl")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 if(!require(rmarkdown)) 
@@ -13,18 +13,29 @@ if(!require(rmarkdown))
 
 library(tidyverse)
 library(lubridate)
-library(googlesheets)
 
 dir.create("schedule")
 
-gs_auth()
+use_gs = T
+if (use_gs)
+{
+    library(googlesheets)
+    gs_auth()
+    derm = 
+	gs_url("https://docs.google.com/spreadsheets/d/18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8") %>%
+	gs_read()
+} else
+{
+    library(googledrive)
+    drive_auth()
+    "https://docs.google.com/spreadsheets/d/18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8" %>%
+	as_id() %>%
+	drive_download(overwrite=T, type = "csv")
+    derm = read_csv("0schedule.csv")
+}
 
-derm = 
-    #gs_key("18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8") %>%
-    gs_url("https://docs.google.com/spreadsheets/d/18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8") %>%
-    gs_read() %>%
-    #gs_read(range = cell_cols("B:H")) %>%
-    #set_names(c("CID","name","lesion","photo_date","registry_date","interval","Note")) %>%
+
+derm = derm %>%
     group_by(CID) %>%
     mutate(photo_date = ymd(photo_date), # register date 
            registry_date = ymd(registry_date), # register date 
