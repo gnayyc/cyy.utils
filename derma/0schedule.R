@@ -42,7 +42,8 @@ derm = derm %>%
 	   lesion = as.character(lesion),
 	   is_last_registry = ifelse(registry_date %in% ymd(max(registry_date, na.rm=T)), T, F),
 	   interval = ifelse(is.na(interval), 6, interval),
-	   #interval = str_replace(interval, "\u00a0", ""),
+	   interval = iconv(interval, "latin1", "ASCII", sub=""),
+	   interval = as.integer(interval), 
 	   note = ifelse(is.na(note), "", note)) %>%
     arrange(CID, lesion, registry_date) %>%
     group_by(CID, lesion) %>%
@@ -67,7 +68,7 @@ d =
   ) %>%
   right_join(derm) %>%
   mutate(
-         next_photo_date = photo_date + months(as.integer(interval)),
+         next_photo_date = photo_date + months(interval),
          next_registry_date = case_when(
 	    is.na(last_registry_date) ~ photo_date,
 	    is.na(registry_date) ~ last_registry_date + months(1),
