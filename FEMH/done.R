@@ -39,7 +39,7 @@ png = list.files(imgdir, "*.png")
 xml = c(list.files(imgdir, "*.xml"), list.files(xmldir, "*.xml"))
 
 if (length(xml)<1) {
-  stop("found no xml files\n", call.=F)
+  stop("no xml file found\n", call.=F)
 } 
 
 
@@ -49,10 +49,11 @@ file.img = tools::file_path_sans_ext(png)
 label.i = which(file.img %in% file.label)
 
 if (length(label.i)<1) {
-  stop("found no un-archived files\n", call.=F)
+  stop("no un-archived file found\n", call.=F)
 } 
 
 for (i in 1:max(label.i)) {
+    cat(file.path(imgdir, paste0(file.img[i],".png")), "\n")
     if (i %in% label.i) {
 	file.rename(file.path(imgdir, paste0(file.img[i],".png")), 
 	            file.path(labeldir, paste0(file.img[i],".png")))
