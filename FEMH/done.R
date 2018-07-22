@@ -24,21 +24,33 @@ if (length(args) >= 2)
 }
 
 
-labeldir = file.path(imgdir, "0label")
-unddir = file.path(imgdir, "0undetermined")
+labeldir = paste0(imgdir, "_label")
+unddir = paste0(imgdir, "_undetermined")
 if (length(args) < 2)
 {
-    xmldir = file.path(imgdir, "0xml")
+    xmldir = paste0(imgdir, "_xml")
 }
 
 dir.create(labeldir)
 dir.create(unddir)
+dir.create(xmldir)
 
 png = list.files(imgdir, "*.png")
-xml = c(list.files(imgdir, "*.xml"), list.files(imgdir, "*.xml"))
+xml = c(list.files(imgdir, "*.xml"), list.files(xmldir, "*.xml"))
+
+if (length(xml)<1) {
+  stop("found no xml files\n", call.=F)
+} 
+
+
+
 file.label = tools::file_path_sans_ext(xml)
 file.img = tools::file_path_sans_ext(png)
 label.i = which(file.img %in% file.label)
+
+if (length(label.i)<1) {
+  stop("found no un-archived files\n", call.=F)
+} 
 
 for (i in 1:max(label.i)) {
     if (i %in% label.i) {
