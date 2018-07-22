@@ -1,5 +1,8 @@
 #!/usr/bin/env Rscript
 
+# move labeled files into 0done
+# move unlabeled files into 0undtermined
+
 args <- commandArgs(TRUE)
 
 # test if there is at least one argument: if not, return an error
@@ -13,6 +16,7 @@ if (!dir.exists(dir)) {
 } 
 
 dir.done = file.path(dir, "0done")
+dir.xml = file.path(dir, "0xml")
 dir.und = file.path(dir, "0undetermined")
 dir.create(dir.done)
 dir.create(dir.und)
@@ -28,7 +32,7 @@ for (i in 1:max(done.i)) {
 	file.rename(file.path(dir, paste0(file.all[i],".png")), 
 	            file.path(dir.done, paste0(file.all[i],".png")))
 	file.rename(file.path(dir, paste0(file.all[i],".xml")), 
-	            file.path(dir.done, paste0(file.all[i],".xml")))
+	            file.path(dir.xml, paste0(file.all[i],".xml")))
     } else {
 	file.rename(file.path(dir, paste0(file.all[i],".png")), 
 	            file.path(dir.und, paste0(file.all[i],".png")))
