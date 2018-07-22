@@ -119,13 +119,8 @@ else:
 ifd.write(data + "\n")
 ifd.close()
 
-try:
-    fd=open(csvfile, 'w+')
+with open(csvfile, 'w+') as fd:
     fd.write(header + "\n")
     fd.write(data + "\n")
-    fd.close()
-except:
-    print("Error creating file (%s)..." % csvfile)
-    sys.exit()
 
 
