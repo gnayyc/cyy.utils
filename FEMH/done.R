@@ -31,39 +31,42 @@ if (length(args) < 2)
     xmldir = paste0(imgdir, "_xml")
 }
 
-dir.create(labeldir)
-dir.create(unddir)
-dir.create(xmldir)
+dir.create(labeldir, showWarnings = F)
+dir.create(unddir, showWarnings = F)
+dir.create(xmldir, showWarnings = F)
 
 png = list.files(imgdir, "*.png")
 xml = c(list.files(imgdir, "*.xml"), list.files(xmldir, "*.xml"))
 
-if (length(xml)<1) {
-  stop("no xml file found\n", call.=F)
-} 
+#if (length(xml)<1) {
+#  stop("no xml file found\n", call.=F)
+#} 
 
 
 
 file.label = tools::file_path_sans_ext(xml)
 file.img = tools::file_path_sans_ext(png)
 label.i = which(file.img %in% file.label)
+label.max = ifelse(length(label.i)>0, max(label.i), 0)
 
-if (length(label.i)<1) {
-  stop("no un-archived file found\n", call.=F)
+if (label.max >0) {
+    for (i in 1:max(label.i)) {
+	cat(file.path(imgdir, paste0(file.img[i],".png")), "\n")
+	if (i %in% label.i) {
+	    file.rename(file.path(imgdir, paste0(file.img[i],".png")), 
+			file.path(labeldir, paste0(file.img[i],".png")))
+	    if(file.exists(file.path(imgdir, paste0(file.img[i],".xml")))) {
+		file.rename(file.path(imgdir, paste0(file.img[i],".xml")), 
+			    file.path(xmldir, paste0(file.img[i],".xml")))
+	    }
+	} else {
+	    file.rename(file.path(imgdir, paste0(file.img[i],".png")), 
+			file.path(unddir, paste0(file.img[i],".png")))
+	}
+    }
 } 
 
-for (i in 1:max(label.i)) {
-    cat(file.path(imgdir, paste0(file.img[i],".png")), "\n")
-    if (i %in% label.i) {
-	file.rename(file.path(imgdir, paste0(file.img[i],".png")), 
-	            file.path(labeldir, paste0(file.img[i],".png")))
-	if(file.exists(file.path(imgdir, paste0(file.img[i],".xml")))) {
-	    file.rename(file.path(imgdir, paste0(file.img[i],".xml")), 
-			file.path(xmldir, paste0(file.img[i],".xml")))
-	}
-    } else {
-	file.rename(file.path(imgdir, paste0(file.img[i],".png")), 
-	            file.path(unddir, paste0(file.img[i],".png")))
-    }
-}
 
+cat("Archived: [", label.max, 
+    "], Done: [", length(xml), 
+    "], Todo: [", length(png) - label.max, "]\n")

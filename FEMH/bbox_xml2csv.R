@@ -23,4 +23,6 @@ for (i in seq_along(f)) {
     
 }
 
-data.frame(ACCNO, bbox) %>% readr::write_csv("bbox.csv")
+data.frame(ACCNO, bbox) %>% 
+    dplyr::filter(nchar(as.character(bbox))>5) %>%
+    readr::write_csv("bbox.csv")
