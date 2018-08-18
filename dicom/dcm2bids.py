@@ -128,6 +128,7 @@ def dcm2csv(filename, csvdir):
         desc,
         "zzz.csv"
             ])) 
+    csvfile = csvfile.replace(":", "_")
 
 
     ifile = os.path.join(csvdir, "info.csv")

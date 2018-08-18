@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 
-library(magrittr)
+library(dplyr)
+library(readr)
 library(xml2)
 
 f = list.files(".", "*.xml")
@@ -8,7 +9,10 @@ ACCNO = character(0)
 bbox = character(0)
 for (i in seq_along(f)) {
     x = f[i] %>% read_xml()
-    accno = x %>% xml_find_all(".//filename") %>% xml_text %>% sub(".png", "", .)
+    accno = x %>% 
+	xml_find_all(".//filename") %>% 
+	xml_text %>% 
+	stringr::str_extract("RA[0-9]*")
     node_box = x %>% xml_find_all(".//bndbox")
     bndbox = ""
     for (b in node_box) {
@@ -23,6 +27,18 @@ for (i in seq_along(f)) {
     
 }
 
-data.frame(ACCNO, bbox) %>% 
-    dplyr::filter(nchar(as.character(bbox))>5) %>%
-    readr::write_csv("bbox.csv")
+
+
+b = data.frame(ACCNO, bbox) %>% 
+    dplyr::filter(nchar(as.character(bbox))>5) 
+
+read_csv("mass_date.csv", col_types = list(
+    col_character(),
+    col_character(),
+    col_character(),
+    col_integer(),
+    col_character()
+    )) %>%
+    left_join(b, by = "ACCNO") %>%
+    mutate(bbox = ifelse(is.na(bbox), "", as.character(bbox))) %>%
+    write_csv("bbox.csv")

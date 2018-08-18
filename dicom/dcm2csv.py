@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import os
 import sys
-import dicom
+import pydicom
 
 # check command line arguments make sense
 if len(sys.argv) != 3:
@@ -28,13 +28,13 @@ if len(sys.argv) != 3:
 
 # read the file
 filename = sys.argv[1]
-dcm = dicom.read_file(filename)
+dcm = pydicom.dcmread(filename)
 
 header = ",".join([
     "PatientID",
     "PatientAge",
     "PatientSex",
-    "PatientsBirthDate",
+    "PatientBirthDate",
     "PatientName",
     "InstitutionName",
     "StudyDate",
@@ -66,8 +66,8 @@ data = ",".join(str(x) for x in
     dcm.get("PatientID", "").strip(), 
     dcm.get("PatientAge", "").strip(), 
     dcm.get("PatientSex", "").strip(), 
-    dcm.get("PatientsBirthDate", "").strip(),
-    dcm.get("PatientName", "").strip(),
+    dcm.get("PatientBirthDate", "").strip(),
+    str(dcm.get("PatientName", "")).strip(),
     dcm.get("InstitutionName", "").strip(),
     dcm.get("StudyDate", "").strip(),
     dcm.get("StudyTime", "").strip(),

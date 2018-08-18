@@ -1,0 +1,54 @@
+#!/usr/bin/env Rscript
+
+library(tidyverse)
+library(lubridate)
+Sys.setenv(TZ = "Asia/Taipei")
+
+## Collect arguments
+args <- commandArgs(TRUE)
+
+## Default setting when no arguments passed
+if(length(args) == 0) {
+    info_csv = file.path(".","info.csv")
+} else {
+    info_csv = args[1]
+    if (dir.exists(info_csv))
+	info_csv = file.path(info_csv, "info.csv")
+    if (!file.exists(info_csv))
+	stop(paste(info_csv, "does not exits!"))
+}
+
+info_dir = dirname(info_csv)
+
+cat("Info csv == ", info_csv, "\n")
+cat("Info dir == ", info_dir, "\n")
+#cat("Info directory == ", info_dir, "\n")
+
+#csv_files =
+#    BIDS %>%
+#    dir(pattern = "*.csv")
+#
+#if (length(csv_files) == 0)
+#{
+#    cat("No csv files!\nQuitting!\n")
+#    quit()
+#}
+
+info = 
+    info_csv %>%
+    read_csv()
+
+cat("Analyzing demo...\n")
+demo = 
+    info %>%
+    distinct(PatientID, PatientsBirthDate, PatientSex, StudyDate, PatientName) %>%
+    group_by(PatientID) %>%
+    mutate(PatientsBirthDate = ymd(PatientsBirthDate),
+	   StudyDate = ymd(StudyDate)) %>%
+    mutate(age = round(interval(PatientsBirthDate, StudyDate)/dyears(1), 1)) %>%
+    select(PatientID, PatientsBirthDate, PatientSex, StudyDate, age, PatientName) %>%
+    mutate(Findings = "", OPD = "") %>%
+    arrange(PatientName)
+
+write_csv(demo, file.path(info_dir, "demo.csv"))
+
