@@ -22,7 +22,7 @@ the image.
 from __future__ import print_function
 
 import sys
-import dicom
+import pydicom
 
 # check command line arguments make sense
 if not 1 < len(sys.argv) < 4:
@@ -31,7 +31,7 @@ if not 1 < len(sys.argv) < 4:
 
 # read the file
 filename = sys.argv[1]
-dcm = dicom.read_file(filename)
+dcm = pydicom.dcmread(filename)
 
 # Verbose mode:
 if len(sys.argv) == 3:

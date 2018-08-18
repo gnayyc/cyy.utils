@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import os
 import sys
-import dicom
+import pydicom
 import magic
 
 # check command line arguments make sense
@@ -49,7 +49,7 @@ else:
     csv_dir = "."
 
 def dcm2csv(filename, csvdir):
-    dcm = dicom.read_file(filename, force=True)
+    dcm = pydicom.dcmread(filename, force=True)
 
     header = ",".join([
         "PatientID",
@@ -156,12 +156,11 @@ for root, dirs, files in os.walk(dcm_dir):
     for file in files:
         path = os.path.join(root, file)
         try:
-            dicom.read_file(path, force = True)
             print("")
             print(path)
+            dcm2csv(path, csv_dir)
             print("dcm2niix -b y -t y -m y -z y -o \"%s\" -f %%i_%%t_%%s_%%p_zzz \"%s\"" % (csv_dir, root))
             os.system("dcm2niix -b y -t y -m y -z y -o \"%s\" -f %%i_%%t_%%s_%%p_zzz \"%s\"" % (csv_dir, root))
-            dcm2csv(path, csv_dir)
             break
-        except:
+        except InvalidDicomError:
             pass

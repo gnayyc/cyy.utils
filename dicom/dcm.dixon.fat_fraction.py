@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import os
 import sys
-import dicom
+import pydicom
 import magic
 
 # check command line arguments make sense

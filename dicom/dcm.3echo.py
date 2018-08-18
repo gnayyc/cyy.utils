@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import os
 import sys
-import dicom
+import pydicom
 import magic
 
 # check command line arguments make sense
@@ -33,7 +33,7 @@ def do(cmd):
 
 path = sys.argv[1]
 
-dicom.read_file(path, force = True)
+pydicom.dcmread(path, force = True)
 print("")
 print("3 echo file path: %s" % (path))
 base = os.path.basename(path).replace(".nii.gz","")
