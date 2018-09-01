@@ -34,7 +34,7 @@ header = ",".join([
     "PatientID",
     "PatientAge",
     "PatientSex",
-    "PatientBirthDate",
+    "PatientsBirthDate",
     "PatientName",
     "InstitutionName",
     "StudyDate",

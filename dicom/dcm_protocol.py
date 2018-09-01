@@ -50,14 +50,14 @@ print("Patient name......:", display_name, "@"+ dcm.InstitutionName)
 
 if not hasattr(dcm, "PatientAge"):
     dcm.PatientAge = "NA"
-if not hasattr(dcm, "PatientsBirthDate"):
+if not hasattr(dcm, "PatientBirthDate"):
     dcm.PatientAge = "NA"
 print("Patient id,age,sex,dob:", 
     ",".join([
         dcm.get("PatientID", "NA"),
         dcm.get("PatientAge", "NA"), 
         dcm.get("PatientSex", "NA"),
-        dcm.get("PatientsBirthDate", "NA")]))
+        dcm.get("PatientBirthDate", "NA")]))
 print("Modality..........:", dcm.PatientID + "_" + dcm.StudyDate + "," +
         dcm.Modality.strip()+ 
     "," + dcm.ManufacturerModelName + "," + dcm.Manufacturer)

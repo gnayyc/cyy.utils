@@ -28,7 +28,7 @@ import zipfile
 
 # special public packages
 import pydicom
-from dicom.filereader import InvalidDicomError
+from pydicom.filereader import InvalidDicomError
 
 # }}}
 
@@ -405,11 +405,16 @@ if __name__ == '__main__':
             else:
                 print ('Source directory not deleted')
         sys.exit()
-    except KeyboardInterrupt, e: # Ctrl-C
-        raise e
-    except SystemExit, e: # sys.exit()
-        raise e
-    except Exception, e:
+    #except KeyboardInterrupt, e: # Ctrl-C
+    except KeyboardInterrupt: # Ctrl-C
+        #raise e
+        raise
+    #except SystemExit, e: # sys.exit()
+    except SystemExit: # sys.exit()
+        #raise e
+        raise
+    #except Exception, e:
+    except Exception:
         print ('ERROR, UNEXPECTED EXCEPTION')
         print (str(e))
         traceback.print_exc()

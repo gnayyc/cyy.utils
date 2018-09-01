@@ -21,7 +21,7 @@ from __future__ import print_function
 import os
 import sys
 import pydicom
-import magic
+from pydicom.filereader import InvalidDicomError
 
 # check command line arguments make sense
 if len(sys.argv) > 3:
@@ -146,6 +146,7 @@ for root, dirs, files in os.walk(dcm_dir):
     for file in files:
         path = os.path.join(root, file)
         try:
+            pydicom.dcmread(path)
             print("")
             print(path)
             dcm2csv(path, csv_dir)

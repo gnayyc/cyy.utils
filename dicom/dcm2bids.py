@@ -1,4 +1,4 @@
-#!/usr/bin/env /usr/local/bin/python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 
@@ -20,7 +20,7 @@ from __future__ import print_function
 import os
 import sys
 import pydicom
-import magic
+from pydicom.filereader import InvalidDicomError
 
 # check command line arguments make sense
 if len(sys.argv) > 3:
@@ -88,7 +88,7 @@ def dcm2csv(filename, csvdir):
         dcm.get("PatientAge", "").strip(), 
         dcm.get("PatientSex", "").strip(), 
         dcm.get("PatientsBirthDate", "").strip(),
-        dcm.get("PatientName", "").strip(),
+        str(dcm.get("PatientName", "")).strip(),
         dcm.get("InstitutionName", "").strip(),
         dcm.get("StudyDate", "").strip(),
         dcm.get("StudyTime", "").strip(),
@@ -156,6 +156,7 @@ for root, dirs, files in os.walk(dcm_dir):
     for file in files:
         path = os.path.join(root, file)
         try:
+            pydicom.dcmread(path)
             print("")
             print(path)
             dcm2csv(path, csv_dir)
@@ -163,4 +164,5 @@ for root, dirs, files in os.walk(dcm_dir):
             os.system("dcm2niix -b y -t y -m y -z y -o \"%s\" -f %%i_%%t_%%s_%%p_zzz \"%s\"" % (csv_dir, root))
             break
         except InvalidDicomError:
+            print("Invalid dicom file: %s" % path)
             pass
