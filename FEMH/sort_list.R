@@ -1,5 +1,7 @@
 #!/usr/bin/env Rscript
 
+# cp from image dir by csv and add PATID to filename
+
 args <- commandArgs(TRUE)
 
 # test if there is at least one argument: if not, return an error
