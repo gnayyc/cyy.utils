@@ -176,7 +176,8 @@ class DICOMSorter(object):
         Return true on success"""
         # check for dicom file
         try:
-            ds = pydicom.dcmread(file,stop_before_pixels=True, force=True)
+            #ds = pydicom.dcmread(file,stop_before_pixels=True, force=True)
+            ds = pydicom.dcmread(file,stop_before_pixels=True, force=False)
         except InvalidDicomError:
             return False
         except KeyError:
@@ -415,8 +416,9 @@ if __name__ == '__main__':
         raise
     #except Exception, e:
     except Exception:
-        print ('ERROR, UNEXPECTED EXCEPTION')
-        print (str(e))
+        #print ('ERROR, UNEXPECTED EXCEPTION')
+        print("Unexpected error:", sys.exc_info()[0])
+        #print (str(e))
         traceback.print_exc()
         os._exit(1)
 
