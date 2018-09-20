@@ -27,18 +27,26 @@ for (i in seq_along(f)) {
     
 }
 
-
-
-b = data.frame(ACCNO, bbox) %>% 
+box = data.frame(ACCNO, bbox) %>% 
     dplyr::filter(nchar(as.character(bbox))>5) 
 
-read_csv("mass_date.csv", col_types = list(
-    col_character(),
-    col_character(),
-    col_character(),
-    col_integer(),
-    col_character()
-    )) %>%
-    left_join(b, by = "ACCNO") %>%
-    mutate(bbox = ifelse(is.na(bbox), "", as.character(bbox))) %>%
-    write_csv("bbox.csv")
+args <- commandArgs(TRUE)
+if (length(args) > 0 && file.exists(args[1])) {
+    if (length(args) > 1) {
+	target_csv = args[2]
+    } else {
+	target_csv = "bbox.csv"
+    } 
+    
+    read_csv(args[1]) %>%
+	select(ACCNO) %>%
+	mutate(ACCNO = as.character(ACCNO)) %>%
+	left_join(box, by = "ACCNO") %>%
+	mutate(bbox = ifelse(is.na(bbox), "", as.character(bbox))) %>%
+	write_csv(target_csv)
+} else {
+    box %>%
+	write_csv("bbox.csv")
+}
+
+

@@ -4,7 +4,7 @@ args <- commandArgs(TRUE)
 
 # test if there is at least one argument: if not, return an error
 if (length(args)!= 3) {
-  stop("cp_list.R csv_with_ACCNO source_dir output_dir\n", call.=F)
+  stop("sort_list.R csv_with_ACCNO_PATID source_dir output_dir\n", call.=F)
 } 
 
 csv = args[1]
@@ -21,9 +21,13 @@ if (!file.exists(dir2)) {
 
 library(tidyverse)
 
-read_csv(csv) %>% 
-  mutate(file = file.path(dir1, paste0(ACCNO, ".png"))) %>%
-  .$file %>%
-  file.copy(dir2, overwrite = F)
+x = read_csv(csv) %>% 
+  mutate(from = file.path(dir1, paste0(ACCNO, ".png"))) %>%
+  mutate(to= file.path(dir2, paste0(PATID, "-", ACCNO, ".png"))) 
+
+for (i in 1:nrow(x))
+{
+    file.copy(x[i,]$from, x[i,]$to, overwrite = F)
+}
 
 
