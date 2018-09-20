@@ -23,7 +23,7 @@ for (fdir in fat.dirs) {
 	    LabelValue == 4 ~ "Bone", # Bone
 	    TRUE ~ "Others")) %>%
 	mutate(id = id, StudyDate = idate) %>%
-        mutate(Area = Volume, `Volume (cm^3)` = Area/2) %>%
+        mutate(`Area (cm^2)`= Volume, `Volume (cm^3)` = Volume/2) %>%
 	select(id, StudyDate, everything(), -Volume)
     
     

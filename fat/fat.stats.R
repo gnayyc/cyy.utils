@@ -15,7 +15,7 @@ for (i in seq_along(fdirs)) {
 
 fat %>%
     bind_rows() %>%
-    select(id, StudyDate, key, `Volume (cm^3)`, Area, Mean) %>%
+    select(id, StudyDate, key, `Volume (cm^3)`, `Area (cm^2)`, `Density (HU)` = Mean) %>%
     filter(str_detect(key, "AT")) %>%
     write_csv("fat_stats.csv")
 

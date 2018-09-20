@@ -210,7 +210,9 @@ segment_ct = function(f, auto=F, plot=F)
   i0 %>% antsImageWrite(file.path(sdir,paste0(sid,"_0anatomy.nii.gz")))
   for (i in seq_along(r))
   {
-    r[[i]] %>% antsImageWrite(file.path(sdir,paste0(sid,"_",i,names(r)[i],".nii.gz")))
+    if (stringr::str_detect(names(r)[i], "label")
+	r[[i]] %>% antsImageWrite(file.path(sdir,paste0(sid,"_",i,names(r)[i],".nii.gz")))
+    
   }
   
   if (T) # use manual method now
@@ -225,6 +227,7 @@ segment_ct = function(f, auto=F, plot=F)
                              LabelValue == 4 ~ "Bone", # Bone
                              TRUE ~ "Others")) %>%
       mutate(id = id, StudyDate = idate) %>%
+      mutate(`Area (cm^2)` = Volume) %>%
       mutate(`Volume (cm^3)` = Volume/2) %>%
       select(id, StudyDate, everything())
     
