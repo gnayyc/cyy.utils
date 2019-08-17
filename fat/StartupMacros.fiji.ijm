@@ -858,7 +858,7 @@ macro "Wand [w]" {
 }
 
 macro "Clear Outside [X]" {
-  run("Clear Outside");
+  run("Clear Outside", "slice");
 }
 
 //macro "SaveBat [o]" {
@@ -972,3 +972,32 @@ macro "Close All Windows [Q]" {
 	close(); 
     } 
 }
+
+/* for 3d stacks
+macro "Fat [f]" {
+    Title = getTitle();
+    run("Duplicate...", "title="+Title+"_fat duplicate");
+    setThreshold(-250, -50);
+    run("Convert to Mask", "method=Default background=Default");
+}
+
+macro "Muscle [g]" {
+    Title = getTitle();
+    run("Duplicate...", "title="+Title+"_muscle duplicate");
+    setThreshold(-49, 80);
+    run("Convert to Mask", "method=Default background=Default");
+}
+
+macro "Measure areas [a]" {
+	setThreshold(255, 255);
+	run("Create Selection");
+	run("Measure");
+}
+
+macro "Clear Outside [X]" {
+  run("Clear Outside", "slice");
+}
+
+
+*/
+

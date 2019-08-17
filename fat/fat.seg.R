@@ -210,12 +210,12 @@ segment_ct = function(f, auto=F, plot=F)
   i0 %>% antsImageWrite(file.path(sdir,paste0(sid,"_0anatomy.nii.gz")))
   for (i in seq_along(r))
   {
-    if (stringr::str_detect(names(r)[i], "label")
+    if (stringr::str_detect(names(r)[i], "label"))
 	r[[i]] %>% antsImageWrite(file.path(sdir,paste0(sid,"_",i,names(r)[i],".nii.gz")))
     
   }
   
-  if (T) # use manual method now
+  if (F) # use manual method now
   {
     vol = 
       i0 %>% 

@@ -24,8 +24,8 @@ if (!file.exists(dir2)) {
 library(tidyverse)
 
 x = read_csv(csv) %>% 
-  mutate(from = file.path(dir1, paste0(ACCNO, ".png"))) %>%
-  mutate(to= file.path(dir2, paste0(PATID, "-", ACCNO, ".png"))) 
+  mutate(from = file.path(dir1, paste0(.[[1]], ".png"))) %>%
+  mutate(to= file.path(dir2, paste0(PATID, "-", .[[1]], ".png"))) 
 
 for (i in 1:nrow(x))
 {

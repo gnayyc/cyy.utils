@@ -21,9 +21,18 @@ if (!file.exists(dir2)) {
 
 library(tidyverse)
 
+### XXXXXXXX: find some map method later
+
+files.copy = function (from, to) {
+    for (i in 1:length(from)) {
+	cat("Copying ", from[i], " to ", to[i], "\n")
+	file.copy(from[i], to[i], overwrite = F)
+    }
+}
+
 read_csv(csv) %>% 
-  mutate(file = file.path(dir1, paste0(.[[1]], ".png"))) %>%
-  .$file %>%
-  file.copy(dir2, overwrite = F)
+    mutate(file1 = file.path(dir1, paste0(.[["ACCNO"]], ".png")),
+	   file2 = file.path(dir2, paste0(.[["label"]], paste0(.[["ACCNO"]], ".png")))) %>%
+    do(a = files.copy(.$file1, .$file2))
 
 
