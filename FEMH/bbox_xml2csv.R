@@ -4,15 +4,16 @@ library(dplyr)
 library(readr)
 library(xml2)
 
-f = list.files(".", "*.xml")
+f = dir(".", "*.xml")
 ACCNO = character(0)
 bbox = character(0)
+label = character(0)
 for (i in seq_along(f)) {
     x = f[i] %>% read_xml()
-    accno = x %>% 
-	xml_find_all(".//filename") %>% 
-	xml_text %>% 
-	stringr::str_extract("RA[0-9]*")
+
+    ACCNO[i] = x %>% xml_find_all(".//filename") %>% xml_text %>% stringr::str_extract("RA[0-9]*")
+    label[i] = x %>% xml_find_all(".//class") %>% xml_text
+
     node_box = x %>% xml_find_all(".//bndbox")
     bndbox = ""
     for (b in node_box) {
@@ -22,12 +23,11 @@ for (i in seq_along(f)) {
 	ymax = b %>% xml_find_all(".//ymax") %>% xml_text
 	bndbox = paste(paste0("(", paste0(c(xmin,ymin,xmax,ymax),collapse=". ") ,")"), bndbox)
     }
-    ACCNO[i] = accno
     bbox[i] = bndbox
     
 }
 
-box = data.frame(ACCNO, bbox) %>% 
+box = data.frame(ACCNO, bbox, label) %>% 
     dplyr::filter(nchar(as.character(bbox))>5) 
 
 args <- commandArgs(TRUE)
@@ -35,7 +35,7 @@ if (length(args) > 0 && file.exists(args[1])) {
     if (length(args) > 1) {
 	target_csv = args[2]
     } else {
-	target_csv = "bbox.csv"
+	target_csv = "label.csv"
     } 
     
     read_csv(args[1]) %>%
@@ -46,7 +46,7 @@ if (length(args) > 0 && file.exists(args[1])) {
 	write_csv(target_csv)
 } else {
     box %>%
-	write_csv("bbox.csv")
+	write_csv("label.csv")
 }
 
 

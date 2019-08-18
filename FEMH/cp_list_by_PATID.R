@@ -21,15 +21,26 @@ if (!file.exists(dir2)) {
    dir.create(dir2)
 } 
 
-library(tidyverse)
+library(data.table)
 
-x = read_csv(csv) %>% 
-  mutate(from = file.path(dir1, paste0(.[[1]], ".png"))) %>%
-  mutate(to= file.path(dir2, paste0(PATID, "-", .[[1]], ".png"))) 
+csv2 = paste0(tools::file_path_sans_ext(csv), "-pid.csv")
 
-for (i in 1:nrow(x))
-{
-    file.copy(x[i,]$from, x[i,]$to, overwrite = F)
-}
+x = fread(csv)
+x[, from:=file.path(dir1, paste0(ACCNO,".png"))]
+x[, to:=file.path(dir2, paste0(PATID, "-", ACCNO,".png"))]
+
+x[,file.copy(from, to, overwrite = F)]
+
+fwrite(x, file= csv2)
+
+
+#x = read_csv(csv) %>% 
+#  mutate(from = file.path(dir1, paste0(.[[1]], ".png"))) %>%
+#  mutate(to= file.path(dir2, paste0(PATID, "-", .[[1]], ".png"))) 
+
+#for (i in 1:nrow(x))
+#{
+#    file.copy(x[i,]$from, x[i,]$to, overwrite = F)
+#}
 
 
