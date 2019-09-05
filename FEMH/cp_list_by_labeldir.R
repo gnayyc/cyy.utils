@@ -37,14 +37,14 @@ files.copy = function (from, to) {
 }
 
 read_csv(csv) %>% 
-    distinct(label) %>%
-    mutate(label= file.path(dir2, label)) %>%
-    pull(label) %>%
+    distinct(Label) %>%
+    mutate(Label= file.path(dir2, Label)) %>%
+    pull(Label) %>%
     dirs.create()
 
 read_csv(csv) %>% 
     mutate(file1 = file.path(dir1, paste0(.[["ACCNO"]], ".png")),
-	   file2 = file.path(dir2, label, paste0(paste0(.[["ACCNO"]], ".png")))) %>%
+	   file2 = file.path(dir2, Label, paste0(paste0(.[["ACCNO"]], ".png")))) %>%
     do(a = files.copy(.$file1, .$file2))
 
 

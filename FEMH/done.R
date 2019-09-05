@@ -24,7 +24,7 @@ if (length(args) >= 2)
 }
 
 
-labeldir = paste0(imgdir, "_label")
+labeldir = paste0(imgdir, "_labeled")
 unddir = paste0(imgdir, "_undetermined")
 if (length(args) < 2)
 {
@@ -68,5 +68,5 @@ if (label.max >0) {
 
 
 cat("Archived: [", label.max, 
-    "], Done: [", length(xml), 
+    "], Labeled: [", length(xml), 
     "], Todo: [", length(png) - label.max, "]\n")

@@ -2,13 +2,14 @@
 
 library(tidyverse)
 library(xml2)
+library(data.table)
 
 f = list.files(".", "*.csv")
 ACCNO = character(0)
 bbox = character(0)
 for (i in seq_along(f)) 
 {
-    x = f[i] %>% read_csv() %>% drop_na()
+    x = f[i] %>% read_csv() %>% select(1:3) %>% drop_na()
     for (j in 1:nrow(x))
     {
 	filename = as.character(x[j, 1]) %>% paste0(".png")
@@ -34,9 +35,9 @@ for (i in seq_along(f))
 		xml_add_sibling("difficult") %>% xml_set_text("0") %>%
 		xml_add_sibling("bndbox") %>% 
 		    xml_add_child("xmin") %>% xml_set_text(xy[1]) %>%
-		    xml_add_child("ymin") %>% xml_set_text(xy[2]) %>%
-		    xml_add_child("xmax") %>% xml_set_text(xy[3]) %>%
-		    xml_add_child("ymax") %>% xml_set_text(xy[4]) 
+		    xml_add_sibling("ymin") %>% xml_set_text(xy[2]) %>%
+		    xml_add_sibling("xmax") %>% xml_set_text(xy[3]) %>%
+		    xml_add_sibling("ymax") %>% xml_set_text(xy[4]) 
 	}
 
 	write_xml(ann, paste0(paste0(x[j, 1], ".xml")))
