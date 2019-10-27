@@ -27,9 +27,16 @@ for (i in seq_along(f))
 	bboxs = x[j, 3] %>% str_extract_all("\\(.*?\\)") %>% .[[1]]
 	for (bbox in bboxs) 
 	{
-	    xy = bbox %>% str_extract_all("\\d+") %>% .[[1]]
+	    xy = bbox %>% str_extract_all("(\\w|\\.)+") %>% .[[1]]
+	    if (length(xy) >= 6) {
+		.score = xy[6]
+	    } else { .score = 0 }
+	    if (length(xy) >= 5) {
+		.label = xy[5]
+	    } else { .label = "default" }
+
 	    ann %>% xml_add_child("object") %>% 
-		xml_add_child("name") %>% xml_set_text("class") %>%
+		xml_add_child("name") %>% xml_set_text(.label) %>%
 		xml_add_sibling("pose") %>% xml_set_text("Unspecified") %>%
 		xml_add_sibling("truncated") %>% xml_set_text("0") %>%
 		xml_add_sibling("difficult") %>% xml_set_text("0") %>%

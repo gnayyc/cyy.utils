@@ -20,13 +20,17 @@ for (i in seq_along(f)) {
     .accno = x %>% xml_find_all(".//filename") %>% xml_text #%>% stringr::str_extract("RA[0-9A-Z]*")
     .label = x %>% xml_find_all(".//class") %>% xml_text
 
-    node_box = x %>% xml_find_all(".//bndbox")
-    for (b in node_box) {
-	xmin = b %>% xml_find_all(".//xmin") %>% xml_text
-	ymin = b %>% xml_find_all(".//ymin") %>% xml_text
-	xmax = b %>% xml_find_all(".//xmax") %>% xml_text
-	ymax = b %>% xml_find_all(".//ymax") %>% xml_text
-	.bbox = paste(paste0("(", paste0(c(xmin,ymin,xmax,ymax),collapse=". ") ,")"), .bbox)
+    node_obj = x %>% xml_find_all(".//object")
+    for (o in node_obj) {
+	name = o %>% xml_find_all(".//name") %>% xml_text
+	node_box = o %>% xml_find_all(".//bndbox")
+	for (b in node_box) {
+	    xmin = b %>% xml_find_all(".//xmin") %>% xml_text
+	    ymin = b %>% xml_find_all(".//ymin") %>% xml_text
+	    xmax = b %>% xml_find_all(".//xmax") %>% xml_text
+	    ymax = b %>% xml_find_all(".//ymax") %>% xml_text
+	    .bbox = paste(paste0("(", paste0(c(xmin,ymin,xmax,ymax,name),collapse=" ") ,")"), .bbox)
+	}
     }
 
     if (!length(.accno)) .accno = ""

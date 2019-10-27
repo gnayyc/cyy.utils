@@ -4,7 +4,7 @@ args <- commandArgs(TRUE)
 
 # test if there is at least one argument: if not, return an error
 if (length(args) < 3) {
-  stop("cp_list.R csv_with_ACCNO source_dir output_dir [imageID_col(ACCNO)] [key_column] [key2_column]\n", call.=F)
+  stop("cp_list.R csv_with_ACCNO source_dir output_dir [iid_column] [key_column] [key2_column]\n", call.=F)
 } 
 
 csv = args[1]
@@ -40,15 +40,13 @@ x[, from:=file.path(dir1, paste0(x[[aid]],".png"))]
 if (length(args) < 5) {
     cat("Copy from ", dir1, " to ", dir2, "\n")
     x[,file.copy(from, dir2, overwrite = F)]
-    x[1,cat(from, " --> ", dir2, "\n")]
 } else {
     cat("Copy from file1 to file2\n")
     if (length(args) == 5) 
 	x[, to:=file.path(dir2, paste0(x[[key]], "-", x[[aid]],".png"))]
     if (length(args) == 6) 
 	x[, to:=file.path(dir2, paste0(x[[key]], "-", x[[key2]], "-", x[[aid]],".png"))]
-    x[,file.copy(from, to, overwrite = F)]
-    x[1,cat(from, " --> ", to, "\n")]
+    x[,file.link(from, to, overwrite = F)]
 
 }
 

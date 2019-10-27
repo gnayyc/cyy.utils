@@ -26,6 +26,9 @@ for (fdir in fat.dirs) {
 	    LabelValue == 2 ~ "VAT", # Visceral Adipose Tissue
 	    LabelValue == 3 ~ "Soft", # Soft tissue
 	    LabelValue == 4 ~ "Bone", # Bone
+	    LabelValue == 5 ~ "Psoas_muscle", # Psoas muscle
+	    LabelValue == 6 ~ "Back_muscle", # Back muscle
+	    LabelValue == 7 ~ "Wall_muscle", # Abdominal wall muscle
 	    TRUE ~ "Others")) %>%
 	mutate(id = id, StudyDate = idate) %>%
         mutate(`Area (cm^2)`= Volume, `Volume (cm^3)` = Volume/2) %>%

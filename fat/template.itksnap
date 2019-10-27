@@ -16,6 +16,10 @@ the same. Do not modify the SaveLocation entry, or this will not work.
 <registry>
   <entry key="SaveLocation" value="/" />
   <entry key="Version" value="20190612" />
+  <folder key="Annotations" >
+    <entry key="Format" value="ITK-SNAP Annotation File" />
+    <entry key="FormatDate" value="20150624" />
+  </folder>
   <folder key="Layers" >
     <folder key="Layer[000]" >
       <entry key="AbsolutePath" value="/id_0anatomy.nii.gz" />
@@ -98,8 +102,8 @@ the same. Do not modify the SaveLocation entry, or this will not work.
           </folder>
           <folder key="LabelState" >
             <entry key="CoverageMode" value="OverOne" />
-            <entry key="DrawingLabel" value="7" />
-            <entry key="OverwriteLabel" value="1" />
+            <entry key="DrawingLabel" value="1" />
+            <entry key="OverwriteLabel" value="2" />
             <entry key="PolygonInvert" value="0" />
             <entry key="SegmentationAlpha" value="0.5" />
           </folder>
