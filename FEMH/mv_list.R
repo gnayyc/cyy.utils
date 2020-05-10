@@ -44,15 +44,15 @@ cat("First from:", x[1,from], "\n")
 cat("Dir2:", dir2, "\n")
 
 if (length(args) < 5) {
-    cat("Copy from ", dir1, " to ", dir2, "\n")
-    x[,file.copy(from, dir2, overwrite = F)]
+    cat("Move ", dir1, " to ", dir2, "\n")
+    x[,file.rename(from, dir2, overwrite = F)]
 } else {
-    cat("Copy from file1 to file2\n")
+    cat("Move from file1 to file2\n")
     if (length(args) == 5) 
 	x[, to:=file.path(dir2, paste0(x[[key]], "-", x[[id]],".png"))]
     if (length(args) == 6) 
 	x[, to:=file.path(dir2, paste0(x[[key]], "-", x[[key2]], "-", x[[id]],".png"))]
-    x[,file.link(from, to, overwrite = F)]
+    x[,file.rename(from, to, overwrite = F)]
 
 }
 

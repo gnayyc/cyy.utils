@@ -35,7 +35,8 @@ if (length(args) >= 6)
     csv2 = paste0(tools::file_path_sans_ext(csv), "-", key, "-", key2, ".csv")
 
 x = fread(csv)
-x[, from:=file.path(dir1, paste0(x[[aid]],".png"))]
+x[, ano := stringr::str_remove(x[[aid]], ".png")]
+x[, from:=file.path(dir1, paste0(ano,".png"))]
 
 if (length(args) < 5) {
     cat("Copy from ", dir1, " to ", dir2, "\n")

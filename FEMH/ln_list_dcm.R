@@ -39,7 +39,7 @@ if (length(args) >= 6)
 cat("csv file:", csv, "\n")
 x = fread(csv)
 cat("Dir1:", dir1, "\n")
-x[, from:=file.path(dir1, paste0(x[[id]],".png"))]
+x[, from:=file.path(dir1, paste0(x[[id]],".dcm"))]
 cat("First from:", x[1,from], "\n")
 cat("Dir2:", dir2, "\n")
 
@@ -49,9 +49,9 @@ if (length(args) < 5) {
 } else {
     cat("Copy from file1 to file2\n")
     if (length(args) == 5) 
-	x[, to:=file.path(dir2, paste0(x[[key]], "-", x[[id]],".png"))]
+	x[, to:=file.path(dir2, paste0(x[[key]], "-", x[[id]],".dcm"))]
     if (length(args) == 6) 
-	x[, to:=file.path(dir2, paste0(x[[key]], "-", x[[key2]], "-", x[[id]],".png"))]
+	x[, to:=file.path(dir2, paste0(x[[key]], "-", x[[key2]], "-", x[[id]],".dcm"))]
     x[,file.link(from, to, overwrite = F)]
 
 }

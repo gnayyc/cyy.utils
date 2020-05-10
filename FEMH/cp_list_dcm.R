@@ -4,17 +4,15 @@ args <- commandArgs(TRUE)
 
 # test if there is at least one argument: if not, return an error
 if (length(args) < 3) {
-  stop("ln_list.R csv_with_ACCNO source_dir output_dir [iid_column] [key_column] [key2_column]\n", call.=F)
+  stop("cp_list.R csv_with_ACCNO source_dir output_dir [imageID_col(ACCNO)] [key_column] [key2_column]\n", call.=F)
 } 
 
 csv = args[1]
 dir1 = args[2]
 dir2 = args[3]
 if (length(args) >= 4) {
-    id = args[4]
-} else {id = "ACCNO"}
-cat("File ID:", id, "\n")
-
+    aid = args[4]
+} else {aid = "ACCNO"}
 if (length(args) >= 5) {
     key = args[5]
 }
@@ -36,23 +34,21 @@ if (length(args) >= 5)
 if (length(args) >= 6)
     csv2 = paste0(tools::file_path_sans_ext(csv), "-", key, "-", key2, ".csv")
 
-cat("csv file:", csv, "\n")
 x = fread(csv)
-cat("Dir1:", dir1, "\n")
-x[, from:=file.path(dir1, paste0(x[[id]],".png"))]
-cat("First from:", x[1,from], "\n")
-cat("Dir2:", dir2, "\n")
+x[, from:=file.path(dir1, paste0(x[[aid]],".dcm"))]
 
 if (length(args) < 5) {
     cat("Copy from ", dir1, " to ", dir2, "\n")
     x[,file.copy(from, dir2, overwrite = F)]
+    x[1,cat(from, " --> ", dir2, "\n")]
 } else {
     cat("Copy from file1 to file2\n")
     if (length(args) == 5) 
-	x[, to:=file.path(dir2, paste0(x[[key]], "-", x[[id]],".png"))]
+	x[, to:=file.path(dir2, paste0(x[[key]], "-", x[[aid]],".dcm"))]
     if (length(args) == 6) 
-	x[, to:=file.path(dir2, paste0(x[[key]], "-", x[[key2]], "-", x[[id]],".png"))]
-    x[,file.link(from, to, overwrite = F)]
+	x[, to:=file.path(dir2, paste0(x[[key]], "-", x[[key2]], "-", x[[aid]],".dcm"))]
+    x[,file.copy(from, to, overwrite = F)]
+    x[1,cat(from, " --> ", to, "\n")]
 
 }
 
