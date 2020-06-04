@@ -22,3 +22,6 @@ rad.regex = function(word = "") {
 
 str_extract(report, "(\\w*\\s*){5}([Tt]racheal*\\s*deviat|[Dd]eviat[\\w\\s]*trachea)(\\w*\\s*){5}")
 x[XTYPE == "CXR"][str_detect(report, "([Tt]racheal*\\s*deviat|[Dd]eviat[\\w\\s]*trachea)")][,m := str_extract(report, ".{25}([Tt]racheal*\\s*deviat|[Dd]eviat[\\w\\s]*trachea).{10}")]
+
+# ^(?=[A-Za-z0-9])([A-Za-z0-9\s]*)(?<=[A-Za-z0-9])$
+# ^(?<=[A-Za-z0-9])([A-Za-z0-9\s]*)(?=[A-Za-z0-9])$

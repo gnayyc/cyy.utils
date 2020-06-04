@@ -19,8 +19,13 @@ if (!file.exists(dir2)) {
    dir.create(dir2)
 } 
 
-library(tidyverse)
-library(qrabbit)
+if (!require(tidyverse)) {install.packages('tidyverse', repos="http://cloud.r-project.org") ;library(tidyverse)}
+if (!require(qrabbit)) {
+    if (!require(remotes) install.packages('remotes', repos="http://cloud.r-project.org") 
+    remotes::install_github('gnayyc/qrabbit')
+    library(qrabbit)
+}
+if (!require(imager)) {install.packages('imager', repos="http://cloud.r-project.org"); library(imager)}
 
 bbox_draw = function(im = NA, bbox = NA, color = "red", lwd = 4, use_plot = 0) {
     library(imager)
@@ -31,16 +36,16 @@ bbox_draw = function(im = NA, bbox = NA, color = "red", lwd = 4, use_plot = 0) {
     }
     if (!is.cimg(im)) return(NA)
 
-    if (!is.list(bbox) & is.vector(bbox) & length(bbox) == 4) {
+    if (!is.list(bbox) & is.vector(bbox) & length(bbox) >= 4) {
 	b = bbox
 	bbox = list()
 	bbox[[1]] = map_int(b, as.integer)
-	names(bbox[[1]]) = c("xmin","ymin","xmax","ymax")
+	names(bbox[[1]])[1:4] = c("xmin","ymin","xmax","ymax")
     }
     if (is.list(bbox)) {
         for(bb in bbox) {
 	    if (dim(im)[4] == 1) im = add.colour(im)
-            if(all(!is.na(bb)) & all(names(bb) == c("xmin","ymin","xmax","ymax"))) {
+            if(all(!is.na(bb)) & all(names(bb)[1:4] == c("xmin","ymin","xmax","ymax"))) {
 		bb = map_int(bb, as.integer)
 		if (use_plot == 1) {
 		    im = implot(im, {rect(bb["xmin"],bb["ymin"],bb["xmax"],bb["ymax"], border=color, lwd=2)})
@@ -60,7 +65,11 @@ bbox_draw = function(im = NA, bbox = NA, color = "red", lwd = 4, use_plot = 0) {
 }
 
 bb = read_csv(csv) 
-ACCNO = bb$ACCNO
+if ("ACCNO" %in% names(bb)) {
+    ACCNO = bb$ACCNO
+} else if ("fid" %in% names(bb)) {
+    ACCNO = bb$fid
+}
 bbox = bb$bbox
 
 for (i in seq_along(ACCNO)) {

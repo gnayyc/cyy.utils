@@ -8,7 +8,7 @@ end
 
 csv = ARGS[1]
 action = ARGS[2]
-ext = ARGS[3]
+ext = "." * ARGS[3]
 dir1 = ARGS[4]
 dir2 = ARGS[5]
 
@@ -18,21 +18,37 @@ x = CSV.read(csv)
 
 if length(ARGS) >= 6
     id = ARGS[6]
+    fid1 = x[:, id]
     if length(ARGS) >= 7
-	key = ARGS[7]
+	key1 = ARGS[7]
+	println("Key1: ", key1)
+	label1 = x[:, key1]
 	if length(ARGS) == 7
-	    csv2 = splitext(csv)[1] * "-" * key * ".csv"
-	    x[:, "to"] = dir2 .* "/" .* key .* "-" .* x[:, id] .* ext
+	    csv2 = splitext(csv)[1] * "-" * key1 * ".csv"
+	    fid2 = string.(label1) .* "-" .* string.(fid1)
+	    #x[:, "to"] = dir2 .* "/" .* key .* "-" .* x[:, id] .* ext
 	else
 	    key2 = ARGS[8]
-	    csv2 = splitext(csv)[1] * "-" * key * "-" * key2 * ".csv"
-	    x[:, "to"] = dir2 .* "/" .* key .* "-" .* key2 .* "-" .* x[:, id] .* ext
+	    println("Key2: ", key2)
+	    label2 = x[:, key2]
+	    csv2 = splitext(csv)[1] * "-" * key1 * "-" * key2 * ".csv"
+	    fid2 = string.(label1) .* "-" .* string.(label2) .* "-" .* string.(fid1)
+	    #x[:, "to"] = dir2 .* "/" .* key .* "-" .* key2 .* "-" .* x[:, id] .* ext
 	end
+    else
+	#x[:, "to"] = dir2 .* "/" .* x[:, id] .* ext
+	fid2 = fid1
     end
 else 
     id = "ACCNO"
-    x[:, "to"] = dir2 .* "/" .* x[:, id] .* ext
+    fid1 = x[:, id]
+    #x[:, "to"] = dir2 .* "/" .* x[:, id] .* ext
+    fid2 = fid1
 end
+
+#x[:, "from"] = dir1 .* "/" .* x[:, id] .* ext
+f1 = dir1 .* "/" .* fid1 .* ext
+f2 = dir2 .* "/" .* fid2 .* ext
 
 println("File ID: ", id)
 
@@ -45,27 +61,27 @@ if !isdir(dir2)
     Base.Filesystem.mkdir(dir2)
 end
 
-println("Dir1: ", dir1)
-x[:, "from"] = dir1 .* "/" .* x[:, id] .* ext
+println("First from: ", f1[1])
+println("First to: ", f2[1])
 
-println("First from: ", x[1,"from"])
-println("Dir2: ", dir2)
-
-println("Copy from ", dir1, " to ", dir2)
+println(action * " from ", dir1, " to ", dir2)
 
 for i = 1:size(x, 1)
-    from = x[i, "from"]
-    to = x[i, "to"]
-    if cmd == "mv"
-	cmd = Sys.iswindows() ? `move $from $to` : `mv $from $to`
-    elseif cmd == "ln"
-	cmd = Sys.iswindows() ? `copy $from $to` : `ln $from $to`
-    else # cp
-	cmd = Sys.iswindows() ? `copy $from $to` : `cp $from $to`
-
-    
+#for i = 1
+    file1 = f1[i]
+    file2 = f2[i]
     try
-	run(cmd)
+	if action == "mv"
+	    mv(file1, file2)
+	elseif action == "ln"
+	    if Sys.iswindows()
+		cp(file1, file2)
+	    else
+		run(`ln $file1 $file2`)
+	    end
+	else # cp
+	    cp(file1, file2)
+	end
     catch e
 	continue
     end
