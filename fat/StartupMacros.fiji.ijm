@@ -887,11 +887,11 @@ function wandSelect(mode) {
 }
 
 
-  // This function returns the numeric value of the 
-  // specified tag (e.g., "0018,0050"). Returns NaN 
-  // (not-a-number) if the tag is not found or it 
-  // does not have a numeric value.
-  function getNumericTag(tag) {
+// This function returns the numeric value of the 
+// specified tag (e.g., "0018,0050"). Returns NaN 
+// (not-a-number) if the tag is not found or it 
+// does not have a numeric value.
+function getNumericTag(tag) {
     value = getTag(tag);
     if (value=="") return NaN;
     index3 = indexOf(value, "\\");
