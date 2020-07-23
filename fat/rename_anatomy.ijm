@@ -30,8 +30,24 @@ macro "T12 [q]" {
   savelvl("T12");
 }
 
+macro "Spleen [v]" {
+  savelvl("Spleen");
+}
+
+macro "Pancreas Head [z]" {
+  savelvl("ps1");
+}
+
+macro "Pancreas Body [x]" {
+  savelvl("ps2");
+}
+
+macro "Pancreas Tail [c]" {
+  savelvl("ps3");
+}
+
 macro "Umbilical [r]" {
-  savelvl("U");
+  savelvl("Umbilicus");
 }
 
 macro "Next Slice [f]" {
