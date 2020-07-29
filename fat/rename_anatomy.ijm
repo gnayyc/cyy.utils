@@ -6,6 +6,10 @@
 //--------------------------------------- 
 
 // "CT measurement Macro"
+macro "Soft Tissue Contrast [g]" {
+    setMinAndMax(-200, 200);
+}
+
 macro "L1 [1]" {
   savelvl("L1");
 }
