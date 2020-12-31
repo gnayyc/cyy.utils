@@ -14,11 +14,14 @@ dir2 = ARGS[5]
 
 println("csv file: ", csv)
 using CSV
-x = CSV.read(csv)
+using DataFrames
+
+x = CSV.read(csv, DataFrame)
 
 if length(ARGS) >= 6
     id = ARGS[6]
     fid1 = x[:, id]
+    fid1 = [replace(i,r"\..*" => "") for i in fid1]
     if length(ARGS) >= 7
 	key1 = ARGS[7]
 	println("Key1: ", key1)
@@ -42,6 +45,7 @@ if length(ARGS) >= 6
 else 
     id = "ACCNO"
     fid1 = x[:, id]
+    fid1 = [replace(i,r"\..*" => "") for i in fid1]
     #x[:, "to"] = dir2 .* "/" .* x[:, id] .* ext
     fid2 = fid1
 end

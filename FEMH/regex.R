@@ -13,7 +13,8 @@ rad.regex = function(word = "") {
 
 # x[year == 2014][
 #    str_detect(report, "[Pp]neumothorax")][
-#    !str_detect(report, "[Nn]o\\s[\\w\\s]*[Pp]neumothorax")]
+#    !str_detect(report, "[Nn]o\\s[\\w\\s]*[Pp]neumothorax")][
+#	,str_extract(.{0,40}neumothorax.{0,40})]
 
 # i="pneumothorax";
 # e=paste0("\\s([Nn]o|or|without)\\s[\\w\\s,]*",i);
