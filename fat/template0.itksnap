@@ -57,15 +57,15 @@ the same. Do not modify the SaveLocation entry, or this will not work.
         <entry key="RemappingSteepness" value="0.04" />
         <folder key="Files" >
           <folder key="Grey" >
-            <entry key="Dimensions" value="512 512 1" />
-            <entry key="Orientation" value="RAI" />
+            <entry key="Dimensions" value="Dim_xyz" />
+            <entry key="Orientation" value="RPI" />
           </folder>
         </folder>
         <folder key="IRIS" >
           <entry key="SliceViewLayerLayout" value="Stacked" />
           <folder key="BoundingBox" >
             <entry key="InterpolationMethod" value="Nearest" />
-            <entry key="ResampleDimensions" value="512 512 1" />
+            <entry key="ResampleDimensions" value="Dim_xyz" />
             <entry key="SeedWithCurrentSegmentation" value="0" />
             <folder key="ROIBox[0]" >
               <entry key="Index" value="0" />
@@ -108,13 +108,20 @@ the same. Do not modify the SaveLocation entry, or this will not work.
             <entry key="SegmentationAlpha" value="0.5" />
           </folder>
           <folder key="LabelTable" >
-            <entry key="NumberOfElements" value="7" />
+            <entry key="NumberOfElements" value="11" />
             <folder key="Element[0]" >
               <entry key="Alpha" value="255" />
               <entry key="Color" value="255 0 0" />
               <entry key="Flags" value="1 1" />
               <entry key="Index" value="1" />
               <entry key="Label" value="Subcutaneous Fat" />
+            </folder>
+            <folder key="Element[10]" >
+              <entry key="Alpha" value="255" />
+              <entry key="Color" value="102 205 170" />
+              <entry key="Flags" value="1 1" />
+              <entry key="Index" value="11" />
+              <entry key="Label" value="Renal Sinus" />
             </folder>
             <folder key="Element[1]" >
               <entry key="Alpha" value="255" />
@@ -153,10 +160,31 @@ the same. Do not modify the SaveLocation entry, or this will not work.
             </folder>
             <folder key="Element[6]" >
               <entry key="Alpha" value="255" />
-              <entry key="Color" value="255 255 255" />
+              <entry key="Color" value="255 239 213" />
               <entry key="Flags" value="1 1" />
               <entry key="Index" value="7" />
               <entry key="Label" value="Abdominal Wall Muscle" />
+            </folder>
+            <folder key="Element[7]" >
+              <entry key="Alpha" value="255" />
+              <entry key="Color" value="0 0 205" />
+              <entry key="Flags" value="1 1" />
+              <entry key="Index" value="8" />
+              <entry key="Label" value="Liver" />
+            </folder>
+            <folder key="Element[8]" >
+              <entry key="Alpha" value="255" />
+              <entry key="Color" value="205 133 63" />
+              <entry key="Flags" value="1 1" />
+              <entry key="Index" value="9" />
+              <entry key="Label" value="Spleen" />
+            </folder>
+            <folder key="Element[9]" >
+              <entry key="Alpha" value="255" />
+              <entry key="Color" value="210 180 140" />
+              <entry key="Flags" value="1 1" />
+              <entry key="Index" value="10" />
+              <entry key="Label" value="Pancreas" />
             </folder>
           </folder>
           <folder key="MeshOptions" >
