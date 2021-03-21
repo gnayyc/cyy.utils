@@ -284,16 +284,16 @@ var RF = 0;
 var WVF = 0;
 var WF = 0;
 var sid = "";
-var id = "";
-var dob = "";
-var sex = "";
-var name = "";
-var date = "";
+var PatientID = "";
+var PatientsBirthDate = "";
+var PatientSex = "";
+var PatientName = "";
+var StudyDate = "";
 var time = "";
 var studyid = "";
 var series = "";
 var image = "";
-var modality = "CT";
+var Modality = "CT";
 
 var iid = "";
 var Title = "";
@@ -340,15 +340,15 @@ function init() {
   roiManager("reset");
   run("Clear Results");
   TF = SF = VF = PF = RF = WVF = WF = 0
-  name = replace(getTag("0010,0010"), " ", "");
-  id = replace(getTag("0010,0020"), " ", "");
-  dob = replace(getTag("0010,0030"), " ", "");
-  sex = replace(getTag("0010,0040"), " ", "");
-  date = replace(getTag("0008,0020"), " ", "");
-  studyid = replace(getTag("0020,0010"), " ", "");
-  series = replace(getTag("0020,0011"), " ", "");
-  image = replace(getTag("0020,0013"), " ", "");
-  modality = replace(getTag("0008,0060"), " ", "");
+  PatientName = getTag("0010,0010");
+  PatientID = getTag("0010,0020");
+  PatientsBirthDate = getTag("0010,0030");
+  PatientSex = getTag("0010,0040");
+  StudyDate = getTag("0008,0020");
+  studyid = getTag("0020,0010");
+  series = getTag("0020,0011");
+  image = getTag("0020,0013");
+  Modality = getTag("0008,0060");
   time = replace(getTime,"E12","");
   time = replace(time, "\\\.", "");
 
@@ -358,9 +358,9 @@ function init() {
   iid = get_iid();
   getDimensions(width, height, channels, slices, frames);
   if (slices > 1)
-      ipath = getDirectory("image") + getInfo("slice.label"); 
+      ipath = idir + getInfo("slice.label"); 
   else
-      ipath = getDirectory("image") + Title;
+      ipath = idir + Title;
 
   if(!File.exists(ipath)) {
     ipath = ipath + ".dcm";
@@ -374,16 +374,14 @@ function init() {
   vfat_title = Title+"_3vfat";
   pfat_title = Title+"_4pfat";
 
-  modality = getTag("0008,0060");
-
-  if (matches(modality, ".*MR.*")){
-    modality = "MR";
+  if (matches(Modality, ".*MR.*")){
+    Modality = "MR";
 	setOption("BlackBackground", true);
 	run("Colors...", "foreground=white background=black selection=red"); //set colors display
 	run("Options...", "iterations=1 black count=1"); //set white background vvv
   }
   else {
-    modality = "CT";
+    Modality = "CT";
 	setOption("BlackBackground", false);
 	run("Colors...", "foreground=black background=white selection=red"); //set colors display
 	run("Options...", "iterations=1 count=1"); //set white background 
@@ -549,6 +547,14 @@ macro "PeritonealFat [f4]" {
   run("Show Overlay");
 }
 
+macro "SaveErrorFOV [f5]" {
+  SF = -1;
+  TF = -1;
+  VF = -1;
+  FatResults();
+  showMessage(getTitle+" out of FOV saved!");
+  save(create_path("_error.png"));
+}
 
 
 function FatResults() {
@@ -564,8 +570,8 @@ function FatResults() {
   {
     FatLogfile = create_path("_fat.csv");
     if(!File.exists(FatLogfile)) 
-      File.append("date,id,name,dob,sex,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,iid", FatLogfile);
-    File.append(date+","+id+","+name+","+dob+","+sex+","+TF+","+SF+","+VF+","+WF,+",",iid, FatLogfile);
+      File.append("StudyDate,PatientID,PatientName,PatientsBirthDate,PatientSex,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,iid", FatLogfile);
+    File.append(StudyDate+","+PatientID+","+PatientName+","+PatientsBirthDate+","+PatientSex+","+TF+","+SF+","+VF+","+WF,+",",iid, FatLogfile);
 
     selectWindow(Title);
     saveROI();
@@ -592,13 +598,13 @@ function get_id(lvl) {
     Title = getTitle();
 
   if (lvl == "date")
-    xid = id + "_" + date;
+    xid = PatientID + "_" + date;
   else if (lvl == "series")
-    xid = id + "_" + date + "-S"+studyid + "_s"+series;
+    xid = PatientID + "_" + date + "-S"+studyid + "_s"+series;
   else if (lvl == "dcm")
     xid = "S"+studyid + "_s"+series + "_i"+image;
   else if (lvl == "image")
-    xid = id + "_" + date + "-S"+studyid + "_s"+series + "_i"+image;
+    xid = PatientID + "_" + date + "-S"+studyid + "_s"+series + "_i"+image;
   return xid;
 }
 
@@ -618,31 +624,6 @@ function get_iid() {
 }
 
 
-macro "SaveErrorFOV [6]" {
-  // if (DataDir == "")
-  //  setDir();
-  // ImgDir = FatImgDir + id + File.separator;
-  ImgDir = getDirectory("image") + "work" + File.separator;
-  FatLogfile = ImgDir + id + "_fat.csv");
-  if(!File.exists(FatLogfile)) 
-    File.append("filename,date,id,iid,name,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,Peritoneal.Fat,Extraperitoneal.Fat", FatLogfile);
-  File.append(getTitle()+","+date+","+id+","+iid+","+name+",0,0,0,0,0,out of FOV", FatLogfile);
-  showMessage(getTitle+" out of FOV saved!");
-  // if (FatImgDir == "")
-  //  setDir();
-  id = getTag("0010,0020");
-  studyid = getTag("0020,0010");
-  series = getTag("0020,0011");
-  image = getTag("0020,0013");
-  id = replace(id, " ", "");
-  studyid = replace(studyid, " ", "");
-  series = replace(series, " ", "");
-  image = replace(image, " ", "");
-  ImgDir = getDirectory("image") + "work" + File.separator;
-  if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
-
-  save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-error.png");
-}
 
 //macro "SelectFile [F8]" {
 //  FatLogfile = File.openDialog("Select a File");
@@ -654,15 +635,11 @@ macro "SaveErrorFOV [6]" {
 
 
 macro "Calculate Aorta Calcification Ratio base [a]" {
-  name = getTag("0010,0010");
-  id = getTag("0010,0020");
+  Patientname = getTag("0010,0010");
+  PatientID = getTag("0010,0020");
   studyid = getTag("0020,0010");
   series = getTag("0020,0011");
   image = getTag("0020,0013");
-  id = replace(id, " ", "");
-  studyid = replace(studyid, " ", "");
-  series = replace(series, " ", "");
-  image = replace(image, " ", "");
 
   // if (AortaImgDir == "")
   //  setDir();
@@ -687,10 +664,6 @@ macro "Calculate Aorta Calcification Ratio [9]" {
   studyid = getTag("0020,0010");
   series = getTag("0020,0011");
   image = getTag("0020,0013");
-  id = replace(id, " ", "");
-  studyid = replace(studyid, " ", "");
-  series = replace(series, " ", "");
-  image = replace(image, " ", "");
 
   Iid = getImageID();
   // if (AortaImgDir == "")
@@ -767,10 +740,6 @@ macro "Calculate Calcification Area [8]" {
   studyid = getTag("0020,0010");
   series = getTag("0020,0011");
   image = getTag("0020,0013");
-  id = replace(id, " ", "");
-  studyid = replace(studyid, " ", "");
-  series = replace(series, " ", "");
-  image = replace(image, " ", "");
 
   Iid = getImageID();
   if (CaImgDir == "")
@@ -941,6 +910,7 @@ function getTag(tag) {
     if (index1==-1) return "";
     index2 = indexOf(info, "\n", index1);
     value = substring(info, index1+1, index2);
+    value = replace(value, " ", "");
     return value;
 }
 
@@ -992,7 +962,7 @@ function addROI(tag) {
     roiManager("add");
     roiManager("select", roiManager("count") - 1);
     roiManager("rename", iid + ":" + tag);
-    showStatus("Added ROI: " + get_id("dcm") + ":" + tag);
+    showStatus("Added ROI: " + iid + ":" + tag);
 }
 
 function create_path(ext) {
