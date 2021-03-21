@@ -252,7 +252,7 @@ macro "About Startup Macros..." {
 		+ "\n"
 		+ "More information is available at:\n"
 		+ "<http://imagej.nih.gov/ij/developer/macro/macros.html>";
-	dummy = call("fiji.FijiTools.openEditor", title, text);
+	dummy = call("fiji.FijiTools.openEditor", fif, text);
 }
 
 macro "Save As JPEG... [j]" {
@@ -283,8 +283,19 @@ var PF = 0;
 var RF = 0;
 var WVF = 0;
 var WF = 0;
+var sid = "";
 var id = "";
-var tp = "";
+var dob = "";
+var sex = "";
+var name = "";
+var date = "";
+var time = "";
+var studyid = "";
+var series = "";
+var image = "";
+var modality = "CT";
+
+var iid = "";
 var Title = "";
 var DataDir = "";
 var FatLogfile = "";
@@ -297,14 +308,22 @@ var fat_title = "";
 var wvfat_title = "";
 var vfat_title = "";
 var pfat_title = "";
+var idir = "";
+var ipath = "";
+
+
 
 //------------------------------------ Fat related macros
 // # Press [f] to set fat mask
-// # Press [1] after remove all but Total Fat 
-// # Press [2] after remove Subcutaneous Fat 
-// # Press [3] after remove Intramuscular Fat 
-// # Press [4] after remove Retroperitoneal Fat 
-// # Press [0] to set the data dir
+// # If default threshold doesn't work well, use another routine:
+//   Press [0] to set init data
+//   Press [9] to duplicate the desired slice and set the title
+//   Press [T] to apply threshold
+//   Press [F] (Capital F) to overlay the original image
+// # Press [f1] after remove all but Total Fat 
+// # Press [f2] after remove Subcutaneous Fat 
+// # Press [f3] after remove Intramuscular Fat 
+// # Press [f4] after remove Retroperitoneal Fat 
 // set fat threshold
 /*
 macro "AutoThreshold [a]" {
@@ -312,300 +331,292 @@ macro "AutoThreshold [a]" {
 }
 */
 
-macro "Set Fat Mask [f]" {
-  Title = getTitle();
+macro "Reload [R]" {
+	run("Install...", "install=["+ getDirectory("macros") + "StartupMacros.fiji.ijm]");
+}
 
-  id = getTag("0010,0020");
-  studyid = getTag("0020,0010");
-  series = getTag("0020,0011");
-  image = getTag("0020,0013");
-  modality = getTag("0008,0060");
 
-  id = replace(id, " ", "");
-  studyid = replace(studyid, " ", "");
-  series = replace(series, " ", "");
-  image = replace(image, " ", "");
-
+function init() {
+  roiManager("reset");
+  run("Clear Results");
+  TF = SF = VF = PF = RF = WVF = WF = 0
+  name = replace(getTag("0010,0010"), " ", "");
+  id = replace(getTag("0010,0020"), " ", "");
+  dob = replace(getTag("0010,0030"), " ", "");
+  sex = replace(getTag("0010,0040"), " ", "");
   date = replace(getTag("0008,0020"), " ", "");
-  tp = id + "_" + date;
+  studyid = replace(getTag("0020,0010"), " ", "");
+  series = replace(getTag("0020,0011"), " ", "");
+  image = replace(getTag("0020,0013"), " ", "");
+  modality = replace(getTag("0008,0060"), " ", "");
+  time = replace(getTime,"E12","");
+  time = replace(time, "\\\.", "");
 
+
+  Title = getTitle();
+  idir = getDirectory("image");
+  iid = get_iid();
   getDimensions(width, height, channels, slices, frames);
   if (slices > 1)
       ipath = getDirectory("image") + getInfo("slice.label"); 
   else
       ipath = getDirectory("image") + Title;
 
+  if(!File.exists(ipath)) {
+    ipath = ipath + ".dcm";
+  }
+  if(!File.exists(ipath)) {
+    ipath = "";
+  }
+
   fat_title = Title+"_1fat";
   wvfat_title = Title+"_2wvfat";
   vfat_title = Title+"_3vfat";
   pfat_title = Title+"_4pfat";
 
+  modality = getTag("0008,0060");
+
+  if (matches(modality, ".*MR.*")){
+    modality = "MR";
+	setOption("BlackBackground", true);
+	run("Colors...", "foreground=white background=black selection=red"); //set colors display
+	run("Options...", "iterations=1 black count=1"); //set white background vvv
+  }
+  else {
+    modality = "CT";
+	setOption("BlackBackground", false);
+	run("Colors...", "foreground=black background=white selection=red"); //set colors display
+	run("Options...", "iterations=1 count=1"); //set white background 
+  }
+
+}
+
+macro "init [0]" {
+  init();
+}
+
+macro "Duplicate for fat work [9]" {
+  init();
 
   run("Select None");
-  run("View 100%");
+  getLocationAndSize(x, y, width, height);
   run("Duplicate...", "title="+fat_title);
-  run("View 100%");
-
-  time = replace(getTime,"E12","");
-  time = replace(time, "\\\.", "");
-
-  setDir();
-  // ImgDir = FatImgDir + id + File.separator;
-  ImgDir = getDirectory("image") + "work" + File.separator;
-  if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
+  setLocation(x+width+10, y);
+  run("Set... ", "zoom=200");
   
-  if(File.exists(ipath)) 
-	File.copy(ipath, ImgDir + tp + "_" + tp + "-S" + studyid + "s" + series + "i" + image + ".dcm");
-  else
-	File.copy(ipath + ".dcm", ImgDir + tp + "_" + tp + "-S" + studyid + "s" + series + "i" + image + ".dcm");
+  File.copy(ipath, create_path("_fat.dcm"));
+}
 
-/*
-  // here to save original png
-  run("Duplicate...", "title="+fat_title+".dup0");
-  run("Duplicate...", "title="+fat_title+".dup1");
-  if (matches(modality, ".*MR.*"))
-	setThreshold(300, 1000);
-  else
-    setThreshold(-300, 100);
-  run("Convert to Mask");
-  run("Create Selection");
-  close();
-  selectWindow(fat_title+".dup0");
-  run("Restore Selection");
-  run("Clear Outside");
-  newMax = 2^8;
-  getRawStatistics(nPixels, mean, min, max); 
-  run("Subtract...", "value=&min"); 
-  scale = newMax/(max-min); 
-  run("Multiply...", "value=&scale"); 
-  setMinAndMax(0, newMax); 
-  save(ImgDir + tp + "-S"+studyid+"s"+series+"i"+image + "-"+ time + "-0soft.png");
-  close();
-*/
+macro "Set Fat Mask [f]" {
+  init();
 
-  run("Options...", "iterations=1 white count=1"); //set black background
-  run("Colors...", "foreground=black background=white selection=red"); //set colors
-  run("Display...", " "); //do not use Inverting LUT
+  run("Select None");
+  getLocationAndSize(x, y, width, height);
+  run("Duplicate...", "title="+fat_title);
+  setLocation(x+width+10, y);
+  run("Set... ", "zoom=200");
+  
+  File.copy(ipath, create_path("_fat.dcm"));
 
-  if (matches(modality, ".*MR.*"))
-	setThreshold(300, 1000);
-  else
+  if (modality.contains("MR")) {
+    setThreshold(64, 1024);
+    run("Make Binary");
+  } else {
     setThreshold(-250, -50);
-  run("Convert to Mask");
+    run("Convert to Mask");
+  }
+
+  //run("Display...", " "); //do not use Inverting LUT
+  // run("Convert to Mask");
   run("Create Selection");
   selectWindow(Title);
   run("Restore Selection");
   selectWindow(fat_title);
   run("Select None");
-  run("Add Image...", "image="+Title+" x=0 y=0 opacity=80");
+  run("Add Image...", "image="+Title+" x=0 y=0 opacity=60");
   showStatus("Next Step: Total Fat then press [1]");
 }
 
+macro "Set Manual Fat Mask after duplicate and threshold [F]" {
+  if (modality.contains("MR")) {
+    run("Make Binary");
+  } else {
+    run("Convert to Mask");
+  }
 
-macro "TotalFat [1]" {
+  //run("Display...", " "); //do not use Inverting LUT
+  // run("Convert to Mask");
+  run("Create Selection");
+  selectWindow(Title);
+  run("Restore Selection");
+  selectWindow(fat_title);
+  run("Select None");
+  run("Add Image...", "image="+Title+" x=0 y=0 opacity=60");
+  showStatus("Next Step: Total Fat then press [F1]");
+}
+
+
+macro "TotalFat [f1]" {
   setThreshold(255, 255);
   run("Create Selection");
+  addROI("fat");
   run("Measure");
-  TF = getResult("Area");
+  getStatistics(TF);
   SF = VF = PF = RF = WVF = WF = 0;
   run("Convert to Mask");
-  FatResults();
-/*
-  if (FatImgDir == "")
-    setDir();
-*/
-  id = getTag("0010,0020");
-  studyid = getTag("0020,0010");
-  series = getTag("0020,0011");
-  image = getTag("0020,0013");
-  id = replace(id, " ", "");
-  studyid = replace(studyid, " ", "");
-  series = replace(series, " ", "");
-  image = replace(image, " ", "");
-  time = replace(getTime,"E12","");
-  time = replace(time, "\\\.", "");
-  date = replace(getTag("0008,0020"), " ", "");
-  tp = id + "_" + date;
-
-
-  // ImgDir = FatImgDir + id + File.separator;
-  ImgDir = getDirectory("image") + "work" + File.separator;
-  if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
+  //FatResults();
 
   run("Hide Overlay");
-  save(ImgDir + tp + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-1fat.png");
+  save(create_path("_1fat.png"));
   run("Show Overlay");
-  run("Out [-]");
-  run("Out [-]");
+  getLocationAndSize(x, y, width, height);
   run("Duplicate...", "title="+wvfat_title);
+  setLocation(x, y+50);
+  run("Set... ", "zoom=200");
   run("Create Selection");
   selectWindow(Title);
   run("Restore Selection");
   selectWindow(wvfat_title);
   run("Select None");
-  showStatus("Next Step: Remove Subcutaneous Fat then press [2]");
+  showStatus("Next Step: Remove Subcutaneous Fat then press [F2]");
 }
 
-macro "WallVisceralFat [2]" { // Get Subcutaneous Fat
+macro "WallVisceralFat [f2]" { // Get Subcutaneous Fat
   setThreshold(255, 255);
   run("Create Selection");
-  run("Measure");
-  WVF = getResult("Area"); // wall and visceral fat
+  addROI("WVF");
+  getStatistics(WVF); // wall and visceral fat
   SF = TF - WVF;
   run("Convert to Mask");
-  FatResults();
-/*
-  if (FatImgDir == "")
-    setDir();
-*/
-  id = getTag("0010,0020");
-  studyid = getTag("0020,0010");
-  series = getTag("0020,0011");
-  image = getTag("0020,0013");
-  id = replace(id, " ", "");
-  studyid = replace(studyid, " ", "");
-  series = replace(series, " ", "");
-  image = replace(image, " ", "");
-  time = replace(getTime,"E12","");
-  time = replace(time, "\\\.", "");
-
-  date = replace(getTag("0008,0020"), " ", "");
-  tp = id + "_" + date;
-
-  // ImgDir = FatImgDir + id + File.separator;
-  ImgDir = getDirectory("image") + "work" + File.separator;
-  if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
+  //FatResults();
 
   run("Hide Overlay");
-  save(ImgDir + tp + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-2wvfat.png");
+  save(create_path("_2wvfat.png"));
   run("Show Overlay");
-  run("Out [-]");
-  run("Out [-]");
+  getLocationAndSize(x, y, width, height);
   run("Duplicate...", "title="+vfat_title);
+  setLocation(x, y+50);
+  run("Set... ", "zoom=200");
   run("Create Selection");
   selectWindow(Title);
   run("Restore Selection");
   selectWindow(vfat_title);
   run("Select None");
-  showStatus("Next Step: Remove Wall Fat then press [3]");
+  showStatus("Next Step: Remove Wall Fat then press [F3]");
 
 }
 
-macro "VisceralFat [3]" { // Get wall fat
+macro "VisceralFat [f3]" { // Get wall fat
   setThreshold(255, 255);
   run("Create Selection");
-  run("Measure");
-  VF = getResult("Area");
+  addROI("VF");
+  getStatistics(VF); // visceral fat
   WF = WVF - VF;
   run("Convert to Mask");
-  FatResults();
-/*
-  if (FatImgDir == "")
-    setDir();
-*/
-  id = getTag("0010,0020");
-  studyid = getTag("0020,0010");
-  series = getTag("0020,0011");
-  image = getTag("0020,0013");
-  id = replace(id, " ", "");
-  studyid = replace(studyid, " ", "");
-  series = replace(series, " ", "");
-  image = replace(image, " ", "");
-  time = replace(getTime,"E12","");
-  time = replace(time, "\\\.", "");
-
-  // ImgDir = FatImgDir + id + File.separator;
-  ImgDir = getDirectory("image") + "work" + File.separator;
-  if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
-
-  date = replace(getTag("0008,0020"), " ", "");
-  tp = id + "_" + date;
 
   run("Hide Overlay");
-  save(ImgDir + tp + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-3vfat.png");
+  save(create_path("_3vfat.png"));
   run("Show Overlay");
+  FatResults();
+
+/*
   run("Out [-]");
   run("Out [-]");
   run("Duplicate...", "title="+pfat_title);
+  run("Set... ", "zoom=200");
   run("Create Selection");
   selectWindow(Title);
+  run("Set... ", "zoom=200");
   run("Restore Selection");
   selectWindow(pfat_title);
+  run("Set... ", "zoom=200");
   run("Select None");
   showStatus("Next Step: Remove Retroperitoneal Fat then press [4]");
+*/
 }
 
-macro "PeritonealFat [4]" {
+macro "PeritonealFat [f4]" {
   setThreshold(255, 255);
   run("Create Selection");
-  run("Measure");
-  PF = getResult("Area");
+  addROI("PF");
+  getStatistics(PF); // peritoneal fat
   RF = VF - PF;
   run("Convert to Mask");
   FatResults();
-/*
-  if (FatImgDir == "")
-    setDir();
-*/
-  id = getTag("0010,0020");
-  studyid = getTag("0020,0010");
-  series = getTag("0020,0011");
-  image = getTag("0020,0013");
-  id = replace(id, " ", "");
-  studyid = replace(studyid, " ", "");
-  series = replace(series, " ", "");
-  image = replace(image, " ", "");
-  time = replace(getTime,"E12","");
-  time = replace(time, "\\\.", "");
-  // ImgDir = FatImgDir + id + File.separator;
-  ImgDir = getDirectory("image") + "work" + File.separator;
-  if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
-
-  run("Create Selection");
-  selectWindow(Title);
-  run("Restore Selection");
-  selectWindow(pfat_title);
-
-  date = replace(getTag("0008,0020"), " ", "");
-  tp = id + "_" + date;
 
   run("Hide Overlay");
-  save(ImgDir + tp + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-4pfat.png");
+  save(create_path("_4pfat.png"));
   run("Show Overlay");
-  saveResult();
 }
 
-macro "SaveResult [5]" {
-  saveResult();
-}
 
-function saveResult() {
-  name = replace(getTag("0010,0010"), " ", "");
-  id = replace(getTag("0010,0020"), " ", "");
-  date = replace(getTag("0008,0020"), " ", "");
-  tp = id + "_" + date;
 
+function FatResults() {
   SF = TF - VF;
   RF = VF - PF;
   colnames = 0;
-  // setDir();
-  // ImgDir = FatImgDir + id + File.separator;
-  ImgDir = getDirectory("image") + "work" + File.separator;
-  if(!File.exists(ImgDir)) File.makeDirectory(ImgDir);
 
-  if (TF*SF*VF*PF*RF == 0)
+  if (TF*SF*VF == 0)
   {
-	showMessage("Measurement not completed!");
+    showMessage("Measurement not completed!");
   }
   else
   {
-	FatLogfile = ImgDir + tp + "_fat.csv";
-	if(!File.exists(FatLogfile)) 
-	    File.append("filename,date,id,name,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,Peritoneal.Fat,Extraperitoneal.Fat", FatLogfile);
-	File.append(getTitle()+","+date+","+id+","+name+","+TF+","+SF+","+VF+","+WF+","+PF+","+RF, FatLogfile);
-	showMessage(id + " saved!");
+    FatLogfile = create_path("_fat.csv");
+    if(!File.exists(FatLogfile)) 
+      File.append("date,id,name,dob,sex,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,iid", FatLogfile);
+    File.append(date+","+id+","+name+","+dob+","+sex+","+TF+","+SF+","+VF+","+WF,+",",iid, FatLogfile);
+
+    selectWindow(Title);
+    saveROI();
   }
 }
+
+
+function saveROI() {
+
+    run("Set Measurements...", "area mean standard perimeter median skewness kurtosis display redirect=None decimal=3");
+    roiManager("Deselect");
+    run("Clear Results");
+    roiManager("Measure");
+    saveAs("Results",  create_path("_results.csv"));
+    roiManager("Save", create_path("_roi.zip"));
+
+    showMessage(id + " saved!");
+  }
+}
+
+
+function get_id(lvl) {
+  if (Title == "")
+    Title = getTitle();
+
+  if (lvl == "date")
+    xid = id + "_" + date;
+  else if (lvl == "series")
+    xid = id + "_" + date + "-S"+studyid + "_s"+series;
+  else if (lvl == "dcm")
+    xid = "S"+studyid + "_s"+series + "_i"+image;
+  else if (lvl == "image")
+    xid = id + "_" + date + "-S"+studyid + "_s"+series + "_i"+image;
+  return xid;
+}
+
+function get_did() {
+    xid = get_id("date");
+    return xid;
+}
+
+function get_sid() {
+    xid = get_id("series");
+    return xid;
+}
+
+function get_iid() {
+    xid = get_id("image");
+    return xid;
+}
+
 
 macro "SaveErrorFOV [6]" {
   // if (DataDir == "")
@@ -614,8 +625,8 @@ macro "SaveErrorFOV [6]" {
   ImgDir = getDirectory("image") + "work" + File.separator;
   FatLogfile = ImgDir + id + "_fat.csv");
   if(!File.exists(FatLogfile)) 
-    File.append("filename,date,id,name,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,Peritoneal.Fat,Extraperitoneal.Fat", FatLogfile);
-  File.append(getTitle()+","+date+","+id+","+name+",0,0,0,0,0,out of FOV", FatLogfile);
+    File.append("filename,date,id,iid,name,Total.Fat,Subcutaneous.Fat,Visceral.Fat,Wall.Fat,Peritoneal.Fat,Extraperitoneal.Fat", FatLogfile);
+  File.append(getTitle()+","+date+","+id+","+iid+","+name+",0,0,0,0,0,out of FOV", FatLogfile);
   showMessage(getTitle+" out of FOV saved!");
   // if (FatImgDir == "")
   //  setDir();
@@ -637,9 +648,9 @@ macro "SaveErrorFOV [6]" {
 //  FatLogfile = File.openDialog("Select a File");
 //}
 
-macro "Set Data Directory [0]" {
-  setDir();
-}
+//macro "Set Data Directory [0]" {
+// setDir();
+//}
 
 
 macro "Calculate Aorta Calcification Ratio base [a]" {
@@ -662,9 +673,10 @@ macro "Calculate Aorta Calcification Ratio base [a]" {
   save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-0Aorta.png");
 }
 
-
+/*
 macro "Calculate Aorta Calcification Ratio [9]" {
   run("Duplicate...", "title="+getTitle());
+  run("Set... ", "zoom=200");
   run("Make Inverse");
   setColor(-100);
   fill();
@@ -699,7 +711,7 @@ macro "Calculate Aorta Calcification Ratio [9]" {
 
   // calculate aorta
   selectImage(Aoid);
-  run("View 100%");
+  run("Set... ", "zoom=200");
   setThreshold(-25, 100);
   run("Convert to Mask");
   save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-2Aorta.png");
@@ -710,7 +722,7 @@ macro "Calculate Aorta Calcification Ratio [9]" {
   //close();
   // calculate Calcification
   selectImage(Caid);
-  run("View 100%");
+  run("Set... ", "zoom=200");
   setThreshold(100,1500);
   run("Convert to Mask");
 
@@ -737,9 +749,9 @@ macro "Calculate Aorta Calcification Ratio [9]" {
     All = Ao + Ca;
     File.append("S"+studyid+"s"+series+"i"+image + "-"+time+","+id+","+name+","+All+","+Ao+","+Ca, AortaLogfile);
     // showMessage(getTitle+" saved! "+ " min: "+ min + ", max: " +max +", Ao: "+Ao+", Ca: "+Ca);
-	close();
-	close();
-	close();
+  close();
+  close();
+  close();
   }
 }
 
@@ -774,7 +786,7 @@ macro "Calculate Calcification Area [8]" {
   save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-1.png");
 
   selectImage(Iid);
-  run("View 100%");
+  run("Set... ", "zoom=200");
   getStatistics(nPixels, mean, min, max, std, histogram);
   setThreshold(150,1500);
   run("Convert to Mask");
@@ -802,17 +814,43 @@ macro "Calculate Calcification Area [8]" {
 
 }
 
+*/
+
 macro "Duplicate [d]" {
+  getLocationAndSize(x, y, width, height);
   run("Duplicate...", "title="+getTitle());
+  setLocation(x+200, y+50);
+  run("Set... ", "zoom=200");
+
 }
 
 //macro "Set Fat Shrethold [F12]" {
 //  setThreshold(-250, -50);
 //}
 
+/*
+macro "saveResult [s]" {
+    run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
+    roiManager("Deselect");
+    run("Clear Results");
+    roiManager("Measure");
+    saveAs("Results",  create_path("_results.csv"));
+    roiManager("Save", create_path("_roi.zip"));
+}
+*/
 
 macro "Convert to Mask [s]" {
-  setThreshold(-250, -50);
+//  setThreshold(-250, -50);
+  if (matches(modality, ".*MR.*")){
+    setThreshold(50, 255);
+//    run("Options...", "iterations=1 black count=1"); //set black background
+//    run("Colors...", "foreground=white background=black selection=red"); //set colors
+  }
+  else {
+    setThreshold(-250, -50);
+  }
+
+
   run("Convert to Mask");
 }
 
@@ -821,19 +859,15 @@ macro "Fill [l]" {
 }
 
 
-macro "Pencil [p]" {
-  setTool(18);
-}
+//macro "Pencil [p]" {
+//  setTool(18);
+//}
 
-macro "Brush [b]" {
-  setTool("brush");
-}
+//macro "Brush [b]" {
+//  setTool("brush");
+//}
 
 macro "Elliptical [e]" {
-  setTool("elliptical");
-}
-
-macro "Elliptical [o]" {
   setTool("oval");
 }
 
@@ -842,7 +876,7 @@ macro "Select None [r]" {
 }
 
 macro "WandSelect [c]" {
-  wandSelect("8-connected");
+  wandSelect("4-connected");
 }
 
 macro "WandSelect [v]" {
@@ -861,11 +895,6 @@ macro "Clear Outside [X]" {
   run("Clear Outside", "slice");
 }
 
-//macro "SaveBat [o]" {
-//  name = getTag("0010,0010");
-// BatFile = "c:\\tmp\\fat.bat";
-//  File.append("copy D:\\IMAGES\\"+getTitle+" C:\\tmp\\images", BatFile);
-//}
 
 macro "Show Info [I]" {
   name = getTag("0010,0010");
@@ -916,18 +945,6 @@ function getTag(tag) {
 }
 
 
-function FatResults() {
-    id = getTag("0010,0020");
-//    setResult("file", nResults -1, getTitle);
-    setResult("SF", nResults - 1, SF);
-    setResult("VF", nResults - 1, VF);
-    setResult("id", nResults - 1, id);
-    setResult("TF", nResults - 1, TF);
-    setResult("PF", nResults - 1, PF);
-    setResult("RF", nResults - 1, RF);
-    updateResults();
-}
-
 
 function setDir ()
 {
@@ -950,14 +967,10 @@ macro "TTT [v]" {
     showMessage(getSliceNumber()+"/"+slices);
 }
 
-macro "Reload [R]" {
-    run("Install...", "install="+getDirectory("imagej") + "/macros/StartupMacros.fiji.ijm");
-    //runMacro(;
-}
 
-macro "Create Selection [s]" {
-    run("Create Selection");
-}
+//macro "Create Selection [s]" {
+//    run("Create Selection");
+//}
 
 macro "Scale Bar [B]" {
     run("Scale Bar...");
@@ -965,39 +978,238 @@ macro "Scale Bar [B]" {
 
 
 
-macro "Close All Windows [Q]" {
-    
-    while (nImages>0) { 
-	selectImage(nImages); 
-	close(); 
-    } 
+macro "Close All Duplicated Windows [Q]" {
+  n = nImages;
+  for(i = 1; i <= n; i++){
+    selectImage(i);
+    t0 = getTitle();
+    if (matches(t0, ".*fat.*"))
+      close();
+  }
 }
 
-/* for 3d stacks
-macro "Fat [f]" {
-    Title = getTitle();
-    run("Duplicate...", "title="+Title+"_fat duplicate");
-    setThreshold(-250, -50);
-    run("Convert to Mask", "method=Default background=Default");
+function addROI(tag) {
+    roiManager("add");
+    roiManager("select", roiManager("count") - 1);
+    roiManager("rename", iid + ":" + tag);
+    showStatus("Added ROI: " + get_id("dcm") + ":" + tag);
 }
 
-macro "Muscle [g]" {
+function create_path(ext) {
+  WorkDir = idir + "work" + File.separator;
+  if(!File.exists(WorkDir)) File.makeDirectory(WorkDir);
+
+  filename = WorkDir + get_iid() + ext;
+  return filename;
+}
+
+function create_series_path(ext) {
+  WorkDir = idir + "work" + File.separator;
+  if(!File.exists(WorkDir)) File.makeDirectory(WorkDir);
+
+  filename = WorkDir + get_sid() + ext;
+  return filename;
+}
+
+
+// For ROI measurement
+
+macro "init [0]" {
+	init();
+}
+
+macro "Oval_10 [1]" {
+    getCursorLoc(x, y, z, flags);
+    makeOval(x, y, 10, 10); 
+}
+
+macro "Oval_20 [2]" {
+    getCursorLoc(x, y, z, flags);
+    makeOval(x, y, 20, 20); 
+}
+
+macro "Oval_30 [3]" {
+    getCursorLoc(x, y, z, flags);
+    makeOval(x, y, 30, 30); 
+}
+
+macro "Oval_40 [4]" {
+    getCursorLoc(x, y, z, flags);
+    makeOval(x, y, 40, 40); 
+}
+
+macro "Oval_50 [5]" {
+    getCursorLoc(x, y, z, flags);
+    makeOval(x, y, 50, 50); 
+}
+
+
+
+
+macro "Liver [j]" {
+    addROI("liver");
+    getStatistics(area, mean);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "liver", area);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "mean", "liver", mean);
+}
+
+macro "Spleen [k]" {
+    addROI("spleen");
+    getStatistics(area, mean);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "spleen", area);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "mean", "spleen", mean);
+}
+
+macro "Pancreas [l]" {
+    addROI("pancreas");
+    getStatistics(area, mean);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "pancreas", area);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "mean", "pancreas", mean);
+
+}
+
+
+macro "Right Renal Sinus Fat [u]" {
+    addROI("rkfat"); //right perirenal sinus fat
+    fat = measure_threshold(-250, -50);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "rkfat", fat);
+
+}
+
+macro "Left Renal Sinus Fat [i]" {
+    addROI("lkfat"); //right perirenal sinus fat
+    fat = measure_threshold(-250, -50);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "lkfat", fat);
+
+}
+
+macro "Right Perirenal Thickness [o]" {
+    addROI("rkthick"); //right perirenal thickness
+    getStatistics(length);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "length", "rkthick", length);
+}
+
+macro "Left Perirenal Thickness [p]" {
+    addROI("lkthick "); //right perirenal thickness
+    getStatistics(length);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "length", "lkthick", length);
+}
+
+macro "Agatston Score [g]" {
     Title = getTitle();
-    run("Duplicate...", "title="+Title+"_muscle duplicate");
-    setThreshold(-49, 80);
-    run("Convert to Mask", "method=Default background=Default");
+    ca1 = measure_threshold(130, 199);
+    ca2 = measure_threshold(200, 299);
+    ca3 = measure_threshold(300, 399);
+    ca4 = measure_threshold(400, 1500);
+    ca = ca1 + ca2 * 2 + ca3 * 3 + ca4 * 4;
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "ca1", ca1);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "ca2", ca2);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "ca3", ca3);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "ca4", ca4);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), "ca", "ca", ca);
+}
+
+macro "saveResult [s]" {
+    run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
+    roiManager("Deselect");
+    run("Clear Results");
+    roiManager("Measure");
+    saveAs("Results",  create_series_path("_measurement.csv"));
+    roiManager("Save", create_series_path("_measurement_roi.zip"));
 }
 
 macro "Measure areas [a]" {
-	setThreshold(255, 255);
-	run("Create Selection");
-	run("Measure");
-}
-
-macro "Clear Outside [X]" {
-  run("Clear Outside", "slice");
+    setThreshold(255, 255);
+    run("Create Selection");
+    run("Measure");
 }
 
 
+/*
+macro "Next Slice [f]" {
+    run("Next Slice [>]");
+}
+
+macro "Previous Slice [d]" {
+    run("Previous Slice [<]");
+}
 */
 
+macro "Next Case [s]" {
+  open_dir(1);
+  run("Set... ", "zoom=200");
+}
+
+macro "Prev Case [a]" {
+  open_dir(-1);
+  run("Set... ", "zoom=200");
+}
+
+function append_result(Logfile, iid, type, label, value) {
+// create_path("_misc.csv"), get_id(), "area", "liver", value 
+  if(!File.exists(Logfile)) 
+    File.append("id,type,label,value", Logfile);
+  File.append(iid+","+type+","+label+","+value, Logfile);
+}
+
+
+function open_dir(direction) {
+  // direction = 1 (forward), 0 (current), -1 (backward)
+  idir = getDirectory("image");
+  pdir = File.getParent(idir) + "/";
+  list = getFileList(pdir);
+
+  idir = replace(idir, "\\", "/");
+  pdir = replace(pdir, "\\", "/");
+  
+  getLocationAndSize(x, y, width, height);
+  for (i=0; i<list.length; i++) {
+    if (endsWith(list[i], "/")) {
+      tmpdir = pdir + list[i];
+      //showMessage("idir: "+ idir + "; list[i]: " + tmpdir);
+        if (idir == tmpdir) {
+            if (direction == 1) {
+              if (i == list.length - 1) {
+                showMessage("Done");
+                return 0;
+              } else {
+                run("Close");
+                open(pdir + list[i+1]);
+                setLocation(x, y, width, height);
+                showStatus(pdir + list[i+1]);
+                return pdir + list[i+1];
+              }
+            } else if (direction == 0) {
+              run("Close");
+              open(pdir + list[i]);
+              setLocation(x, y, width, height);
+              showStatus(pdir + list[i]);
+              return pdir + list[i];
+            } else {
+              run("Close");
+              open(pdir + list[i-1]);
+              setLocation(x, y, width, height);
+              showStatus(pdir + list[i-1]);
+              return pdir + list[i-1];
+            }
+        }
+    }
+  }
+}
+
+function measure_threshold(lower, upper) {
+    run("Duplicate...", "title="+getTitle()+" duplicate");
+    //? run("Make Inverse");
+    setThreshold(lower, upper);
+    run("Convert to Mask", "method=Default background=Default");
+    setThreshold(255, 255);
+    run("Create Selection");
+    getStatistics(area);
+    close();
+    return area;
+}
+
+macro "Delete last ROI Manager [D]" {
+  roiManager("select", roiManager("count") - 1);
+  roiManager("delete");
+}
