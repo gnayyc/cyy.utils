@@ -34,7 +34,7 @@ for (fdir in fat.dirs) {
 		LabelValue == 7 ~ "Wall_muscle", # Abdominal wall muscle
 		TRUE ~ "Others")) %>%
 	    mutate(id = id, StudyDate = idate) %>%
-	    mutate(`Area (cm^2)`= Volume, `Volume (cm^3)` = Volume/2) %>%
+	    mutate(`Area_cm2`= Volume, `Volume_cm3` = Volume/2) %>%
 	    select(id, StudyDate, everything(), -Volume)
 	
 	write_csv(vol, file.path(fdir,paste0(sid,"_9stats.csv")))
