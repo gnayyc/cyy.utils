@@ -339,7 +339,7 @@ macro "Reload [R]" {
 function init() {
   roiManager("reset");
   run("Clear Results");
-  TF = SF = VF = PF = RF = WVF = WF = 0
+  TF = SF = VF = PF = RF = WVF = WF = 0;
   PatientName = getTag("0010,0010");
   PatientID = getTag("0010,0020");
   PatientsBirthDate = getTag("0010,0030");
@@ -579,6 +579,10 @@ function FatResults() {
 }
 
 
+macro "Save ROIs [S]" {
+  saveROI();
+}
+
 function saveROI() {
 
     run("Set Measurements...", "area mean standard perimeter median skewness kurtosis display redirect=None decimal=3");
@@ -588,7 +592,11 @@ function saveROI() {
     saveAs("Results",  create_path("_results.csv"));
     roiManager("Save", create_path("_roi.zip"));
 
-    showMessage(id + " saved!");
+    if (endsWith(getInfo("image.filename"), ".nii.gz")) {
+	showMessage(create_path("_results.csv") + " saved!");
+    } else {
+	showMessage(id + " saved!");
+    }
   }
 }
 
@@ -597,6 +605,8 @@ function get_id(lvl) {
   if (Title == "")
     Title = getTitle();
 
+  if (endsWith(getInfo("image.filename"), ".nii.gz"))
+    return getInfo("image.filename");
   if (lvl == "date")
     xid = PatientID + "_" + date;
   else if (lvl == "series")
@@ -1106,12 +1116,12 @@ macro "Previous Slice [d]" {
 */
 
 macro "Next Case [s]" {
-  open_dir(1);
+  open_case(1);
   run("Set... ", "zoom=200");
 }
 
 macro "Prev Case [a]" {
-  open_dir(-1);
+  open_case(-1);
   run("Set... ", "zoom=200");
 }
 
@@ -1123,47 +1133,93 @@ function append_result(Logfile, iid, type, label, value) {
 }
 
 
-function open_dir(direction) {
+function open_case(direction) {
   // direction = 1 (forward), 0 (current), -1 (backward)
-  idir = getDirectory("image");
-  pdir = File.getParent(idir) + "/";
-  list = getFileList(pdir);
 
-  idir = replace(idir, "\\", "/");
-  pdir = replace(pdir, "\\", "/");
-  
-  getLocationAndSize(x, y, width, height);
-  for (i=0; i<list.length; i++) {
-    if (endsWith(list[i], "/")) {
-      tmpdir = pdir + list[i];
-      //showMessage("idir: "+ idir + "; list[i]: " + tmpdir);
-        if (idir == tmpdir) {
-            if (direction == 1) {
-              if (i == list.length - 1) {
-                showMessage("Done");
-                return 0;
-              } else {
-                run("Close");
-                open(pdir + list[i+1]);
-                setLocation(x, y, width, height);
-                showStatus(pdir + list[i+1]);
-                return pdir + list[i+1];
-              }
-            } else if (direction == 0) {
-              run("Close");
-              open(pdir + list[i]);
-              setLocation(x, y, width, height);
-              showStatus(pdir + list[i]);
-              return pdir + list[i];
-            } else {
-              run("Close");
-              open(pdir + list[i-1]);
-              setLocation(x, y, width, height);
-              showStatus(pdir + list[i-1]);
-              return pdir + list[i-1];
-            }
-        }
-    }
+  idir = getDirectory("image");
+  if (endsWith(getInfo("image.filename"), ".nii.gz")) filemode = 1;
+  if (filemode == 1) {
+      iname = getInfo("image.filename");
+      list = getFileList(idir);
+      idir = replace(idir, "\\", "/");
+
+      getLocationAndSize(x, y, width, height);
+      for (i=0; i<list.length; i++) {
+	if (endsWith(list[i], "nii.gz")) {
+	    if (iname == list[i]) {
+		if (direction == 1) {
+		  if (i == list.length - 1) {
+		    showMessage("Done");
+		    return 0;
+		  } else {
+		    run("Close");
+		    open(idir + list[i+1]);
+		    setLocation(x, y, width, height);
+		    showStatus(idir + list[i+1]);
+		    init();
+		    return idir + list[i+1];
+		  }
+		} else if (direction == 0) {
+		  run("Close");
+		  open(idir + list[i]);
+		  setLocation(x, y, width, height);
+		  showStatus(idir + list[i]);
+		  init();
+		  return idir + list[i];
+		} else {
+		  run("Close");
+		  open(idir + list[i-1]);
+		  setLocation(x, y, width, height);
+		  showStatus(idir + list[i-1]);
+		  init();
+		  return idir + list[i-1];
+		}
+	    }
+	}
+      }
+  } else { // dirmode
+      pdir = File.getParent(idir) + "/";
+      list = getFileList(pdir);
+
+      idir = replace(idir, "\\", "/");
+      pdir = replace(pdir, "\\", "/");
+      
+      getLocationAndSize(x, y, width, height);
+      for (i=0; i<list.length; i++) {
+	if (endsWith(list[i], "/")) {
+	  tmpdir = pdir + list[i];
+	  //showMessage("idir: "+ idir + "; list[i]: " + tmpdir);
+	    if (idir == tmpdir) {
+		if (direction == 1) {
+		  if (i == list.length - 1) {
+		    showMessage("Done");
+		    return 0;
+		  } else {
+		    run("Close");
+		    open(pdir + list[i+1]);
+		    setLocation(x, y, width, height);
+		    showStatus(pdir + list[i+1]);
+		    init();
+		    return pdir + list[i+1];
+		  }
+		} else if (direction == 0) {
+		  run("Close");
+		  open(pdir + list[i]);
+		  setLocation(x, y, width, height);
+		  showStatus(pdir + list[i]);
+		  init();
+		  return pdir + list[i];
+		} else {
+		  run("Close");
+		  open(pdir + list[i-1]);
+		  setLocation(x, y, width, height);
+		  showStatus(pdir + list[i-1]);
+		  init();
+		  return pdir + list[i-1];
+		}
+	    }
+	}
+      }
   }
 }
 
@@ -1183,3 +1239,9 @@ macro "Delete last ROI Manager [D]" {
   roiManager("select", roiManager("count") - 1);
   roiManager("delete");
 }
+
+macro "Double Flip [H]" {
+    run("Flip Horizontally", "stack");
+    run("Flip Vertically", "stack");
+}
+

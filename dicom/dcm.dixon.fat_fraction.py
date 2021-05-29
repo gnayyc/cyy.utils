@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 
 """
-Read a DICOM directory and print protocol to a CSV directory
+Calculate fat_fraction map from DIXON fat and water images
 
 Usage:  python dicom.dixon.fat_fraction.py dixon_fat dixon_water
 

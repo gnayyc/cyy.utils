@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 
@@ -160,8 +160,8 @@ for root, dirs, files in os.walk(dcm_dir):
             print("")
             print(path)
             dcm2csv(path, csv_dir)
-            print("dcm2niix -b y -t y -m y -z y -o \"%s\" -f %%i_%%t_%%s_%%p_%%c_zzz \"%s\"" % (csv_dir, root))
-            os.system("dcm2niix -b y -t y -m y -z y -o \"%s\" -f %%i_%%t_%%s_%%p_%%c_zzz \"%s\"" % (csv_dir, root))
+            print("dcm2niix -b y -t y -m y -z y -o \"%s\" -f %%i_%%t_%%s_%%p_%%d_zzz \"%s\"" % (csv_dir, root))
+            os.system("dcm2niix -b y -t y -m y -z y -o \"%s\" -f %%i_%%t_%%s_%%p_%%d_zzz \"%s\"" % (csv_dir, root))
             break
         except InvalidDicomError:
             print("Invalid dicom file: %s" % path)
