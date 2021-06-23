@@ -607,6 +607,7 @@ function get_id(lvl) {
 
   if (endsWith(getInfo("image.filename"), ".nii.gz"))
     return getInfo("image.filename");
+  date = getTag("0008,0020");
   if (lvl == "date")
     xid = PatientID + "_" + date;
   else if (lvl == "series")
@@ -1029,22 +1030,25 @@ macro "Oval_50 [5]" {
 macro "Liver [j]" {
     addROI("liver");
     getStatistics(area, mean);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "liver", area);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "mean", "liver", mean);
+    roi = timestamp();
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "liver", area);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "liver", mean);
 }
 
 macro "Spleen [k]" {
     addROI("spleen");
     getStatistics(area, mean);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "spleen", area);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "mean", "spleen", mean);
+    roi = timestamp();
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "spleen", area);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "spleen", mean);
 }
 
 macro "Pancreas [l]" {
     addROI("pancreas");
     getStatistics(area, mean);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "pancreas", area);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "mean", "pancreas", mean);
+    roi = timestamp();
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "pancreas", area);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "pancreas", mean);
 
 }
 
@@ -1052,27 +1056,31 @@ macro "Pancreas [l]" {
 macro "Right Renal Sinus Fat [u]" {
     addROI("rkfat"); //right perirenal sinus fat
     fat = measure_threshold(-250, -50);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "rkfat", fat);
+    roi = timestamp();
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "rkfat", fat);
 
 }
 
 macro "Left Renal Sinus Fat [i]" {
     addROI("lkfat"); //right perirenal sinus fat
     fat = measure_threshold(-250, -50);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "lkfat", fat);
+    roi = timestamp();
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "lkfat", fat);
 
 }
 
 macro "Right Perirenal Thickness [o]" {
     addROI("rkthick"); //right perirenal thickness
     getStatistics(length);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "length", "rkthick", length);
+    roi = timestamp();
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "rkthick", length);
 }
 
 macro "Left Perirenal Thickness [p]" {
     addROI("lkthick "); //right perirenal thickness
     getStatistics(length);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "length", "lkthick", length);
+    roi = timestamp();
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "lkthick", length);
 }
 
 macro "Agatston Score [g]" {
@@ -1082,11 +1090,11 @@ macro "Agatston Score [g]" {
     ca3 = measure_threshold(300, 399);
     ca4 = measure_threshold(400, 1500);
     ca = ca1 + ca2 * 2 + ca3 * 3 + ca4 * 4;
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "ca1", ca1);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "ca2", ca2);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "ca3", ca3);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "area", "ca4", ca4);
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), "ca", "ca", ca);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca1", ca1);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca2", ca2);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca3", ca3);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca4", ca4);
+    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "ca", "ca", ca);
 }
 
 macro "saveResult [s]" {
@@ -1115,21 +1123,21 @@ macro "Previous Slice [d]" {
 }
 */
 
-macro "Next Case [s]" {
+macro "Next Case [F]" {
   open_case(1);
   run("Set... ", "zoom=200");
 }
 
-macro "Prev Case [a]" {
+macro "Prev Case [D]" {
   open_case(-1);
   run("Set... ", "zoom=200");
 }
 
-function append_result(Logfile, iid, type, label, value) {
+function append_result(Logfile, iid, roi, type, label, value) {
 // create_path("_misc.csv"), get_id(), "area", "liver", value 
   if(!File.exists(Logfile)) 
-    File.append("id,type,label,value", Logfile);
-  File.append(iid+","+type+","+label+","+value, Logfile);
+    File.append("id,roi,type,label,value", Logfile);
+  File.append(iid+","+roi+","+type+","+label+","+value, Logfile);
 }
 
 
@@ -1137,7 +1145,9 @@ function open_case(direction) {
   // direction = 1 (forward), 0 (current), -1 (backward)
 
   idir = getDirectory("image");
-  if (endsWith(getInfo("image.filename"), ".nii.gz")) filemode = 1;
+  if (endsWith(getInfo("image.filename"), ".nii.gz")) {
+	filemode = 1;
+  } else { filemode = 0; }
   if (filemode == 1) {
       iname = getInfo("image.filename");
       list = getFileList(idir);
@@ -1245,3 +1255,18 @@ macro "Double Flip [H]" {
     run("Flip Vertically", "stack");
 }
 
+function timestamp() {
+     MonthNames = newArray("01","02","03","04","05","06","07","08","09","10","11","12");
+     getDateAndTime(year, month, dayOfWeek, dayOfMonth, hour, minute, second, msec);
+     TimeString ="";
+     if (dayOfMonth<10) {TimeString = TimeString+"0";}
+     TimeString = ""+year+""+MonthNames[month]+""+dayOfMonth+""+TimeString;
+     if (hour<10) {TimeString = TimeString+"0";}
+     TimeString = TimeString+hour+"";
+     if (minute<10) {TimeString = TimeString+"0";}
+     TimeString = TimeString+minute+"";
+     if (second<10) {TimeString = TimeString+"0";}
+     TimeString = TimeString+second;
+
+     return(TimeString); // Prints the time stamp
+}

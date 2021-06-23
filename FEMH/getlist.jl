@@ -29,28 +29,23 @@ if length(ARGS) >= 6
 	if length(ARGS) == 7
 	    csv2 = splitext(csv)[1] * "-" * key1 * ".csv"
 	    fid2 = string.(label1) .* "-" .* string.(fid1)
-	    #x[:, "to"] = dir2 .* "/" .* key .* "-" .* x[:, id] .* ext
 	else
 	    key2 = ARGS[8]
 	    println("Key2: ", key2)
 	    label2 = x[:, key2]
 	    csv2 = splitext(csv)[1] * "-" * key1 * "-" * key2 * ".csv"
 	    fid2 = string.(label1) .* "-" .* string.(label2) .* "-" .* string.(fid1)
-	    #x[:, "to"] = dir2 .* "/" .* key .* "-" .* key2 .* "-" .* x[:, id] .* ext
 	end
     else
-	#x[:, "to"] = dir2 .* "/" .* x[:, id] .* ext
 	fid2 = fid1
     end
 else 
     id = "ACCNO"
     fid1 = x[:, id]
     fid1 = [replace(i,r"\..*" => "") for i in fid1]
-    #x[:, "to"] = dir2 .* "/" .* x[:, id] .* ext
     fid2 = fid1
 end
 
-#x[:, "from"] = dir1 .* "/" .* x[:, id] .* ext
 f1 = dir1 .* "/" .* fid1 .* ext
 f2 = dir2 .* "/" .* fid2 .* ext
 
@@ -71,7 +66,6 @@ println("First to: ", f2[1])
 println(action * " from ", dir1, " to ", dir2)
 
 for i = 1:size(x, 1)
-#for i = 1
     file1 = f1[i]
     file2 = f2[i]
     try
