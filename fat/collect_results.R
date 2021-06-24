@@ -21,7 +21,7 @@ write_csv(x, "results.csv")
 saveRDS(x, "results.rds")
 
 x = bind_rows(.m) %>%
-    mutate(sid = as.character(str_extract(id, "^[:alnum:]+"))) %>%
+    mutate(sid = str_extract(id, "^[:alnum:]+")) %>%
     mutate(date = str_extract(id, "(?<=_)(\\d{8})")) %>%
     relocate(sid, date)
 
