@@ -1090,6 +1090,7 @@ macro "Agatston Score [g]" {
     ca3 = measure_threshold(300, 399);
     ca4 = measure_threshold(400, 1500);
     ca = ca1 + ca2 * 2 + ca3 * 3 + ca4 * 4;
+    roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca1", ca1);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca2", ca2);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca3", ca3);
@@ -1221,7 +1222,7 @@ function open_case(direction) {
 		  return pdir + list[i];
 		} else {
 		  if (i == 0) {
-		    showMessage("Already tthe first");
+		    showMessage("Already the first");
 		    return 0;
 		  } else {
 		    run("Close");
@@ -1275,5 +1276,5 @@ function timestamp() {
      if (second<10) {TimeString = TimeString+"0";}
      TimeString = TimeString+second;
 
-     return(TimeString); // Prints the time stamp
+     return TimeString; // Prints the time stamp
 }
