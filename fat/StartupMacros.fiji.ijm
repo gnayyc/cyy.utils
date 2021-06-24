@@ -871,6 +871,10 @@ macro "Wand [w]" {
   setTool("wand");
 }
 
+macro "Line [Z]" {
+  setTool("Line");
+}
+
 macro "Clear Outside [X]" {
   run("Clear Outside", "slice");
 }
@@ -1244,6 +1248,10 @@ function measure_threshold(lower, upper) {
     //? run("Make Inverse");
     getStatistics(area, mean, min, max);
     if (max < lower) {
+	close();
+	return 0;
+    }
+    if (upper < min) {
 	close();
 	return 0;
     }
