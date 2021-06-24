@@ -1240,8 +1240,15 @@ function open_case(direction) {
 }
 
 function measure_threshold(lower, upper) {
-    run("Duplicate...", "title="+getTitle()+" duplicate");
+    run("Duplicate...", "title="+getTitle());
     //? run("Make Inverse");
+    getStatistics(area, mean, min, max);
+    if (max < lower) {
+	close();
+	return 0;
+    }
+    if (max < upper)
+	upper = max;
     setThreshold(lower, upper);
     run("Convert to Mask", "method=Default background=Default");
     setThreshold(255, 255);
