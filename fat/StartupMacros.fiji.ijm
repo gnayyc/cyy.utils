@@ -1035,7 +1035,7 @@ macro "Liver [j]" {
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "liver", mean);
 }
 
-macro "Spleen [k]" {
+macro "Spleen [l]" {
     addROI("spleen");
     getStatistics(area, mean);
     roi = timestamp();
@@ -1043,7 +1043,7 @@ macro "Spleen [k]" {
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "spleen", mean);
 }
 
-macro "Pancreas [l]" {
+macro "Pancreas [k]" {
     addROI("pancreas");
     getStatistics(area, mean);
     roi = timestamp();
@@ -1220,12 +1220,17 @@ function open_case(direction) {
 		  init();
 		  return pdir + list[i];
 		} else {
-		  run("Close");
-		  open(pdir + list[i-1]);
-		  setLocation(x, y, width, height);
-		  showStatus(pdir + list[i-1]);
-		  init();
-		  return pdir + list[i-1];
+		  if (i == 0) {
+		    showMessage("Already tthe first");
+		    return 0;
+		  } else {
+		    run("Close");
+		    open(pdir + list[i-1]);
+		    setLocation(x, y, width, height);
+		    showStatus(pdir + list[i-1]);
+		    init();
+		    return pdir + list[i-1];
+		  }
 		}
 	    }
 	}
@@ -1245,9 +1250,11 @@ function measure_threshold(lower, upper) {
     return area;
 }
 
-macro "Delete last ROI Manager [D]" {
-  roiManager("select", roiManager("count") - 1);
-  roiManager("delete");
+macro "Delete last ROI Manager [N]" {
+  if (roiManager("count") > 0) {
+      roiManager("select", roiManager("count") - 1);
+      roiManager("delete");
+  }
 }
 
 macro "Double Flip [H]" {
