@@ -1005,27 +1005,27 @@ macro "init [0]" {
 
 macro "Oval_10 [1]" {
     getCursorLoc(x, y, z, flags);
-    makeOval(x, y, 10, 10); 
+    makeOval(x-5, y-5, 10, 10); 
 }
 
 macro "Oval_20 [2]" {
     getCursorLoc(x, y, z, flags);
-    makeOval(x, y, 20, 20); 
+    makeOval(x-10, y-10, 20, 20); 
 }
 
 macro "Oval_30 [3]" {
     getCursorLoc(x, y, z, flags);
-    makeOval(x, y, 30, 30); 
+    makeOval(x-15, y-15, 30, 30); 
 }
 
 macro "Oval_40 [4]" {
     getCursorLoc(x, y, z, flags);
-    makeOval(x, y, 40, 40); 
+    makeOval(x-20, y-20, 40, 40); 
 }
 
 macro "Oval_50 [5]" {
     getCursorLoc(x, y, z, flags);
-    makeOval(x, y, 50, 50); 
+    makeOval(x-25, y-25, 50, 50); 
 }
 
 
