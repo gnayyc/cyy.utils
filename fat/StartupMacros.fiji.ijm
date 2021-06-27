@@ -1138,6 +1138,11 @@ macro "Prev Case [D]" {
   run("Set... ", "zoom=200");
 }
 
+macro "Next Undon Case [N]" {
+  open_case(0);
+  run("Set... ", "zoom=200");
+}
+
 function append_result(Logfile, iid, roi, type, label, value) {
 // create_path("_misc.csv"), get_id(), "area", "liver", value 
   if(!File.exists(Logfile)) 
@@ -1147,20 +1152,31 @@ function append_result(Logfile, iid, roi, type, label, value) {
 
 
 function open_case(direction) {
-  // direction = 1 (forward), 0 (current), -1 (backward)
+  // direction = 1 (forward), 0 (find first undone), -1 (backward)
 
   idir = getDirectory("image");
   if (endsWith(getInfo("image.filename"), ".nii.gz")) {
 	filemode = 1;
   } else { filemode = 0; }
-  if (filemode == 1) {
+
+  if (filemode == 1) { // nii.gz
       iname = getInfo("image.filename");
       list = getFileList(idir);
       idir = replace(idir, "\\", "/");
 
       getLocationAndSize(x, y, width, height);
-      for (i=0; i<list.length; i++) {
-	if (endsWith(list[i], "nii.gz")) {
+      for (i = 0; i < list.length; i++) {
+	if (direction == 0) {
+	    // XXXXX not yet done
+	    if (!File.exists(pdir + list[i] + "/work")) {
+		  run("Close");
+		  open(pdir + list[i]);
+		  setLocation(x, y, width, height);
+		  showStatus(pdir + list[i]);
+		  init();
+		  return pdir + list[i];
+	    }
+	} else if (endsWith(list[i], "nii.gz")) {
 	    if (iname == list[i]) {
 		if (direction == 1) {
 		  if (i == list.length - 1) {
@@ -1174,34 +1190,40 @@ function open_case(direction) {
 		    init();
 		    return idir + list[i+1];
 		  }
-		} else if (direction == 0) {
-		  run("Close");
-		  open(idir + list[i]);
-		  setLocation(x, y, width, height);
-		  showStatus(idir + list[i]);
-		  init();
-		  return idir + list[i];
-		} else {
+		} else { // direction == -1
+		  if (i == 0) {
+		    showMessage("Already the first");
+		    return 0;
+		  } else {
 		  run("Close");
 		  open(idir + list[i-1]);
 		  setLocation(x, y, width, height);
 		  showStatus(idir + list[i-1]);
 		  init();
 		  return idir + list[i-1];
-		}
+		  }
+	       }
 	    }
 	}
       }
   } else { // dirmode
       pdir = File.getParent(idir) + "/";
       list = getFileList(pdir);
-
       idir = replace(idir, "\\", "/");
       pdir = replace(pdir, "\\", "/");
-      
       getLocationAndSize(x, y, width, height);
-      for (i=0; i<list.length; i++) {
-	if (endsWith(list[i], "/")) {
+
+      for (i = 0; i < list.length; i++) {
+	if (direction == 0) {
+	    if (!File.exists(pdir + list[i] + "/work")) {
+		  run("Close");
+		  open(pdir + list[i]);
+		  setLocation(x, y, width, height);
+		  showStatus(pdir + list[i]);
+		  init();
+		  return pdir + list[i];
+	    }
+	} else if (endsWith(list[i], "/")) {
 	  tmpdir = pdir + list[i];
 	  //showMessage("idir: "+ idir + "; list[i]: " + tmpdir);
 	    if (idir == tmpdir) {
@@ -1217,14 +1239,7 @@ function open_case(direction) {
 		    init();
 		    return pdir + list[i+1];
 		  }
-		} else if (direction == 0) {
-		  run("Close");
-		  open(pdir + list[i]);
-		  setLocation(x, y, width, height);
-		  showStatus(pdir + list[i]);
-		  init();
-		  return pdir + list[i];
-		} else {
+		} else { // direction == -1
 		  if (i == 0) {
 		    showMessage("Already the first");
 		    return 0;
@@ -1239,7 +1254,7 @@ function open_case(direction) {
 		}
 	    }
 	}
-      }
+     }
   }
 }
 
@@ -1266,7 +1281,7 @@ function measure_threshold(lower, upper) {
     return area;
 }
 
-macro "Delete last ROI Manager [N]" {
+macro "Delete last ROI Manager [B]" {
   if (roiManager("count") > 0) {
       roiManager("select", roiManager("count") - 1);
       roiManager("delete");
