@@ -16,19 +16,20 @@ library(lubridate)
 
 dir.create("schedule")
 
+sched_url = "https://drive.google.com/drive/u/0/folders/1QPDeSfpSG8vIr2DrSv2B1HVH61yMn0TA"
 use_gs = T
 if (use_gs)
 {
     library(googlesheets)
     gs_auth()
     derm = 
-	gs_url("https://docs.google.com/spreadsheets/d/18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8") %>%
+	gs_url(sched_url) %>%
 	gs_read()
 } else
 {
     library(googledrive)
     drive_auth()
-    "https://docs.google.com/spreadsheets/d/18NQX3J2LxYY7K_FJgmk_Sf88G0-a64SxCj_c8OxQgd8" %>%
+    sched_url %>%
 	as_id() %>%
 	drive_download(overwrite=T, type = "csv")
     derm = read_csv("0schedule.csv")
@@ -84,8 +85,14 @@ d =
 
   ) 
 
+csv_dir = paste0("schedule/", year(today()), "-", month(today()))
+csv_file = paste0(csv_dir, "/", ymd(today()), ".csv")
+write_csv(derm, csv_file)
+
+d_file = paste0(csv_dir, "/", ymd(today()), ".Rdata")
 dfile = "schedule/schedule.Rdata"
 save(d, derm, file = dfile)
+save(d, derm, file = d_file)
 
 today = format(Sys.time(), "%Y-%m-%d")
 rmds <- list.files(path=".", pattern="*.Rmd", full.names=T, recursive=FALSE)
