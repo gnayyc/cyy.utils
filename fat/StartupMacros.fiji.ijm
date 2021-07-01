@@ -1178,8 +1178,9 @@ function open_case(direction) {
 					  run("Close");
 					  open(pdir + list[i]);
 					  setLocation(x, y, width, height);
-					  showStatus(pdir + list[i]);
+					  //showStatus(idir + list[i] + " (" + i+1 + "/" + list.length + ")");
 					  init();
+					  showStatus("[" + i+1 + "/" + list.length + "] " + idir + list[i]);
 					  return pdir + list[i];
 				    }
 				} else if (endsWith(list[i], "nii.gz")) {
@@ -1192,8 +1193,10 @@ function open_case(direction) {
 					    run("Close");
 					    open(idir + list[i+1]);
 					    setLocation(x, y, width, height);
-					    showStatus(idir + list[i+1]);
+					    //showStatus(idir + list[i+1]);
+					    //showStatus(idir + list[i+1] + " (" + i+2 + "/" + list.length + ")");
 					    init();
+					    showStatus("[" + i+2 + "/" + list.length + "] " + idir + list[i+1]);
 					    return idir + list[i+1];
 					  }
 					} else { // direction == -1
@@ -1204,8 +1207,10 @@ function open_case(direction) {
 					  run("Close");
 					  open(idir + list[i-1]);
 					  setLocation(x, y, width, height);
-					  showStatus(idir + list[i-1]);
+					  //showStatus(idir + list[i-1]);
+					  //showStatus(idir + list[i-1] + " (" + i + "/" + list.length + ")");
 					  init();
+					  showStatus("[" + i + "/" + list.length + "] " + idir + list[i-1]);
 					  return idir + list[i-1];
 					  }
 				       }
@@ -1232,8 +1237,10 @@ function open_case(direction) {
 					  run("Close");
 					  open(pdir + list[i]);
 					  setLocation(x, y, width, height);
-					  showStatus(pdir + list[i]);
+					  //showStatus(pdir + list[i]);
+					  //showStatus(pdir + list[i] + " (" + i+1 + "/" + list.length + ")");
 					  init();
+					  showStatus("[" + i+1 + "/" + list.length + "] " + pdir + list[i]);
 					  return pdir + list[i];
 				    }
 				} else if (endsWith(list[i], "/")) {
@@ -1248,8 +1255,9 @@ function open_case(direction) {
 							    run("Close");
 							    open(pdir + list[i+1]);
 							    setLocation(x, y, width, height);
-							    showStatus(pdir + list[i+1]);
+							    //showStatus(pdir + list[i+1]);
 							    init();
+							    showStatus("[" + i+2 + "/" + list.length + "] " + pdir + list[i+1]);
 							    return pdir + list[i+1];
 							  }
 							} else { // direction == -1
@@ -1260,8 +1268,9 @@ function open_case(direction) {
 							    run("Close");
 							    open(pdir + list[i-1]);
 							    setLocation(x, y, width, height);
-							    showStatus(pdir + list[i-1]);
+							    //showStatus(pdir + list[i-1]);
 							    init();
+							    showStatus("[" + i + "/" + list.length + "] " + pdir + list[i-1]);
 							    return pdir + list[i-1];
 							  }
 							}
