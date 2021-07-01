@@ -3,7 +3,7 @@
 local({r <- getOption("repos"); 
     r["CRAN"] <- "https://cloud.r-project.org/";
     options(repos = r)})
-list.of.packages <- c("tidyverse", "lubridate", "knitr", "devtools", "stringr", "googlesheets", "googledrive", "kableExtra", "DT", "readxl")
+list.of.packages <- c("tidyverse", "lubridate", "knitr", "devtools", "stringr", "googlesheets4", "googledrive", "kableExtra", "DT", "readxl", "httpuv")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 if(!require(rmarkdown)) 
@@ -16,25 +16,10 @@ library(lubridate)
 
 dir.create("schedule")
 
-sched_url = "https://drive.google.com/drive/u/0/folders/1QPDeSfpSG8vIr2DrSv2B1HVH61yMn0TA"
-use_gs = T
-if (use_gs)
-{
-    library(googlesheets)
-    gs_auth()
-    derm = 
-	gs_url(sched_url) %>%
-	gs_read()
-} else
-{
-    library(googledrive)
-    drive_auth()
-    sched_url %>%
-	as_id() %>%
-	drive_download(overwrite=T, type = "csv")
-    derm = read_csv("0schedule.csv")
-}
+library(googlesheets4)
 
+sched_url = "https://docs.google.com/spreadsheets/d/1D-OeRTaYaxXvH2Jt-2NQ8-Wtk3nEIuewSz4QlvZDiZs/edit#gid=918129101"
+derm = read_sheet(sched_url, col_types="ccciDDicccccc")
 
 derm = derm %>%
     group_by(CID) %>%
@@ -86,6 +71,7 @@ d =
   ) 
 
 csv_dir = paste0("schedule/", year(today()), "-", month(today()))
+dir.create(csv_dir, recursive=T)
 csv_file = paste0(csv_dir, "/", ymd(today()), ".csv")
 write_csv(derm, csv_file)
 

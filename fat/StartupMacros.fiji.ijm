@@ -400,7 +400,7 @@ macro "Duplicate for fat work [9]" {
   getLocationAndSize(x, y, width, height);
   run("Duplicate...", "title="+fat_title);
   setLocation(x+width+10, y);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
   
   File.copy(ipath, create_path("_fat.dcm"));
 }
@@ -412,7 +412,7 @@ macro "Set Fat Mask [f]" {
   getLocationAndSize(x, y, width, height);
   run("Duplicate...", "title="+fat_title);
   setLocation(x+width+10, y);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
   
   File.copy(ipath, create_path("_fat.dcm"));
 
@@ -470,7 +470,7 @@ macro "TotalFat [f1]" {
   getLocationAndSize(x, y, width, height);
   run("Duplicate...", "title="+wvfat_title);
   setLocation(x, y+50);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
   run("Create Selection");
   selectWindow(Title);
   run("Restore Selection");
@@ -494,7 +494,7 @@ macro "WallVisceralFat [f2]" { // Get Subcutaneous Fat
   getLocationAndSize(x, y, width, height);
   run("Duplicate...", "title="+vfat_title);
   setLocation(x, y+50);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
   run("Create Selection");
   selectWindow(Title);
   run("Restore Selection");
@@ -521,13 +521,13 @@ macro "VisceralFat [f3]" { // Get wall fat
   run("Out [-]");
   run("Out [-]");
   run("Duplicate...", "title="+pfat_title);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
   run("Create Selection");
   selectWindow(Title);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
   run("Restore Selection");
   selectWindow(pfat_title);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
   run("Select None");
   showStatus("Next Step: Remove Retroperitoneal Fat then press [4]");
 */
@@ -664,7 +664,7 @@ macro "Calculate Aorta Calcification Ratio base [a]" {
 /*
 macro "Calculate Aorta Calcification Ratio [9]" {
   run("Duplicate...", "title="+getTitle());
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
   run("Make Inverse");
   setColor(-100);
   fill();
@@ -695,7 +695,7 @@ macro "Calculate Aorta Calcification Ratio [9]" {
 
   // calculate aorta
   selectImage(Aoid);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
   setThreshold(-25, 100);
   run("Convert to Mask");
   save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-2Aorta.png");
@@ -706,7 +706,7 @@ macro "Calculate Aorta Calcification Ratio [9]" {
   //close();
   // calculate Calcification
   selectImage(Caid);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
   setThreshold(100,1500);
   run("Convert to Mask");
 
@@ -766,7 +766,7 @@ macro "Calculate Calcification Area [8]" {
   save(ImgDir + id + "-S"+studyid+"s"+series+"i"+image + "-"+time + "-1.png");
 
   selectImage(Iid);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
   getStatistics(nPixels, mean, min, max, std, histogram);
   setThreshold(150,1500);
   run("Convert to Mask");
@@ -800,7 +800,7 @@ macro "Duplicate [d]" {
   getLocationAndSize(x, y, width, height);
   run("Duplicate...", "title="+getTitle());
   setLocation(x+200, y+50);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
 
 }
 
@@ -1130,17 +1130,17 @@ macro "Previous Slice [d]" {
 
 macro "Next Case [F]" {
   open_case(1);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
 }
 
 macro "Prev Case [D]" {
   open_case(-1);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
 }
 
 macro "Next Undon Case [N]" {
   open_case(0);
-  run("Set... ", "zoom=200");
+  run("Set... ", "zoom=150");
 }
 
 function append_result(Logfile, iid, roi, type, label, value) {
@@ -1161,99 +1161,112 @@ function open_case(direction) {
 
   if (filemode == 1) { // nii.gz
       iname = getInfo("image.filename");
-      list = getFileList(idir);
+      list0 = getFileList(idir);
       idir = replace(idir, "\\", "/");
+
+      list = list0;
+      for (i = 0; i < list0.length; i++) {
+				if (!endsWith(list0[i], "nii.gz"))
+					list = Array.deleteValue(list, list0[i]);
+      }
 
       getLocationAndSize(x, y, width, height);
       for (i = 0; i < list.length; i++) {
-	if (direction == 0) {
-	    // XXXXX not yet done
-	    if (!File.exists(pdir + list[i] + "/work")) {
-		  run("Close");
-		  open(pdir + list[i]);
-		  setLocation(x, y, width, height);
-		  showStatus(pdir + list[i]);
-		  init();
-		  return pdir + list[i];
-	    }
-	} else if (endsWith(list[i], "nii.gz")) {
-	    if (iname == list[i]) {
-		if (direction == 1) {
-		  if (i == list.length - 1) {
-		    showMessage("Done");
-		    return 0;
-		  } else {
-		    run("Close");
-		    open(idir + list[i+1]);
-		    setLocation(x, y, width, height);
-		    showStatus(idir + list[i+1]);
-		    init();
-		    return idir + list[i+1];
-		  }
-		} else { // direction == -1
-		  if (i == 0) {
-		    showMessage("Already the first");
-		    return 0;
-		  } else {
-		  run("Close");
-		  open(idir + list[i-1]);
-		  setLocation(x, y, width, height);
-		  showStatus(idir + list[i-1]);
-		  init();
-		  return idir + list[i-1];
-		  }
-	       }
-	    }
-	}
+				if (direction == 0) {
+				    // XXXXX not yet done
+				    if (!File.exists(pdir + list[i] + "/work")) {
+					  run("Close");
+					  open(pdir + list[i]);
+					  setLocation(x, y, width, height);
+					  showStatus(pdir + list[i]);
+					  init();
+					  return pdir + list[i];
+				    }
+				} else if (endsWith(list[i], "nii.gz")) {
+				    if (iname == list[i]) {
+					if (direction == 1) {
+					  if (i == list.length - 1) {
+					    showMessage("Done");
+					    return 0;
+					  } else {
+					    run("Close");
+					    open(idir + list[i+1]);
+					    setLocation(x, y, width, height);
+					    showStatus(idir + list[i+1]);
+					    init();
+					    return idir + list[i+1];
+					  }
+					} else { // direction == -1
+					  if (i == 0) {
+					    showMessage("Already the first");
+					    return 0;
+					  } else {
+					  run("Close");
+					  open(idir + list[i-1]);
+					  setLocation(x, y, width, height);
+					  showStatus(idir + list[i-1]);
+					  init();
+					  return idir + list[i-1];
+					  }
+				       }
+				    }
+				}
       }
   } else { // dirmode
       pdir = File.getParent(idir) + "/";
-      list = getFileList(pdir);
+      list0 = getFileList(pdir);
       idir = replace(idir, "\\", "/");
       pdir = replace(pdir, "\\", "/");
       getLocationAndSize(x, y, width, height);
 
+      list = list0;
+      for (i = 0; i < list0.length; i++) {
+				if (!endsWith(list0[i], "/"))
+					list = Array.deleteValue(list, list0[i]);
+      }
+
+
       for (i = 0; i < list.length; i++) {
-	if (direction == 0) {
-	    if (!File.exists(pdir + list[i] + "/work")) {
-		  run("Close");
-		  open(pdir + list[i]);
-		  setLocation(x, y, width, height);
-		  showStatus(pdir + list[i]);
-		  init();
-		  return pdir + list[i];
-	    }
-	} else if (endsWith(list[i], "/")) {
-	  tmpdir = pdir + list[i];
-	  //showMessage("idir: "+ idir + "; list[i]: " + tmpdir);
-	    if (idir == tmpdir) {
-		if (direction == 1) {
-		  if (i == list.length - 1) {
-		    showMessage("Done");
-		    return 0;
-		  } else {
-		    run("Close");
-		    open(pdir + list[i+1]);
-		    setLocation(x, y, width, height);
-		    showStatus(pdir + list[i+1]);
-		    init();
-		    return pdir + list[i+1];
-		  }
-		} else { // direction == -1
-		  if (i == 0) {
-		    showMessage("Already the first");
-		    return 0;
-		  } else {
-		    run("Close");
-		    open(pdir + list[i-1]);
-		    setLocation(x, y, width, height);
-		    showStatus(pdir + list[i-1]);
-		    init();
-		    return pdir + list[i-1];
-		  }
-		}
-	    }
-	}
+				if (direction == 0) {
+				    if (!File.exists(pdir + list[i] + "/work")) {
+					  run("Close");
+					  open(pdir + list[i]);
+					  setLocation(x, y, width, height);
+					  showStatus(pdir + list[i]);
+					  init();
+					  return pdir + list[i];
+				    }
+				} else if (endsWith(list[i], "/")) {
+				  tmpdir = pdir + list[i];
+				  //showMessage("idir: "+ idir + "; list[i]: " + tmpdir);
+				    if (idir == tmpdir) {
+							if (direction == 1) {
+							  if (i == list.length - 1) {
+							    showMessage("Done");
+							    return 0;
+							  } else {
+							    run("Close");
+							    open(pdir + list[i+1]);
+							    setLocation(x, y, width, height);
+							    showStatus(pdir + list[i+1]);
+							    init();
+							    return pdir + list[i+1];
+							  }
+							} else { // direction == -1
+							  if (i == 0) {
+							    showMessage("Already the first");
+							    return 0;
+							  } else {
+							    run("Close");
+							    open(pdir + list[i-1]);
+							    setLocation(x, y, width, height);
+							    showStatus(pdir + list[i-1]);
+							    init();
+							    return pdir + list[i-1];
+							  }
+							}
+					 }
+				}
      }
   }
 }
