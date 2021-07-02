@@ -847,7 +847,7 @@ macro "Fill [l]" {
 //  setTool("brush");
 //}
 
-macro "Elliptical [e]" {
+macro "Elliptical [E]" {
   setTool("oval");
 }
 
