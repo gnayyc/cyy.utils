@@ -1004,26 +1004,31 @@ macro "init [0]" {
 }
 
 macro "Oval_10 [1]" {
+    setTool("oval");
     getCursorLoc(x, y, z, flags);
     makeOval(x-5, y-5, 10, 10); 
 }
 
 macro "Oval_20 [2]" {
+    setTool("oval");
     getCursorLoc(x, y, z, flags);
     makeOval(x-10, y-10, 20, 20); 
 }
 
 macro "Oval_30 [3]" {
+    setTool("oval");
     getCursorLoc(x, y, z, flags);
     makeOval(x-15, y-15, 30, 30); 
 }
 
 macro "Oval_40 [4]" {
+    setTool("oval");
     getCursorLoc(x, y, z, flags);
     makeOval(x-20, y-20, 40, 40); 
 }
 
 macro "Oval_50 [5]" {
+    setTool("oval");
     getCursorLoc(x, y, z, flags);
     makeOval(x-25, y-25, 50, 50); 
 }
@@ -1037,6 +1042,7 @@ macro "Liver [j]" {
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "liver", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "liver", mean);
+    saveResult();
 }
 
 macro "Spleen [l]" {
@@ -1045,6 +1051,7 @@ macro "Spleen [l]" {
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "spleen", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "spleen", mean);
+    saveResult();
 }
 
 macro "Pancreas [k]" {
@@ -1053,7 +1060,7 @@ macro "Pancreas [k]" {
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "pancreas", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "pancreas", mean);
-
+    saveResult();
 }
 
 
@@ -1062,7 +1069,7 @@ macro "Right Renal Sinus Fat [u]" {
     fat = measure_threshold(-250, -50);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "rkfat", fat);
-
+    saveResult();
 }
 
 macro "Left Renal Sinus Fat [i]" {
@@ -1070,7 +1077,7 @@ macro "Left Renal Sinus Fat [i]" {
     fat = measure_threshold(-250, -50);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "lkfat", fat);
-
+    saveResult();
 }
 
 macro "Right Perirenal Thickness [o]" {
@@ -1078,6 +1085,7 @@ macro "Right Perirenal Thickness [o]" {
     getStatistics(length);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "rkthick", length);
+    saveResult();
 }
 
 macro "Left Perirenal Thickness [p]" {
@@ -1103,6 +1111,10 @@ macro "Agatston Score [g]" {
 }
 
 macro "saveResult [s]" {
+    saveResult();
+}
+
+function saveResult () {
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
     roiManager("Deselect");
     run("Clear Results");
@@ -1196,6 +1208,8 @@ function open_case(direction) {
 					    //showStatus(idir + list[i+1]);
 					    //showStatus(idir + list[i+1] + " (" + i+2 + "/" + list.length + ")");
 					    init();
+					    if (File.exists(create_series_path("_measurement_roi.zip")))
+						roiManager("Open", create_series_path("_measurement_roi.zip"));
 					    showStatus("[" + i+2 + "/" + list.length + "] " + idir + list[i+1]);
 					    return idir + list[i+1];
 					  }
@@ -1210,6 +1224,8 @@ function open_case(direction) {
 					  //showStatus(idir + list[i-1]);
 					  //showStatus(idir + list[i-1] + " (" + i + "/" + list.length + ")");
 					  init();
+					  if (File.exists(create_series_path("_measurement_roi.zip")))
+					    roiManager("Open", create_series_path("_measurement_roi.zip"));
 					  showStatus("[" + i + "/" + list.length + "] " + idir + list[i-1]);
 					  return idir + list[i-1];
 					  }
@@ -1257,6 +1273,8 @@ function open_case(direction) {
 							    setLocation(x, y, width, height);
 							    //showStatus(pdir + list[i+1]);
 							    init();
+							    if (File.exists(create_series_path("_measurement_roi.zip")))
+								roiManager("Open", create_series_path("_measurement_roi.zip"));
 							    showStatus("[" + i+2 + "/" + list.length + "] " + pdir + list[i+1]);
 							    return pdir + list[i+1];
 							  }
@@ -1270,6 +1288,8 @@ function open_case(direction) {
 							    setLocation(x, y, width, height);
 							    //showStatus(pdir + list[i-1]);
 							    init();
+							    if (File.exists(create_series_path("_measurement_roi.zip")))
+								roiManager("Open", create_series_path("_measurement_roi.zip"));
 							    showStatus("[" + i + "/" + list.length + "] " + pdir + list[i-1]);
 							    return pdir + list[i-1];
 							  }
