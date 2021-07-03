@@ -388,6 +388,10 @@ function init() {
   }
     if (File.exists(create_series_path("_measurement_roi.zip")))
 	roiManager("Open", create_series_path("_measurement_roi.zip"));
+    run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
+    roiManager("Deselect");
+    run("Clear Results");
+    roiManager("Measure");
 
 }
 
@@ -1123,6 +1127,7 @@ function saveResult () {
     roiManager("Measure");
     saveAs("Results",  create_series_path("_measurement.csv"));
     roiManager("Save", create_series_path("_measurement_roi.zip"));
+    //roiManager("Update");
 }
 
 macro "Measure areas [A]" {
@@ -1132,22 +1137,20 @@ macro "Measure areas [A]" {
 }
 
 
-/*
-macro "Next Slice [f]" {
+macro "Next Slice [v]" {
     run("Next Slice [>]");
 }
 
-macro "Previous Slice [d]" {
+macro "Previous Slice [c]" {
     run("Previous Slice [<]");
 }
-*/
 
-macro "Next Case [j]" {
+macro "Next Case [V]" {
   open_case(1);
   run("Set... ", "zoom=150");
 }
 
-macro "Prev Case [k]" {
+macro "Prev Case [C]" {
   open_case(-1);
   run("Set... ", "zoom=150");
 }
