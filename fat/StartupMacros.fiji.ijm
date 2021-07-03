@@ -1137,20 +1137,20 @@ macro "Measure areas [A]" {
 }
 
 
-macro "Next Slice [v]" {
+macro "Next Slice [c]" {
     run("Next Slice [>]");
 }
 
-macro "Previous Slice [c]" {
+macro "Previous Slice [x]" {
     run("Previous Slice [<]");
 }
 
-macro "Next Case [V]" {
+macro "Next Case [C]" {
   open_case(1);
   run("Set... ", "zoom=150");
 }
 
-macro "Prev Case [C]" {
+macro "Prev Case [X]" {
   open_case(-1);
   run("Set... ", "zoom=150");
 }
@@ -1243,8 +1243,8 @@ function open_case(direction) {
 
       list = list0;
       for (i = 0; i < list0.length; i++) {
-				if (!endsWith(list0[i], "/"))
-					list = Array.deleteValue(list, list0[i]);
+	    if (!endsWith(list0[i], "/"))
+		    list = Array.deleteValue(list, list0[i]);
       }
 
 
@@ -1254,8 +1254,6 @@ function open_case(direction) {
 					  run("Close");
 					  open(pdir + list[i]);
 					  setLocation(x, y, width, height);
-					  //showStatus(pdir + list[i]);
-					  //showStatus(pdir + list[i] + " (" + i+1 + "/" + list.length + ")");
 					  init();
 					  showStatus("[" + i+1 + "/" + list.length + "] " + pdir + list[i]);
 					  return pdir + list[i];
@@ -1272,7 +1270,6 @@ function open_case(direction) {
 							    run("Close");
 							    open(pdir + list[i+1]);
 							    setLocation(x, y, width, height);
-							    //showStatus(pdir + list[i+1]);
 							    init();
 							    showStatus("[" + i+2 + "/" + list.length + "] " + pdir + list[i+1]);
 							    return pdir + list[i+1];
@@ -1285,7 +1282,6 @@ function open_case(direction) {
 							    run("Close");
 							    open(pdir + list[i-1]);
 							    setLocation(x, y, width, height);
-							    //showStatus(pdir + list[i-1]);
 							    init();
 							    showStatus("[" + i + "/" + list.length + "] " + pdir + list[i-1]);
 							    return pdir + list[i-1];
