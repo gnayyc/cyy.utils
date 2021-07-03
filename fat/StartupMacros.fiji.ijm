@@ -386,6 +386,8 @@ function init() {
 	run("Colors...", "foreground=black background=white selection=red"); //set colors display
 	run("Options...", "iterations=1 count=1"); //set white background 
   }
+    if (File.exists(create_series_path("_measurement_roi.zip")))
+	roiManager("Open", create_series_path("_measurement_roi.zip"));
 
 }
 
@@ -796,7 +798,7 @@ macro "Calculate Calcification Area [8]" {
 
 */
 
-macro "Duplicate [d]" {
+macro "Duplicate [D]" {
   getLocationAndSize(x, y, width, height);
   run("Duplicate...", "title="+getTitle());
   setLocation(x+200, y+50);
@@ -817,7 +819,6 @@ macro "saveResult [s]" {
     saveAs("Results",  create_path("_results.csv"));
     roiManager("Save", create_path("_roi.zip"));
 }
-*/
 
 macro "Convert to Mask [s]" {
 //  setThreshold(-250, -50);
@@ -833,6 +834,7 @@ macro "Convert to Mask [s]" {
 
   run("Convert to Mask");
 }
+*/
 
 macro "Fill [l]" {
   fill();
@@ -1036,7 +1038,7 @@ macro "Oval_50 [5]" {
 
 
 
-macro "Liver [j]" {
+macro "Liver [a]" {
     addROI("liver");
     getStatistics(area, mean);
     roi = timestamp();
@@ -1045,7 +1047,7 @@ macro "Liver [j]" {
     saveResult();
 }
 
-macro "Spleen [l]" {
+macro "Spleen [d]" {
     addROI("spleen");
     getStatistics(area, mean);
     roi = timestamp();
@@ -1054,7 +1056,7 @@ macro "Spleen [l]" {
     saveResult();
 }
 
-macro "Pancreas [k]" {
+macro "Pancreas [s]" {
     addROI("pancreas");
     getStatistics(area, mean);
     roi = timestamp();
@@ -1064,7 +1066,7 @@ macro "Pancreas [k]" {
 }
 
 
-macro "Right Renal Sinus Fat [u]" {
+macro "Right Renal Sinus Fat [q]" {
     addROI("rkfat"); //right perirenal sinus fat
     fat = measure_threshold(-250, -50);
     roi = timestamp();
@@ -1072,7 +1074,7 @@ macro "Right Renal Sinus Fat [u]" {
     saveResult();
 }
 
-macro "Left Renal Sinus Fat [i]" {
+macro "Left Renal Sinus Fat [w]" {
     addROI("lkfat"); //right perirenal sinus fat
     fat = measure_threshold(-250, -50);
     roi = timestamp();
@@ -1080,7 +1082,7 @@ macro "Left Renal Sinus Fat [i]" {
     saveResult();
 }
 
-macro "Right Perirenal Thickness [o]" {
+macro "Right Perirenal Thickness [e]" {
     addROI("rkthick"); //right perirenal thickness
     getStatistics(length);
     roi = timestamp();
@@ -1088,7 +1090,7 @@ macro "Right Perirenal Thickness [o]" {
     saveResult();
 }
 
-macro "Left Perirenal Thickness [p]" {
+macro "Left Perirenal Thickness [r]" {
     addROI("lkthick "); //right perirenal thickness
     getStatistics(length);
     roi = timestamp();
@@ -1110,7 +1112,7 @@ macro "Agatston Score [g]" {
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "ca", "ca", ca);
 }
 
-macro "saveResult [s]" {
+macro "saveResult [S]" {
     saveResult();
 }
 
@@ -1123,7 +1125,7 @@ function saveResult () {
     roiManager("Save", create_series_path("_measurement_roi.zip"));
 }
 
-macro "Measure areas [a]" {
+macro "Measure areas [A]" {
     setThreshold(255, 255);
     run("Create Selection");
     run("Measure");
@@ -1140,17 +1142,17 @@ macro "Previous Slice [d]" {
 }
 */
 
-macro "Next Case [F]" {
+macro "Next Case [j]" {
   open_case(1);
   run("Set... ", "zoom=150");
 }
 
-macro "Prev Case [D]" {
+macro "Prev Case [k]" {
   open_case(-1);
   run("Set... ", "zoom=150");
 }
 
-macro "Next Undon Case [N]" {
+macro "Next Undon Case [n]" {
   open_case(0);
   run("Set... ", "zoom=150");
 }
@@ -1208,8 +1210,6 @@ function open_case(direction) {
 					    //showStatus(idir + list[i+1]);
 					    //showStatus(idir + list[i+1] + " (" + i+2 + "/" + list.length + ")");
 					    init();
-					    if (File.exists(create_series_path("_measurement_roi.zip")))
-						roiManager("Open", create_series_path("_measurement_roi.zip"));
 					    showStatus("[" + i+2 + "/" + list.length + "] " + idir + list[i+1]);
 					    return idir + list[i+1];
 					  }
@@ -1224,8 +1224,6 @@ function open_case(direction) {
 					  //showStatus(idir + list[i-1]);
 					  //showStatus(idir + list[i-1] + " (" + i + "/" + list.length + ")");
 					  init();
-					  if (File.exists(create_series_path("_measurement_roi.zip")))
-					    roiManager("Open", create_series_path("_measurement_roi.zip"));
 					  showStatus("[" + i + "/" + list.length + "] " + idir + list[i-1]);
 					  return idir + list[i-1];
 					  }
@@ -1273,8 +1271,6 @@ function open_case(direction) {
 							    setLocation(x, y, width, height);
 							    //showStatus(pdir + list[i+1]);
 							    init();
-							    if (File.exists(create_series_path("_measurement_roi.zip")))
-								roiManager("Open", create_series_path("_measurement_roi.zip"));
 							    showStatus("[" + i+2 + "/" + list.length + "] " + pdir + list[i+1]);
 							    return pdir + list[i+1];
 							  }
@@ -1288,8 +1284,6 @@ function open_case(direction) {
 							    setLocation(x, y, width, height);
 							    //showStatus(pdir + list[i-1]);
 							    init();
-							    if (File.exists(create_series_path("_measurement_roi.zip")))
-								roiManager("Open", create_series_path("_measurement_roi.zip"));
 							    showStatus("[" + i + "/" + list.length + "] " + pdir + list[i-1]);
 							    return pdir + list[i-1];
 							  }
