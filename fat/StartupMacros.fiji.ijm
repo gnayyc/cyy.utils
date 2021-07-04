@@ -1099,6 +1099,7 @@ macro "Left Perirenal Thickness [r]" {
     getStatistics(length);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "lkthick", length);
+    saveResult();
 }
 
 macro "Agatston Score [g]" {
