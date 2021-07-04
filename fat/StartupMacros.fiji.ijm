@@ -982,7 +982,8 @@ macro "Close All Duplicated Windows [Q]" {
 function addROI(tag) {
     roiManager("add");
     roiManager("select", roiManager("count") - 1);
-    roiManager("rename", iid + ":" + tag);
+    // roiManager("rename", iid + ":" + tag);
+    roiManager("rename", tag);
     showStatus("Added ROI: " + iid + ":" + tag);
 }
 
@@ -1115,6 +1116,8 @@ macro "Agatston Score [g]" {
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca3", ca3);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca4", ca4);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "ca", "ca", ca);
+    addROI("Aorta");
+    saveResult();
 }
 
 macro "saveResult [S]" {
@@ -1129,6 +1132,7 @@ function saveResult () {
     saveAs("Results",  create_series_path("_measurement.csv"));
     roiManager("Save", create_series_path("_measurement_roi.zip"));
     //roiManager("Update");
+    run("Restore Selection");
 }
 
 macro "Measure areas [A]" {
@@ -1343,4 +1347,8 @@ function timestamp() {
      TimeString = TimeString+second;
 
      return TimeString; // Prints the time stamp
+}
+
+macro "Abdominal window [f]" {
+    setMinAndMax(-125, 225);
 }
