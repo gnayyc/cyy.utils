@@ -1004,7 +1004,28 @@ function create_series_path(ext) {
 }
 
 
-// For ROI measurement
+//--------------------------------------- For ROI measurement
+// "ROI measurement Macro"
+// [0] initialize 
+// [1] create oval ROI sized 10 pixel centered on the mouse pointer
+// [2] create oval ROI sized 20 pixel centered on the mouse pointer
+// [3] create oval ROI sized 30 pixel centered on the mouse pointer
+// [4] create oval ROI sized 40 pixel centered on the mouse pointer
+// [5] create oval ROI sized 50 pixel centered on the mouse pointer
+// [a] save ROI to _result_csv, roiManager, labeled as 'liver', clear and update roimanager measurement
+// [s] save ROI to _result_csv, roiManager, labeled as 'pancreas', clear and update roimanager measurement
+// [d] save ROI to _result_csv, roiManager, labeled as 'spleen', clear and update roimanager measurement
+// [q] save ROI to _result_csv, roiManager, labeled as 'rkfat', clear and update roimanager measurement
+// [w] save ROI to _result_csv, roiManager, labeled as 'lkfat', clear and update roimanager measurement
+// [e] save ROI length to _result_csv, roiManager, labeled as 'rkthick', clear and update roimanager measurement
+// [r] save ROI length to _result_csv, roiManager, labeled as 'lkthick', clear and update roimanager measurement
+// [g] save calcium score to _result_csv, ROI to roiManager, labeled as 'Aorta', clear and update roimanager measurement
+// [c] next slice
+// [x] previous slice
+// [C] open next case     
+// [X] open previous case 
+// [n] save ROI to roiManager, labeled as 'liver', clear and update roimanager measurement
+// [Z] save ROI to roiManager, labeled as 'liver', clear and update roimanager measurement
 
 macro "init [0]" {
 	init();
