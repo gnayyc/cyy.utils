@@ -1342,7 +1342,7 @@ function measure_threshold(lower, upper) {
     return area;
 }
 
-macro "Delete last ROI Manager [B]" {
+macro "Delete last ROI Manager [h]" {
   if (roiManager("count") > 0) {
       roiManager("select", roiManager("count") - 1);
       roiManager("delete");
