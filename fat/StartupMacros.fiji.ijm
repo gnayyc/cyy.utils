@@ -815,7 +815,7 @@ macro "Duplicate [D]" {
 //}
 
 /*
-macro "saveResult [s]" {
+macro "updateResults [s]" {
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
     roiManager("Deselect");
     run("Clear Results");
@@ -1070,7 +1070,7 @@ macro "Liver [a]" {
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "liver", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "liver", mean);
-    saveResult();
+    updateResults();
 }
 
 macro "Spleen [d]" {
@@ -1079,7 +1079,7 @@ macro "Spleen [d]" {
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "spleen", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "spleen", mean);
-    saveResult();
+    updateResults();
 }
 
 macro "Pancreas [s]" {
@@ -1088,7 +1088,7 @@ macro "Pancreas [s]" {
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "pancreas", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "pancreas", mean);
-    saveResult();
+    updateResults();
 }
 
 
@@ -1097,7 +1097,7 @@ macro "Right Renal Sinus Fat [q]" {
     fat = measure_threshold(-250, -50);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "rkfat", fat);
-    saveResult();
+    updateResults();
 }
 
 macro "Left Renal Sinus Fat [w]" {
@@ -1105,7 +1105,7 @@ macro "Left Renal Sinus Fat [w]" {
     fat = measure_threshold(-250, -50);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "lkfat", fat);
-    saveResult();
+    updateResults();
 }
 
 macro "Right Perirenal Thickness [e]" {
@@ -1113,7 +1113,7 @@ macro "Right Perirenal Thickness [e]" {
     getStatistics(length);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "rkthick", length);
-    saveResult();
+    updateResults();
 }
 
 macro "Left Perirenal Thickness [r]" {
@@ -1121,7 +1121,7 @@ macro "Left Perirenal Thickness [r]" {
     getStatistics(length);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "lkthick", length);
-    saveResult();
+    updateResults();
 }
 
 macro "Agatston Score [g]" {
@@ -1138,14 +1138,14 @@ macro "Agatston Score [g]" {
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca4", ca4);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "ca", "ca", ca);
     addROI("Aorta");
-    saveResult();
+    updateResults();
 }
 
 macro "saveResult [S]" {
-    saveResult();
+    updateResults();
 }
 
-function saveResult () {
+function updateResults () {
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
     roiManager("Deselect");
     run("Clear Results");
@@ -1347,6 +1347,7 @@ macro "Delete last ROI Manager [h]" {
       roiManager("select", roiManager("count") - 1);
       roiManager("delete");
   }
+  updateResults();
 }
 
 macro "Double Flip [H]" {
