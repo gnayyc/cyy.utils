@@ -311,6 +311,15 @@ var pfat_title = "";
 var idir = "";
 var ipath = "";
 
+var group_liver = 1;
+var group_pancreas = 2;
+var group_spleen = 3;
+var group_rkfat = 4;
+var group_lkfat = 5;
+var group_rkthick = 6;
+var group_lkthick = 7;
+var group_aorta = 8;
+
 
 
 //------------------------------------ Fat related macros
@@ -389,10 +398,30 @@ function init() {
     if (File.exists(create_series_path("_measurement_roi.zip")))
 	roiManager("Open", create_series_path("_measurement_roi.zip"));
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
-    roiManager("Deselect");
+    roiManager("reset);
     run("Clear Results");
     roiManager("Measure");
 
+}
+
+function print_group(group_name, group_id) {
+    RoiManager.selectGroup(group_liver);
+    print("[" + RoiManager.selected + "] " + group_name);
+}
+
+function update_info() {
+    print("\\Clear");
+    print(iid);
+    print();
+    print_group("Liver", group_liver);
+    print_group("Pancreas", group_pancreas);
+    print_group("Spleen", group_spleen);
+    print_group("Right Kidney Sinus Fat", group_rkfat);
+    print_group("Right Kidney Thickness", group_rkthick);
+    print_group("Left Kidney Sinus Fat", group_lkfat);
+    print_group("Left Kidney Thickness", group_lkthick);
+    print_group("Aorta", group_aorta);
+    print();
 }
 
 macro "init [0]" {
@@ -592,7 +621,7 @@ macro "Save ROIs [S]" {
 function saveROI() {
 
     run("Set Measurements...", "area mean standard perimeter median skewness kurtosis display redirect=None decimal=3");
-    roiManager("Deselect");
+    roiManager("reset");
     run("Clear Results");
     roiManager("Measure");
     saveAs("Results",  create_path("_results.csv"));
@@ -817,7 +846,7 @@ macro "Duplicate [D]" {
 /*
 macro "saveResult [s]" {
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
-    roiManager("Deselect");
+    roiManager("reset");
     run("Clear Results");
     roiManager("Measure");
     saveAs("Results",  create_path("_results.csv"));
@@ -1066,7 +1095,10 @@ macro "Oval_50 [5]" {
 
 macro "Liver [a]" {
     addROI("liver");
+    Roi.setGroup(group_liver);
     getStatistics(area, mean);
+    update_info();
+    print("Liver: "+ area + " (" + mean + ")");
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "liver", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "liver", mean);
@@ -1075,7 +1107,10 @@ macro "Liver [a]" {
 
 macro "Spleen [d]" {
     addROI("spleen");
+    Roi.setGroup(group_spleen);
     getStatistics(area, mean);
+    update_info();
+    print("Spleen: "+ area + " (" + mean + ")");
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "spleen", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "spleen", mean);
@@ -1084,7 +1119,10 @@ macro "Spleen [d]" {
 
 macro "Pancreas [s]" {
     addROI("pancreas");
+    Roi.setGroup(group_pancreas);
     getStatistics(area, mean);
+    update_info();
+    print("Pancreas: "+ area + " (" + mean + ")");
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "pancreas", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "pancreas", mean);
@@ -1094,7 +1132,10 @@ macro "Pancreas [s]" {
 
 macro "Right Renal Sinus Fat [q]" {
     addROI("rkfat"); //right perirenal sinus fat
+    Roi.setGroup(group_rkfat);
     fat = measure_threshold(-250, -50);
+    update_info();
+    print("RK fat: "+ fat);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "rkfat", fat);
     saveResult();
@@ -1102,7 +1143,10 @@ macro "Right Renal Sinus Fat [q]" {
 
 macro "Left Renal Sinus Fat [w]" {
     addROI("lkfat"); //right perirenal sinus fat
+    Roi.setGroup(group_lkfat);
     fat = measure_threshold(-250, -50);
+    update_info();
+    print("LK fat: "+ fat);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "lkfat", fat);
     saveResult();
@@ -1110,7 +1154,10 @@ macro "Left Renal Sinus Fat [w]" {
 
 macro "Right Perirenal Thickness [e]" {
     addROI("rkthick"); //right perirenal thickness
+    Roi.setGroup(group_rkthick);
     getStatistics(length);
+    update_info();
+    print("RK thickness: "+ length);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "rkthick", length);
     saveResult();
@@ -1118,7 +1165,10 @@ macro "Right Perirenal Thickness [e]" {
 
 macro "Left Perirenal Thickness [r]" {
     addROI("lkthick "); //right perirenal thickness
+    Roi.setGroup(group_lkthick);
     getStatistics(length);
+    update_info();
+    print("LK thickness: "+ length);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "lkthick", length);
     saveResult();
@@ -1138,6 +1188,9 @@ macro "Agatston Score [g]" {
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca4", ca4);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "ca", "ca", ca);
     addROI("Aorta");
+    Roi.setGroup(group_aorta);
+    update_info();
+    print("Ca Score: " + ca);
     saveResult();
 }
 
@@ -1147,7 +1200,7 @@ macro "saveResult [S]" {
 
 function saveResult () {
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
-    roiManager("Deselect");
+    roiManager("reset");
     run("Clear Results");
     roiManager("Measure");
     saveAs("Results",  create_series_path("_measurement.csv"));
@@ -1373,3 +1426,4 @@ function timestamp() {
 macro "Abdominal window [f]" {
     setMinAndMax(-125, 225);
 }
+
