@@ -328,15 +328,15 @@ function init() {
     ipath = idir + iid;
 
     print("\\Clear");
-    print("\\Update0:" + iid);
+    print("\\Update0:" + iid + " (" + ymd_hms() + ")");
     print("\\Update1:");
-    print("\\Update2:[1]        Time: O ---> (" + ymd_hms() + ")");
-    print("\\Update3:[2] Set Scale: X ---> Draw a line -> Analyze -> Set Scale... -> [2]");
-    print("\\Update4:[3]          ROI: X ---> Draw lesion ROI -> [3] ");
-    print("\\Update5:[4]         Grid: X ---> [o/O] grid -> [4]");
+    print("\\Update2:[1] Time: = " + ymd_hms());
+    print("\\Update3:[2] Scale: X ---> Draw line -> [Analyze] -> [Set Scale...] -> [2]");
+    print("\\Update4:[3]   ROI: X ---> Draw ROI -> [3] ");
+    print("\\Update5:[4]  Grid: X ---> [4]");
     print("\\Update6:");
-    print("\\Update7:[o] Create grid overylay.");
-    print("\\Update8:[O] Remove grid overlay.");
+    print("\\Update7:[g] Create grid overylay.");
+    print("\\Update8:[G] Remove grid overlay.");
 
     if (File.exists(create_path("_measurement_roi.zip")))
 	roiManager("Open", create_path("_measurement_roi.zip"));
@@ -368,48 +368,61 @@ function check_id () {
 
 }
 
-function update_scale () {
-    check_id();
+function addROI(tag) {
+    roiManager("add");
+    roiManager("select", roiManager("count") - 1);
+    // roiManager("rename", iid + ":" + tag);
+    roiManager("rename", tag);
+    showStatus("Added ROI: " + iid + ":" + tag);
+}
 
-    getPixelSize(unit, pw, ph, pd);
-    if (unit!="cm") {
-	print("\\Update3:[2] Set Scale: X ---> Scale not set to cm!");
-	setTool("Line");
-	exit();
-    }
+
+function set_scale () {
+    check_id();
 
     if (selectionType == 5) { // straight line
 	addROI("scale"); 
-	getStatistics(length);
-	append_result(create_path("_time.csv"), iid, ymdhms(), "length", "scale", length);
 	getLine(x1, y1, x2, y2, lineWidth);
+	//getPixelSize(unit, width, height, depth);
+	//x1*=width; y1*=height; x2*=width; y2*=height; 
+	pixel_length = sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+
+	run("Set Scale...");
+
+	getPixelSize(unit, width, height, depth);
+	x1*=width; y1*=height; x2*=width; y2*=height; 
+	scale_length = sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+
+	append_result(create_path("_time.csv"), iid, ymdhms(), "pixel_length", "scale", pixel_length);
+	append_result(create_path("_time.csv"), iid, ymdhms(), "scale_length", "scale", scale_length);
 	append_result(create_path("_time.csv"), iid, ymdhms(), "x1", "scale", x1);
 	append_result(create_path("_time.csv"), iid, ymdhms(), "y1", "scale", y1);
 	append_result(create_path("_time.csv"), iid, ymdhms(), "x2", "scale", x2);
 	append_result(create_path("_time.csv"), iid, ymdhms(), "y2", "scale", y2);
 	saveResult();
 
+	tiff_path = create_path(".tiff");
 	run("Duplicate...", "title="+iid);
-	saveAs("Tiff", create_path(".tiff"));
+	saveAs("Tiff", tiff_path);
 	close();
 
-	print("\\Update3:[2] Set Scale: O (cm)");
+	print("\\Update3:[2] Scale: = "+ pixel_length + " pixels ("+ scale_length+" cm)");
 	setTool("freehand");
 	scale = 1;
     } else {
-	print("\\Update3:[2] Set Scale: X ---> Keep scale line and do again!!");
+	print("\\Update3:[2] Scale: X ---> Draw scale line and do again!!");
     }
 }
 
 function check_scale () {
     if (scale == 0) {
-	print("\\Update3:[2] Set Scale: X ---> Set scale first!!");
+	print("\\Update3:[2] Scale: X ---> Set scale first!!");
 	exit();
     }
 }
 
 macro "Update scale [2]" {
-    update_scale();
+    set_scale();
 }
 
 macro "Update ROI [3]" {
@@ -421,17 +434,17 @@ macro "Update ROI [3]" {
 	getStatistics(area);
 	append_result(create_path("_time.csv"), iid, ymdhms(), "area", "lesion", area);
 	saveResult();
-	print("\\Update4:[3]          ROI: O");
+	print("\\Update4:[3]   ROI: = " + area + " (cm2)");
 	run("Select None");
 	roi = 1;
     } else {
-	print("\\Update4:[3]          ROI: X ---> Need a freehand ROI!!");
+	print("\\Update4:[3]   ROI: X ---> Need a freehand ROI!!");
     }
 }
 
 function check_roi () {
     if (roi == 0) {
-	print("\\Update4:[3]          ROI: X ---> Draw ROI first!!");
+	print("\\Update4:[3]   ROI: X ---> Draw ROI first!!");
 	exit();
     }
 }
@@ -441,6 +454,7 @@ macro "Grid [4]" {
     check_scale();
     check_roi();
 
+    grid_overlay(0.5);
     count = 0;
     Dialog.create("Input area count");
     Dialog.addNumber("Count:", count);
@@ -448,17 +462,9 @@ macro "Grid [4]" {
     count = Dialog.getNumber();
     if (count > 0) {
 	append_result(create_path("_time.csv"), iid, ymdhms(), "count", "lesion", count);
-	print("\\Update5:[4]         Grid: O");
+	print("\\Update5:[4]  Grid: = " + count + " (sq)");
     }
 }
-
-macro "dig test [5]" {
-  Dialog.create("Input area count");
-  Dialog.addNumber("Count:");
-  Dialog.show();
-  count = Dialog.getNumber();
-}
-
 
 function ymd_hms() {
     getDateAndTime(year, month, wday, mday, hour, minute, second, msec);
@@ -490,37 +496,13 @@ function ymdhms() {
     return datetime;
 }
 
-function settime(E) {
-    // 
-    getDateAndTime(year, month, wday, mday, hour, minute, second, msec);
-    date = "" + year;
-    month = month + 1;
-    if (month<10) {date = date+"0";}
-    date = date + month;
-    if (mday<10) {date = date+"0";}
-    date = date + mday;
-    time = "";
-    if (hour < 10) {time = time + "0";}
-    time = time + hour;
-    if (minute<10) {time = time + "0";}
-    time = time + minute;
-    if (second<10) {time = time + "0";}
-    time= time + second;
-
-    TimeLogfile = create_path("_time.csv");
-    if(!File.exists(TimeLogfile))
-	File.append("file,event,date,time", TimeLogfile);
-    File.append(getTitle() + "," + E + "," + date + "," + time, TimeLogfile);
-    showStatus(getTitle() + "," + E + "," + date + "," + time);
-}
-
-macro "Grid Overlay [o]" {
+function grid_overlay(width) {
     color = "green";
     tileWidth = 250;
 
     getPixelSize(unit, pw, ph, pd);
     if (unit=="cm") {
-        tileWidth= 0.5/pw;
+        tileWidth= width/pw;
         tileHeight = tileWidth;
     } else {
       showMessage("Please set scale (cm) first!!!");
@@ -545,14 +527,23 @@ macro "Grid Overlay [o]" {
           yoff += tileHeight;
         }
         run("Select None");
+	append_result(create_path("_time.csv"), iid, ymdhms(), "grid", "event", ymdhms());
     }
 }
+macro "Grid Overlay [g]" {
+    grid_overlay(0.5);
+}
 
-macro "Remove Overlay [O]" {
+macro "Remove Overlay [G]" {
     run("Remove Overlay");
 }
 
 
+macro "Reload [R]" {
+	run("Install...", "install=["+ getDirectory("macros") + "StartupMacros.fiji.ijm]");
+}
+
 
 // run("Set Measurements...", "area feret's display redirect=None decimal=3");
 // run("Set Scale...");
+
