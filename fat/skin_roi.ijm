@@ -330,10 +330,10 @@ function init() {
     print("\\Clear");
     print("\\Update0:" + iid + " (" + ymd_hms() + ")");
     print("\\Update1:");
-    print("\\Update2:[1] Time: = " + ymd_hms());
-    print("\\Update3:[2] Scale: X ---> Draw line -> [Analyze] -> [Set Scale...] -> [2]");
-    print("\\Update4:[3]   ROI: X ---> Draw ROI -> [3] ");
-    print("\\Update5:[4]  Grid: X ---> [4]");
+    print("\\Update2:[1] Time = " + ymd_hms());
+    print("\\Update3:[2] Scale = X ---> Draw line -> [2]");
+    print("\\Update4:[3]   ROI = X ---> Draw ROI -> [3] ");
+    print("\\Update5:[4]  Grid = X ---> [4]");
     print("\\Update6:");
     print("\\Update7:[g] Create grid overylay.");
     print("\\Update8:[G] Remove grid overlay.");
@@ -406,17 +406,17 @@ function set_scale () {
 	saveAs("Tiff", tiff_path);
 	close();
 
-	print("\\Update3:[2] Scale: = "+ pixel_length + " pixels ("+ scale_length+" cm)");
+	print("\\Update3:[2] Scale = "+ pixel_length + " pixels ("+ scale_length+" cm)");
 	setTool("freehand");
 	scale = 1;
     } else {
-	print("\\Update3:[2] Scale: X ---> Draw scale line and do again!!");
+	print("\\Update3:[2] Scale = X ---> Draw scale line and do again!!");
     }
 }
 
 function check_scale () {
     if (scale == 0) {
-	print("\\Update3:[2] Scale: X ---> Set scale first!!");
+	print("\\Update3:[2] Scale = X ---> Set scale first!!");
 	exit();
     }
 }
@@ -434,17 +434,17 @@ macro "Update ROI [3]" {
 	getStatistics(area);
 	append_result(create_path("_time.csv"), iid, ymdhms(), "area", "lesion", area);
 	saveResult();
-	print("\\Update4:[3]   ROI: = " + area + " (cm2)");
+	print("\\Update4:[3]   ROI = " + area + " (cm2)");
 	run("Select None");
 	roi = 1;
     } else {
-	print("\\Update4:[3]   ROI: X ---> Need a freehand ROI!!");
+	print("\\Update4:[3]   ROI = X ---> Need a freehand ROI!!");
     }
 }
 
 function check_roi () {
     if (roi == 0) {
-	print("\\Update4:[3]   ROI: X ---> Draw ROI first!!");
+	print("\\Update4:[3]   ROI = X ---> Draw ROI first!!");
 	exit();
     }
 }
@@ -462,7 +462,7 @@ macro "Grid [4]" {
     count = Dialog.getNumber();
     if (count > 0) {
 	append_result(create_path("_time.csv"), iid, ymdhms(), "count", "lesion", count);
-	print("\\Update5:[4]  Grid: = " + count + " (sq)");
+	print("\\Update5:[4]  Grid = " + count + " (sq)");
     }
 }
 
@@ -543,7 +543,4 @@ macro "Reload [R]" {
 	run("Install...", "install=["+ getDirectory("macros") + "StartupMacros.fiji.ijm]");
 }
 
-
-// run("Set Measurements...", "area feret's display redirect=None decimal=3");
-// run("Set Scale...");
 
