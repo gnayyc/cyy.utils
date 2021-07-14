@@ -346,82 +346,84 @@ macro "Reload [R]" {
 
 
 function init() {
-  roiManager("reset");
-  run("Clear Results");
-  TF = SF = VF = PF = RF = WVF = WF = 0;
-  PatientName = getTag("0010,0010");
-  PatientID = getTag("0010,0020");
-  PatientsBirthDate = getTag("0010,0030");
-  PatientSex = getTag("0010,0040");
-  StudyDate = getTag("0008,0020");
-  studyid = getTag("0020,0010");
-  series = getTag("0020,0011");
-  image = getTag("0020,0013");
-  Modality = getTag("0008,0060");
-  time = replace(getTime,"E12","");
-  time = replace(time, "\\\.", "");
+    roiManager("reset");
+    run("Clear Results");
+    TF = SF = VF = PF = RF = WVF = WF = 0;
+    PatientName = getTag("0010,0010");
+    PatientID = getTag("0010,0020");
+    PatientsBirthDate = getTag("0010,0030");
+    PatientSex = getTag("0010,0040");
+    StudyDate = getTag("0008,0020");
+    studyid = getTag("0020,0010");
+    series = getTag("0020,0011");
+    image = getTag("0020,0013");
+    Modality = getTag("0008,0060");
+    time = replace(getTime,"E12","");
+    time = replace(time, "\\\.", "");
 
 
-  Title = getTitle();
-  idir = getDirectory("image");
-  iid = get_iid();
-  getDimensions(width, height, channels, slices, frames);
-  if (slices > 1)
-      ipath = idir + getInfo("slice.label"); 
-  else
-      ipath = idir + Title;
+    Title = getTitle();
+    idir = getDirectory("image");
+    iid = get_iid();
+    getDimensions(width, height, channels, slices, frames);
+    if (slices > 1)
+	ipath = idir + getInfo("slice.label"); 
+    else
+	ipath = idir + Title;
 
-  if(!File.exists(ipath)) {
-    ipath = ipath + ".dcm";
-  }
-  if(!File.exists(ipath)) {
-    ipath = "";
-  }
+    if(!File.exists(ipath)) {
+	ipath = ipath + ".dcm";
+    }
+    if(!File.exists(ipath)) {
+	ipath = "";
+    }
 
-  fat_title = Title+"_1fat";
-  wvfat_title = Title+"_2wvfat";
-  vfat_title = Title+"_3vfat";
-  pfat_title = Title+"_4pfat";
+    fat_title = Title+"_1fat";
+    wvfat_title = Title+"_2wvfat";
+    vfat_title = Title+"_3vfat";
+    pfat_title = Title+"_4pfat";
 
-  if (matches(Modality, ".*MR.*")){
-    Modality = "MR";
+    if (matches(Modality, ".*MR.*")){
+	Modality = "MR";
 	setOption("BlackBackground", true);
 	run("Colors...", "foreground=white background=black selection=red"); //set colors display
 	run("Options...", "iterations=1 black count=1"); //set white background vvv
-  }
-  else {
-    Modality = "CT";
+    }
+    else {
+	Modality = "CT";
 	setOption("BlackBackground", false);
 	run("Colors...", "foreground=black background=white selection=red"); //set colors display
 	run("Options...", "iterations=1 count=1"); //set white background 
-  }
+    }
     if (File.exists(create_series_path("_measurement_roi.zip")))
 	roiManager("Open", create_series_path("_measurement_roi.zip"));
+    update_info();
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
-    roiManager("reset);
+    roiManager("Deselect");
     run("Clear Results");
     roiManager("Measure");
-
 }
 
 function print_group(group_name, group_id) {
-    RoiManager.selectGroup(group_liver);
-    print("[" + RoiManager.selected + "] " + group_name);
+    RoiManager.selectGroup(group_id);
+    print("[", RoiManager.selected , "]", group_name, "(", group_id, ")");
 }
 
 function update_info() {
     print("\\Clear");
     print(iid);
-    print();
-    print_group("Liver", group_liver);
-    print_group("Pancreas", group_pancreas);
-    print_group("Spleen", group_spleen);
-    print_group("Right Kidney Sinus Fat", group_rkfat);
-    print_group("Right Kidney Thickness", group_rkthick);
-    print_group("Left Kidney Sinus Fat", group_lkfat);
-    print_group("Left Kidney Thickness", group_lkthick);
-    print_group("Aorta", group_aorta);
-    print();
+    print("");
+    print_group("[ 4 ] [ A ] Liver", group_liver);
+    print_group("[ 3 ] [ S ] Pancreas", group_pancreas);
+    print_group("[ 3 ] [ D ] Spleen", group_spleen);
+    print("");
+    print_group("[ 1 ] [ Q ] Right Kidney Sinus Fat", group_rkfat);
+    print_group("[ 1 ] [ W ] Left Kidney Sinus Fat", group_lkfat);
+    print_group("[ 1 ] [ E ] Right Kidney Thickness", group_rkthick);
+    print_group("[ 1 ] [ R ] Left Kidney Thickness", group_lkthick);
+    print("");
+    print_group("[ 8 ] [ G ] Aorta", group_aorta);
+    print("");
 }
 
 macro "init [0]" {
@@ -438,6 +440,10 @@ macro "Duplicate for fat work [9]" {
   run("Set... ", "zoom=150");
   
   File.copy(ipath, create_path("_fat.dcm"));
+}
+
+macro "test [9]" {
+    RoiManager.selectGroup(group_liver);
 }
 
 macro "Set Fat Mask [f]" {
@@ -621,7 +627,7 @@ macro "Save ROIs [S]" {
 function saveROI() {
 
     run("Set Measurements...", "area mean standard perimeter median skewness kurtosis display redirect=None decimal=3");
-    roiManager("reset");
+    roiManager("Deselect");
     run("Clear Results");
     roiManager("Measure");
     saveAs("Results",  create_path("_results.csv"));
@@ -846,7 +852,7 @@ macro "Duplicate [D]" {
 /*
 macro "updateResults [s]" {
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
-    roiManager("reset");
+    roiManager("Deselect");
     run("Clear Results");
     roiManager("Measure");
     saveAs("Results",  create_path("_results.csv"));
@@ -1008,7 +1014,8 @@ macro "Close All Duplicated Windows [Q]" {
   }
 }
 
-function addROI(tag) {
+function addROI(tag, group_id) {
+    Roi.setGroup(group_id);
     roiManager("add");
     roiManager("select", roiManager("count") - 1);
     // roiManager("rename", iid + ":" + tag);
@@ -1094,84 +1101,79 @@ macro "Oval_50 [5]" {
 
 
 macro "Liver [a]" {
-    addROI("liver");
-    Roi.setGroup(group_liver);
+    addROI("liver", group_liver);
     getStatistics(area, mean);
-    update_info();
-    print("Liver: "+ area + " (" + mean + ")");
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "liver", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "liver", mean);
     updateResults();
+    print("Liver: "+ area + " (" + mean + ")");
 }
 
 macro "Spleen [d]" {
-    addROI("spleen");
-    Roi.setGroup(group_spleen);
+    addROI("spleen", group_spleen);
     getStatistics(area, mean);
-    update_info();
-    print("Spleen: "+ area + " (" + mean + ")");
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "spleen", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "spleen", mean);
     updateResults();
+    print("Spleen: "+ area + " (" + mean + ")");
 }
 
 macro "Pancreas [s]" {
-    addROI("pancreas");
-    Roi.setGroup(group_pancreas);
+    addROI("pancreas", group_pancreas);
     getStatistics(area, mean);
-    update_info();
-    print("Pancreas: "+ area + " (" + mean + ")");
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "pancreas", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "pancreas", mean);
     updateResults();
+    print("Pancreas: "+ area + " (" + mean + ")");
 }
 
 
 macro "Right Renal Sinus Fat [q]" {
-    addROI("rkfat"); //right perirenal sinus fat
-    Roi.setGroup(group_rkfat);
+    addROI("rkfat", group_rkfat); //right perirenal sinus fat
     fat = measure_threshold(-250, -50);
-    update_info();
-    print("RK fat: "+ fat);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "rkfat", fat);
     updateResults();
+    print("RK fat: "+ fat);
 }
 
 macro "Left Renal Sinus Fat [w]" {
-    addROI("lkfat"); //right perirenal sinus fat
-    Roi.setGroup(group_lkfat);
+    addROI("lkfat", group_lkfat); //right perirenal sinus fat
     fat = measure_threshold(-250, -50);
-    update_info();
-    print("LK fat: "+ fat);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "lkfat", fat);
     updateResults();
+    print("LK fat: "+ fat);
 }
 
 macro "Right Perirenal Thickness [e]" {
-    addROI("rkthick"); //right perirenal thickness
-    Roi.setGroup(group_rkthick);
-    getStatistics(length);
-    update_info();
-    print("RK thickness: "+ length);
-    roi = timestamp();
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "rkthick", length);
-    updateResults();
+    if (selectionType == 5) {
+	addROI("rkthick", group_rkthick); //right perirenal thickness
+	getStatistics(length);
+	roi = timestamp();
+	append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "rkthick", length);
+	updateResults();
+	print("RK thickness: "+ length);
+    } else {
+	print("!!! Draw a straight line first !!!");
+    }
 }
 
 macro "Left Perirenal Thickness [r]" {
-    addROI("lkthick "); //right perirenal thickness
-    Roi.setGroup(group_lkthick);
-    getStatistics(length);
-    update_info();
-    print("LK thickness: "+ length);
-    roi = timestamp();
-    append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "lkthick", length);
-    updateResults();
+    if (selectionType == 5) {
+	addROI("lkthick", group_lkthick); //right perirenal thickness
+	getStatistics(length);
+	roi = timestamp();
+	append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "lkthick", length);
+
+	updateResults();
+	print("LK thickness: "+ length);
+    } else {
+	print("!!! Draw a straight line first !!!");
+    }
 }
 
 macro "Agatston Score [g]" {
@@ -1187,11 +1189,9 @@ macro "Agatston Score [g]" {
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca3", ca3);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca4", ca4);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "ca", "ca", ca);
-    addROI("Aorta");
-    Roi.setGroup(group_aorta);
-    update_info();
-    print("Ca Score: " + ca);
+    addROI("Aorta", group_aorta);
     updateResults();
+    print("Ca Score: " + ca);
 }
 
 macro "saveResult [S]" {
@@ -1200,13 +1200,14 @@ macro "saveResult [S]" {
 
 function updateResults () {
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
-    roiManager("reset");
+    roiManager("Deselect");
     run("Clear Results");
     roiManager("Measure");
     saveAs("Results",  create_series_path("_measurement.csv"));
     roiManager("Save", create_series_path("_measurement_roi.zip"));
     //roiManager("Update");
     run("Restore Selection");
+    update_info();
 }
 
 macro "Measure areas [A]" {
@@ -1248,128 +1249,128 @@ function append_result(Logfile, iid, roi, type, label, value) {
 
 
 function open_case(direction) {
-  // direction = 1 (forward), 0 (find first undone), -1 (backward)
+    // direction = 1 (forward), 0 (find first undone), -1 (backward)
 
-  idir = getDirectory("image");
-  if (endsWith(getInfo("image.filename"), ".nii.gz")) {
+    idir = getDirectory("image");
+    if (endsWith(getInfo("image.filename"), ".nii.gz")) {
 	filemode = 1;
-  } else { filemode = 0; }
+    } else { filemode = 0; }
 
-  if (filemode == 1) { // nii.gz
-      iname = getInfo("image.filename");
-      list0 = getFileList(idir);
-      idir = replace(idir, "\\", "/");
+    if (filemode == 1) { // nii.gz
+	iname = getInfo("image.filename");
+	list0 = getFileList(idir);
+	idir = replace(idir, "\\", "/");
 
-      list = list0;
-      for (i = 0; i < list0.length; i++) {
-				if (!endsWith(list0[i], "nii.gz"))
-					list = Array.deleteValue(list, list0[i]);
-      }
+	list = list0;
+	for (i = 0; i < list0.length; i++) {
+	    if (!endsWith(list0[i], "nii.gz"))
+		list = Array.deleteValue(list, list0[i]);
+	}
 
-      getLocationAndSize(x, y, width, height);
-      for (i = 0; i < list.length; i++) {
-				if (direction == 0) {
-				    // XXXXX not yet done
-				    if (!File.exists(pdir + list[i] + "/work")) {
-					  run("Close");
-					  open(pdir + list[i]);
-					  setLocation(x, y, width, height);
-					  //showStatus(idir + list[i] + " (" + i+1 + "/" + list.length + ")");
-					  init();
-					  showStatus("[" + i+1 + "/" + list.length + "] " + idir + list[i]);
-					  return pdir + list[i];
-				    }
-				} else if (endsWith(list[i], "nii.gz")) {
-				    if (iname == list[i]) {
-					if (direction == 1) {
-					  if (i == list.length - 1) {
-					    showMessage("Done");
-					    return 0;
-					  } else {
-					    run("Close");
-					    open(idir + list[i+1]);
-					    setLocation(x, y, width, height);
-					    //showStatus(idir + list[i+1]);
-					    //showStatus(idir + list[i+1] + " (" + i+2 + "/" + list.length + ")");
-					    init();
-					    showStatus("[" + i+2 + "/" + list.length + "] " + idir + list[i+1]);
-					    return idir + list[i+1];
-					  }
-					} else { // direction == -1
-					  if (i == 0) {
-					    showMessage("Already the first");
-					    return 0;
-					  } else {
-					  run("Close");
-					  open(idir + list[i-1]);
-					  setLocation(x, y, width, height);
-					  //showStatus(idir + list[i-1]);
-					  //showStatus(idir + list[i-1] + " (" + i + "/" + list.length + ")");
-					  init();
-					  showStatus("[" + i + "/" + list.length + "] " + idir + list[i-1]);
-					  return idir + list[i-1];
-					  }
-				       }
-				    }
-				}
-      }
-  } else { // dirmode
-      pdir = File.getParent(idir) + "/";
-      list0 = getFileList(pdir);
-      idir = replace(idir, "\\", "/");
-      pdir = replace(pdir, "\\", "/");
-      getLocationAndSize(x, y, width, height);
+	getLocationAndSize(x, y, width, height);
+	for (i = 0; i < list.length; i++) {
+	    if (direction == 0) {
+		// XXXXX not yet done
+		if (!File.exists(pdir + list[i] + "/work")) {
+		    run("Close");
+		    open(pdir + list[i]);
+		    setLocation(x, y, width, height);
+		    //showStatus(idir + list[i] + " (" + i+1 + "/" + list.length + ")");
+		    init();
+		    showStatus("[" + i+1 + "/" + list.length + "] " + idir + list[i]);
+		    return pdir + list[i];
+		}
+	    } else if (endsWith(list[i], "nii.gz")) {
+		if (iname == list[i]) {
+		    if (direction == 1) {
+			if (i == list.length - 1) {
+			    showMessage("Done");
+			    return 0;
+			} else {
+			    run("Close");
+			    open(idir + list[i+1]);
+			    setLocation(x, y, width, height);
+			    //showStatus(idir + list[i+1]);
+			    //showStatus(idir + list[i+1] + " (" + i+2 + "/" + list.length + ")");
+			    init();
+			    showStatus("[" + i+2 + "/" + list.length + "] " + idir + list[i+1]);
+			    return idir + list[i+1];
+			}
+		    } else { // direction == -1
+			if (i == 0) {
+			    showMessage("Already the first");
+			    return 0;
+			} else {
+			    run("Close");
+			    open(idir + list[i-1]);
+			    setLocation(x, y, width, height);
+			    //showStatus(idir + list[i-1]);
+			    //showStatus(idir + list[i-1] + " (" + i + "/" + list.length + ")");
+			    init();
+			    showStatus("[" + i + "/" + list.length + "] " + idir + list[i-1]);
+			    return idir + list[i-1];
+			}
+		    }
+		}
+	    }
+	}
+    } else { // dirmode
+	pdir = File.getParent(idir) + "/";
+	list0 = getFileList(pdir);
+	idir = replace(idir, "\\", "/");
+	pdir = replace(pdir, "\\", "/");
+	getLocationAndSize(x, y, width, height);
 
-      list = list0;
-      for (i = 0; i < list0.length; i++) {
+	list = list0;
+	for (i = 0; i < list0.length; i++) {
 	    if (!endsWith(list0[i], "/"))
-		    list = Array.deleteValue(list, list0[i]);
-      }
+		list = Array.deleteValue(list, list0[i]);
+	}
 
 
-      for (i = 0; i < list.length; i++) {
-				if (direction == 0) {
-				    if (!File.exists(pdir + list[i] + "/work")) {
-					  run("Close");
-					  open(pdir + list[i]);
-					  setLocation(x, y, width, height);
-					  init();
-					  showStatus("[" + i+1 + "/" + list.length + "] " + pdir + list[i]);
-					  return pdir + list[i];
-				    }
-				} else if (endsWith(list[i], "/")) {
-				  tmpdir = pdir + list[i];
-				  //showMessage("idir: "+ idir + "; list[i]: " + tmpdir);
-				    if (idir == tmpdir) {
-							if (direction == 1) {
-							  if (i == list.length - 1) {
-							    showMessage("Done");
-							    return 0;
-							  } else {
-							    run("Close");
-							    open(pdir + list[i+1]);
-							    setLocation(x, y, width, height);
-							    init();
-							    showStatus("[" + i+2 + "/" + list.length + "] " + pdir + list[i+1]);
-							    return pdir + list[i+1];
-							  }
-							} else { // direction == -1
-							  if (i == 0) {
-							    showMessage("Already the first");
-							    return 0;
-							  } else {
-							    run("Close");
-							    open(pdir + list[i-1]);
-							    setLocation(x, y, width, height);
-							    init();
-							    showStatus("[" + i + "/" + list.length + "] " + pdir + list[i-1]);
-							    return pdir + list[i-1];
-							  }
-							}
-					 }
-				}
-     }
-  }
+	for (i = 0; i < list.length; i++) {
+	    if (direction == 0) {
+		if (!File.exists(pdir + list[i] + "/work")) {
+		    run("Close");
+		    open(pdir + list[i]);
+		    setLocation(x, y, width, height);
+		    init();
+		    showStatus("[" + i+1 + "/" + list.length + "] " + pdir + list[i]);
+		    return pdir + list[i];
+		}
+	    } else if (endsWith(list[i], "/")) {
+		tmpdir = pdir + list[i];
+		//showMessage("idir: "+ idir + "; list[i]: " + tmpdir);
+		if (idir == tmpdir) {
+		    if (direction == 1) {
+			if (i == list.length - 1) {
+			    showMessage("Done");
+			    return 0;
+			} else {
+			    run("Close");
+			    open(pdir + list[i+1]);
+			    setLocation(x, y, width, height);
+			    init();
+			    showStatus("[" + i+2 + "/" + list.length + "] " + pdir + list[i+1]);
+			    return pdir + list[i+1];
+			}
+		    } else { // direction == -1
+			if (i == 0) {
+			    showMessage("Already the first");
+			    return 0;
+			} else {
+			    run("Close");
+			    open(pdir + list[i-1]);
+			    setLocation(x, y, width, height);
+			    init();
+			    showStatus("[" + i + "/" + list.length + "] " + pdir + list[i-1]);
+			    return pdir + list[i-1];
+			}
+		    }
+		}
+	    }
+	}
+    }
 }
 
 function measure_threshold(lower, upper) {
@@ -1396,11 +1397,12 @@ function measure_threshold(lower, upper) {
 }
 
 macro "Delete last ROI Manager [h]" {
-  if (roiManager("count") > 0) {
-      roiManager("select", roiManager("count") - 1);
-      roiManager("delete");
-  }
-  updateResults();
+    if (roiManager("count") > 0) {
+	roiManager("select", roiManager("count") - 1);
+	roiManager("delete");
+    }
+    updateResults();
+
 }
 
 macro "Double Flip [H]" {
