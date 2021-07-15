@@ -397,7 +397,7 @@ function init() {
     }
     if (File.exists(create_series_path("_roi.zip"))) {
 	roiManager("Open", create_series_path("_roi.zip"));
-    update_results();
+	update_results();
     }
     update_info();
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
@@ -1197,7 +1197,6 @@ macro "Left Perirenal Thickness [r]" {
 	getStatistics(length);
 	roi = timestamp();
 	append_result(create_series_path("_results.csv"), get_iid(), roi, "length", "lkthick", length);
-
 	update_results();
 	print("LK thickness: "+ length);
     } else {
