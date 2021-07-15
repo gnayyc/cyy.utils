@@ -395,11 +395,39 @@ function init() {
 	run("Colors...", "foreground=black background=white selection=red"); //set colors display
 	run("Options...", "iterations=1 count=1"); //set white background 
     }
-    if (File.exists(create_series_path("_measurement_roi.zip")))
+    if (File.exists(create_series_path("_measurement_roi.zip"))) {
+	setBatchMode(true);
 	roiManager("Open", create_series_path("_measurement_roi.zip"));
+	// do a posteriori correction of group_name and group_id
+	n = RoiManager.size;
+	for (i=0; i<n; i++) {
+	    RoiManager.select(i);
+	    name = RoiManager.getName(i);
+	    if (startsWith(name, "liver")) {
+		RoiManager.setGroup(group_liver);
+	    } else if (startsWith(name, "pancreas") {
+		RoiManager.setGroup(group_pancreas);
+	    } else if (startsWith(name, "spleen") {
+		RoiManager.setGroup(group_spleen);
+	    } else if (startsWith(name, "rkfat") {
+		RoiManager.setGroup(group_rkfat);
+	    } else if (startsWith(name, "lkfat") {
+		RoiManager.setGroup(group_lkfat);
+	    } else if (startsWith(name, "rkthick") {
+		RoiManager.setGroup(group_rkthick);
+	    } else if (startsWith(name, "lkthick") {
+		RoiManager.setGroup(group_lkthick);
+		roiManager("rename", "lkthick")
+	    } else if (startsWith(name, "Aorta") {
+		RoiManager.setGroup(group_aorta);
+	    }
+	}
+	setBatchMode(false);
+    }
     update_info();
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
-    roiManager("Deselect");
+    // roiManager("Deselect");
+    RoiManager.select(-1);
     run("Clear Results");
     roiManager("Measure");
 }
@@ -410,6 +438,7 @@ function print_group(group_name, group_id) {
 }
 
 function update_info() {
+    setBatchMode(true);
     print("\\Clear");
     print(iid);
     print("");
@@ -424,6 +453,7 @@ function update_info() {
     print("");
     print_group("[ 8 ] [ G ] Aorta", group_aorta);
     print("");
+    setBatchMode(false);
 }
 
 macro "init [0]" {
@@ -850,7 +880,7 @@ macro "Duplicate [D]" {
 //}
 
 /*
-macro "updateResults [s]" {
+macro "update_results [s]" {
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
     roiManager("Deselect");
     run("Clear Results");
@@ -1106,7 +1136,7 @@ macro "Liver [a]" {
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "liver", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "liver", mean);
-    updateResults();
+    update_results();
     print("Liver: "+ area + " (" + mean + ")");
 }
 
@@ -1116,7 +1146,7 @@ macro "Spleen [d]" {
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "spleen", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "spleen", mean);
-    updateResults();
+    update_results();
     print("Spleen: "+ area + " (" + mean + ")");
 }
 
@@ -1126,7 +1156,7 @@ macro "Pancreas [s]" {
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "pancreas", area);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "mean", "pancreas", mean);
-    updateResults();
+    update_results();
     print("Pancreas: "+ area + " (" + mean + ")");
 }
 
@@ -1136,7 +1166,7 @@ macro "Right Renal Sinus Fat [q]" {
     fat = measure_threshold(-250, -50);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "rkfat", fat);
-    updateResults();
+    update_results();
     print("RK fat: "+ fat);
 }
 
@@ -1145,7 +1175,7 @@ macro "Left Renal Sinus Fat [w]" {
     fat = measure_threshold(-250, -50);
     roi = timestamp();
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "lkfat", fat);
-    updateResults();
+    update_results();
     print("LK fat: "+ fat);
 }
 
@@ -1155,7 +1185,7 @@ macro "Right Perirenal Thickness [e]" {
 	getStatistics(length);
 	roi = timestamp();
 	append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "rkthick", length);
-	updateResults();
+	update_results();
 	print("RK thickness: "+ length);
     } else {
 	print("!!! Draw a straight line first !!!");
@@ -1169,7 +1199,7 @@ macro "Left Perirenal Thickness [r]" {
 	roi = timestamp();
 	append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "length", "lkthick", length);
 
-	updateResults();
+	update_results();
 	print("LK thickness: "+ length);
     } else {
 	print("!!! Draw a straight line first !!!");
@@ -1190,15 +1220,15 @@ macro "Agatston Score [g]" {
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "area", "ca4", ca4);
     append_result(create_series_path("_measurement_results.csv"), get_iid(), roi, "ca", "ca", ca);
     addROI("Aorta", group_aorta);
-    updateResults();
+    update_results();
     print("Ca Score: " + ca);
 }
 
 macro "saveResult [S]" {
-    updateResults();
+    update_results();
 }
 
-function updateResults () {
+function update_results () {
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
     roiManager("Deselect");
     run("Clear Results");
@@ -1401,7 +1431,7 @@ macro "Delete last ROI Manager [h]" {
 	roiManager("select", roiManager("count") - 1);
 	roiManager("delete");
     }
-    updateResults();
+    update_results();
 
 }
 
