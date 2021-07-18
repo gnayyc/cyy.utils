@@ -412,6 +412,112 @@ function print_group(group_name, group_id) {
     print("[", RoiManager.selected , "]", group_name, "(", group_id, ")");
 }
 
+function get_length() {
+    if (selectionType == 5) { // straight line
+        getLine(x1, y1, x2, y2, lineWidth);
+        // pixel_length = sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+        getPixelSize(unit, width, height, depth);
+        x1*=width; y1*=height; x2*=width; y2*=height;
+        scale_length = sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+	return scale_length;
+    } else 
+	return -1;
+}
+
+
+function set_result(row, id, ts, type, label, value) {
+    setResult("id", row, id);
+    setResult("timestamp", row, ts);
+    setResult("type", row, type);
+    setResult("label", row, label);
+    setResult("value", row, value);
+}
+
+function generate_results() {
+    setBatchMode(true);
+    Table.create("lifestyle");
+    Table.showRowNumbers(false);
+    Table.showRowIndexes(false);
+    id = newArray;
+    ts = newArray;
+    label = newArray;
+    type = newArray;
+    value = newArray;
+    for (i=0; i < RoiManager.size; i++) {
+        RoiManager.select(i);
+        name = RoiManager.getName(i);
+        if (startsWith(name, "rkfat") || startsWith(name, "lkfat")) {
+            fat = measure_threshold(-250, -50);
+            id = Array.concat(id, Roi.getProperty("id"));
+            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            label = Array.concat(label, name);
+            type = Array.concat(type, "area");
+            value = Array.concat(value, fat);
+        } else if (startsWith(name, "rkthick") || startsWith(name, "lkthick")) {
+            length = get_length();
+            id = Array.concat(id, Roi.getProperty("id"));
+            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            label = Array.concat(label, name);
+            type = Array.concat(type, "length");
+            value = Array.concat(value, length);
+        } else if (startsWith(name, "aorta")) {
+            ca1 = measure_threshold(130, 199);
+            ca2 = measure_threshold(200, 299);
+            ca3 = measure_threshold(300, 399);
+            ca4 = measure_threshold(400, 1500);
+            ca = ca1 + ca2 * 2 + ca3 * 3 + ca4 * 4;
+            id = Array.concat(id, Roi.getProperty("id"));
+            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            label = Array.concat(label, name);
+            type = Array.concat(type, "ca1");
+            value = Array.concat(value, ca1);
+            id = Array.concat(id, Roi.getProperty("id"));
+            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            label = Array.concat(label, name);
+            type = Array.concat(type, "ca2");
+            value = Array.concat(value, ca2);
+            id = Array.concat(id, Roi.getProperty("id"));
+            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            label = Array.concat(label, name);
+            type = Array.concat(type, "ca3");
+            value = Array.concat(value, ca3);
+            id = Array.concat(id, Roi.getProperty("id"));
+            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            label = Array.concat(label, name);
+            type = Array.concat(type, "ca4");
+            value = Array.concat(value, ca4);
+            id = Array.concat(id, Roi.getProperty("id"));
+            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            label = Array.concat(label, name);
+            type = Array.concat(type, "ca");
+            value = Array.concat(value, ca);
+        } else {
+	    print(name);
+            getStatistics(area, mean);
+            id = Array.concat(id, Roi.getProperty("id"));
+            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            label = Array.concat(label, name);
+            type = Array.concat(type, "area");
+            value = Array.concat(value, area);
+            id = Array.concat(id, Roi.getProperty("id"));
+            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            label = Array.concat(label, name);
+            type = Array.concat(type, "mean");
+            value = Array.concat(value, mean);
+        }
+    }
+
+    Table.setColumn("id", id);
+    Table.setColumn("timestamp", ts);
+    Table.setColumn("label", label);
+    Table.setColumn("type", type);
+    Table.setColumn("value", value);
+    Table.update;
+    Table.save(create_path("_results.csv"));
+    //saveAs("Results",  create_path("_results.csv"));
+    setBatchMode(false);
+}
+
 function update_info() {
     setBatchMode(true);
     print("\\Clear");
@@ -445,10 +551,6 @@ macro "Duplicate for fat work [9]" {
   run("Set... ", "zoom=150");
   
   File.copy(ipath, create_path("_fat.dcm"));
-}
-
-macro "test [9]" {
-    RoiManager.selectGroup(group_liver);
 }
 
 macro "Set Fat Mask [f]" {
@@ -1009,14 +1111,8 @@ macro "Scale Bar [B]" {
 
 
 
-macro "Close All Duplicated Windows [Q]" {
-  n = nImages;
-  for(i = 1; i <= n; i++){
-    selectImage(i);
-    t0 = getTitle();
-    if (matches(t0, ".*fat.*"))
-      close();
-  }
+macro "Close All Other Image Windows [Q]" {
+    close("\\Others");
 }
 
 function addROI(tag, group_id) {
@@ -1024,6 +1120,8 @@ function addROI(tag, group_id) {
 	Roi.setName(tag);
 	Roi.setGroup(group_id);
 	Roi.setPosition(getSliceNumber());
+	Roi.setProperty("timestamp", timestamp());
+	Roi.setProperty("id", get_iid());
 	Roi.setGroupNames(tag);
 	roiManager("add");
 	showStatus("Added ROI: " + iid + ":" + tag);
@@ -1057,14 +1155,14 @@ function create_series_path(ext) {
 // [3] create oval ROI sized 30 pixel centered on the mouse pointer
 // [4] create oval ROI sized 40 pixel centered on the mouse pointer
 // [5] create oval ROI sized 50 pixel centered on the mouse pointer
-// [a] save ROI to _result_csv, roiManager, labeled as 'liver', clear and update roimanager measurement
-// [s] save ROI to _result_csv, roiManager, labeled as 'pancreas', clear and update roimanager measurement
-// [d] save ROI to _result_csv, roiManager, labeled as 'spleen', clear and update roimanager measurement
-// [q] save ROI to _result_csv, roiManager, labeled as 'rkfat', clear and update roimanager measurement
-// [w] save ROI to _result_csv, roiManager, labeled as 'lkfat', clear and update roimanager measurement
-// [e] save ROI length to _result_csv, roiManager, labeled as 'rkthick', clear and update roimanager measurement
-// [r] save ROI length to _result_csv, roiManager, labeled as 'lkthick', clear and update roimanager measurement
-// [g] save calcium score to _result_csv, ROI to roiManager, labeled as 'Aorta', clear and update roimanager measurement
+// [a] save ROI to _result.csv, roiManager, labeled as 'liver', clear and update roimanager measurement
+// [s] save ROI to _result.csv, roiManager, labeled as 'pancreas', clear and update roimanager measurement
+// [d] save ROI to _result.csv, roiManager, labeled as 'spleen', clear and update roimanager measurement
+// [q] save ROI to _result.csv, roiManager, labeled as 'rkfat', clear and update roimanager measurement
+// [w] save ROI to _result.csv, roiManager, labeled as 'lkfat', clear and update roimanager measurement
+// [e] save ROI length to _result.csv, roiManager, labeled as 'rkthick', clear and update roimanager measurement
+// [r] save ROI length to _result.csv, roiManager, labeled as 'lkthick', clear and update roimanager measurement
+// [g] save calcium score to _result.csv, ROI to roiManager, labeled as 'Aorta', clear and update roimanager measurement
 // [c] next slice
 // [x] previous slice
 // [C] open next case     
@@ -1110,7 +1208,7 @@ macro "Oval_50 [5]" {
 
 
 macro "Liver [a]" {
-    if (selectionType >= 0) {
+    if (is("area")) {
 	addROI("liver", group_liver);
 	getStatistics(area, mean);
 	roi = timestamp();
@@ -1124,7 +1222,7 @@ macro "Liver [a]" {
 }
 
 macro "Spleen [d]" {
-    if (selectionType >= 0) {
+    if (is("area")) {
 	addROI("spleen", group_spleen);
 	getStatistics(area, mean);
 	roi = timestamp();
@@ -1138,7 +1236,7 @@ macro "Spleen [d]" {
 }
 
 macro "Pancreas [s]" {
-    if (selectionType >= 0) {
+    if (is("area")) {
 	addROI("pancreas", group_pancreas);
 	getStatistics(area, mean);
 	roi = timestamp();
@@ -1153,7 +1251,7 @@ macro "Pancreas [s]" {
 
 
 macro "Right Renal Sinus Fat [q]" {
-    if (selectionType >= 0) {
+    if (is("area")) {
 	addROI("rkfat", group_rkfat); //right perirenal sinus fat
 	fat = measure_threshold(-250, -50);
 	roi = timestamp();
@@ -1166,7 +1264,7 @@ macro "Right Renal Sinus Fat [q]" {
 }
 
 macro "Left Renal Sinus Fat [w]" {
-    if (selectionType >= 0) {
+    if (is("area")) {
 	addROI("lkfat", group_lkfat); //right perirenal sinus fat
 	fat = measure_threshold(-250, -50);
 	roi = timestamp();
@@ -1179,7 +1277,7 @@ macro "Left Renal Sinus Fat [w]" {
 }
 
 macro "Right Perirenal Thickness [e]" {
-    if (selectionType == 5) {
+    if (is("line")) {
 	addROI("rkthick", group_rkthick); //right perirenal thickness
 	getStatistics(length);
 	roi = timestamp();
@@ -1192,7 +1290,7 @@ macro "Right Perirenal Thickness [e]" {
 }
 
 macro "Left Perirenal Thickness [r]" {
-    if (selectionType == 5) {
+    if (is("line")) {
 	addROI("lkthick", group_lkthick); //right perirenal thickness
 	getStatistics(length);
 	roi = timestamp();
@@ -1205,7 +1303,7 @@ macro "Left Perirenal Thickness [r]" {
 }
 
 macro "Agatston Score [g]" {
-    if (selectionType >= 0) {
+    if (is("area")) {
 	Title = getTitle();
 	ca1 = measure_threshold(130, 199);
 	ca2 = measure_threshold(200, 299);
@@ -1218,7 +1316,7 @@ macro "Agatston Score [g]" {
 	append_result(create_series_path("_results.csv"), get_iid(), roi, "area", "ca3", ca3);
 	append_result(create_series_path("_results.csv"), get_iid(), roi, "area", "ca4", ca4);
 	append_result(create_series_path("_results.csv"), get_iid(), roi, "ca", "ca", ca);
-	addROI("Aorta", group_aorta);
+	addROI("aorta", group_aorta);
 	update_results();
 	print("Ca Score: " + ca);
     } else {
@@ -1237,8 +1335,6 @@ function update_results () {
     roiManager("Measure");
     saveAs("Results",  create_series_path("_roi.csv"));
     roiManager("Save", create_series_path("_roi.zip"));
-    //roiManager("Update");
-    //run("Restore Selection");
     update_info();
 }
 
@@ -1462,3 +1558,43 @@ macro "Abdominal window [f]" {
     setMinAndMax(-125, 225);
 }
 
+macro "generate [9]" {
+    generate_results();
+}
+
+function grid_overlay(width) {
+    setBatchMode(true);
+    color = "green";
+    tileWidth = 250;
+
+    getPixelSize(unit, pw, ph, pd);
+    if (unit=="cm") {
+        tileWidth= width/pw;
+        tileHeight = tileWidth;
+    } else {
+      showMessage("Please set scale (cm) first!!!");
+      return;
+    }
+
+    if (nImages>0) {
+        run("Remove Overlay");
+        width = getWidth;
+        height = getHeight;
+
+        xoff=tileWidth;
+        while (true && xoff<width) { // draw vertical lines
+          makeLine(xoff, 0, xoff, height);
+          run("Add Selection...", "stroke="+color);
+          xoff += tileWidth;
+        }
+        yoff=tileHeight;
+        while (true && yoff<height) { // draw horizonal lines
+          makeLine(0, yoff, width, yoff);
+          run("Add Selection...", "stroke="+color);
+          yoff += tileHeight;
+        }
+        run("Select None");
+	append_result(create_path("_time.csv"), iid, ymdhms(), "grid", "event", ymdhms());
+    }
+    setBatchMode(false);
+}

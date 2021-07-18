@@ -318,6 +318,14 @@ function saveResult () {
     run("Restore Selection");
 }
 
+var init_time = "";
+
+var 
+var id = newArray;
+var ts = newArray;
+var label = newArray;
+var type = newArray;
+var value = newArray;
 
 function init() {
     roiManager("reset");
@@ -338,17 +346,18 @@ function init() {
     print("\\Update7:[g] Create grid overylay.");
     print("\\Update8:[G] Remove grid overlay.");
 
-    if (File.exists(create_path("_measurement_roi.zip")))
-	roiManager("Open", create_path("_measurement_roi.zip"));
+    if (File.exists(create_path("_roi.zip")))
+	roiManager("Open", create_path("_roi.zip"));
     run("Set Measurements...", "area feret's display redirect=None decimal=3");
     roiManager("Deselect");
     run("Clear Results");
     roiManager("Measure");
     run("Set Scale...", "distance=0 known=0 unit=pixel");
 
-    // append_result(create_path("_measurement_results.csv"), get_iid(), roi, "area", "ca3", ca3);
-    run("Remove Overlay");
-    append_result(create_path("_time.csv"), iid, ymdhms(), "init", "event", ymdhms());
+    // run("Remove Overlay");
+    Overlay.clear;
+    init_time = ymdhms();
+    append_result(create_path("_time.csv"), iid, init_time, "init", "event", init_time);
     scale = 0;
     roi = 0;
     grid = 0;
@@ -497,6 +506,7 @@ function ymdhms() {
 }
 
 function grid_overlay(width) {
+    setBatchMode(true);
     color = "green";
     tileWidth = 250;
 
@@ -529,13 +539,17 @@ function grid_overlay(width) {
         run("Select None");
 	append_result(create_path("_time.csv"), iid, ymdhms(), "grid", "event", ymdhms());
     }
-}
-macro "Grid Overlay [g]" {
-    grid_overlay(0.5);
+    setBatchMode(false);
 }
 
-macro "Remove Overlay [G]" {
-    run("Remove Overlay");
+macro "Grid Overlay [g]" {
+    if (Overlay.size) {
+	if (Overlay.hidden)
+	    Overlay.show;
+	else 
+	    Overlay.hide;
+    } else
+	grid_overlay(0.5);
 }
 
 
