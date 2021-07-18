@@ -295,7 +295,9 @@ var series = "";
 var image = "";
 var Modality = "CT";
 
+var ImageID = 0;
 var iid = "";
+var sid = "";
 var Title = "";
 var DataDir = "";
 var FatLogfile = "";
@@ -347,7 +349,7 @@ macro "Reload [R]" {
 
 function init() {
     roiManager("reset");
-    run("Clear Results");
+    //run("Clear Results");
     TF = SF = VF = PF = RF = WVF = WF = 0;
     PatientName = getTag("0010,0010");
     PatientID = getTag("0010,0020");
@@ -361,10 +363,11 @@ function init() {
     time = replace(getTime,"E12","");
     time = replace(time, "\\\.", "");
 
-
+    ImageID = getImageID();
     Title = getTitle();
     idir = getDirectory("image");
     iid = get_iid();
+    sid = get_sid();
     getDimensions(width, height, channels, slices, frames);
     if (slices > 1)
 	ipath = idir + getInfo("slice.label"); 
@@ -397,14 +400,8 @@ function init() {
     }
     if (File.exists(create_series_path("_roi.zip"))) {
 	roiManager("Open", create_series_path("_roi.zip"));
-	update_results();
     }
-    update_info();
-    run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
-    // roiManager("Deselect");
-    RoiManager.select(-1);
-    run("Clear Results");
-    roiManager("Measure");
+    update_results();
 }
 
 function print_group(group_name, group_id) {
@@ -492,7 +489,6 @@ function generate_results() {
             type = Array.concat(type, "ca");
             value = Array.concat(value, ca);
         } else {
-	    print(name);
             getStatistics(area, mean);
             id = Array.concat(id, Roi.getProperty("id"));
             ts = Array.concat(ts, Roi.getProperty("timestamp"));
@@ -512,16 +508,15 @@ function generate_results() {
     Table.setColumn("label", label);
     Table.setColumn("type", type);
     Table.setColumn("value", value);
-    Table.update;
     Table.save(create_path("_results.csv"));
-    //saveAs("Results",  create_path("_results.csv"));
     setBatchMode(false);
+    Table.update;
 }
 
 function update_info() {
     setBatchMode(true);
     print("\\Clear");
-    print(iid);
+    print(sid);
     print("");
     print_group("[ 4 ] [ A ] Liver", group_liver);
     print_group("[ 3 ] [ S ] Pancreas", group_pancreas);
@@ -535,6 +530,8 @@ function update_info() {
     print_group("[ 8 ] [ G ] Aorta", group_aorta);
     print("");
     setBatchMode(false);
+    generate_results();
+    selectImage(ImageID);
 }
 
 macro "init [0]" {
@@ -957,7 +954,7 @@ macro "Duplicate [D]" {
 //}
 
 /*
-macro "update_results [s]" {
+macro "update results [s]" {
     run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
     roiManager("Deselect");
     run("Clear Results");
@@ -1121,10 +1118,10 @@ function addROI(tag, group_id) {
 	Roi.setGroup(group_id);
 	Roi.setPosition(getSliceNumber());
 	Roi.setProperty("timestamp", timestamp());
-	Roi.setProperty("id", get_iid());
+	Roi.setProperty("id", get_sid());
 	Roi.setGroupNames(tag);
 	roiManager("add");
-	showStatus("Added ROI: " + iid + ":" + tag);
+	showStatus("Added ROI: " + sid + ":" + tag);
     } else {
 	showStatus("No ROI to add");
     }
@@ -1134,7 +1131,7 @@ function create_path(ext) {
   WorkDir = idir + "work" + File.separator;
   if(!File.exists(WorkDir)) File.makeDirectory(WorkDir);
 
-  filename = WorkDir + get_iid() + ext;
+  filename = WorkDir + get_sid() + ext;
   return filename;
 }
 
@@ -1210,12 +1207,7 @@ macro "Oval_50 [5]" {
 macro "Liver [a]" {
     if (is("area")) {
 	addROI("liver", group_liver);
-	getStatistics(area, mean);
-	roi = timestamp();
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "area", "liver", area);
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "mean", "liver", mean);
 	update_results();
-	print("Liver: "+ area + " (" + mean + ")");
     } else {
 	showStatus("No ROI to add");
     }
@@ -1224,12 +1216,7 @@ macro "Liver [a]" {
 macro "Spleen [d]" {
     if (is("area")) {
 	addROI("spleen", group_spleen);
-	getStatistics(area, mean);
-	roi = timestamp();
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "area", "spleen", area);
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "mean", "spleen", mean);
 	update_results();
-	print("Spleen: "+ area + " (" + mean + ")");
     } else {
 	showStatus("No ROI to add");
     }
@@ -1238,12 +1225,7 @@ macro "Spleen [d]" {
 macro "Pancreas [s]" {
     if (is("area")) {
 	addROI("pancreas", group_pancreas);
-	getStatistics(area, mean);
-	roi = timestamp();
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "area", "pancreas", area);
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "mean", "pancreas", mean);
 	update_results();
-	print("Pancreas: "+ area + " (" + mean + ")");
     } else {
 	showStatus("No ROI to add");
     }
@@ -1253,11 +1235,7 @@ macro "Pancreas [s]" {
 macro "Right Renal Sinus Fat [q]" {
     if (is("area")) {
 	addROI("rkfat", group_rkfat); //right perirenal sinus fat
-	fat = measure_threshold(-250, -50);
-	roi = timestamp();
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "area", "rkfat", fat);
 	update_results();
-	print("RK fat: "+ fat);
     } else {
 	showStatus("No ROI to add");
     }
@@ -1266,11 +1244,7 @@ macro "Right Renal Sinus Fat [q]" {
 macro "Left Renal Sinus Fat [w]" {
     if (is("area")) {
 	addROI("lkfat", group_lkfat); //right perirenal sinus fat
-	fat = measure_threshold(-250, -50);
-	roi = timestamp();
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "area", "lkfat", fat);
 	update_results();
-	print("LK fat: "+ fat);
     } else {
 	showStatus("No ROI to add");
     }
@@ -1279,11 +1253,7 @@ macro "Left Renal Sinus Fat [w]" {
 macro "Right Perirenal Thickness [e]" {
     if (is("line")) {
 	addROI("rkthick", group_rkthick); //right perirenal thickness
-	getStatistics(length);
-	roi = timestamp();
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "length", "rkthick", length);
 	update_results();
-	print("RK thickness: "+ length);
     } else {
 	print("!!! Draw a straight line first !!!");
     }
@@ -1292,11 +1262,7 @@ macro "Right Perirenal Thickness [e]" {
 macro "Left Perirenal Thickness [r]" {
     if (is("line")) {
 	addROI("lkthick", group_lkthick); //right perirenal thickness
-	getStatistics(length);
-	roi = timestamp();
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "length", "lkthick", length);
 	update_results();
-	print("LK thickness: "+ length);
     } else {
 	print("!!! Draw a straight line first !!!");
     }
@@ -1304,37 +1270,26 @@ macro "Left Perirenal Thickness [r]" {
 
 macro "Agatston Score [g]" {
     if (is("area")) {
-	Title = getTitle();
-	ca1 = measure_threshold(130, 199);
-	ca2 = measure_threshold(200, 299);
-	ca3 = measure_threshold(300, 399);
-	ca4 = measure_threshold(400, 1500);
-	ca = ca1 + ca2 * 2 + ca3 * 3 + ca4 * 4;
-	roi = timestamp();
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "area", "ca1", ca1);
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "area", "ca2", ca2);
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "area", "ca3", ca3);
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "area", "ca4", ca4);
-	append_result(create_series_path("_results.csv"), get_iid(), roi, "ca", "ca", ca);
 	addROI("aorta", group_aorta);
 	update_results();
-	print("Ca Score: " + ca);
     } else {
 	showStatus("No ROI to add");
     }
 }
 
-macro "saveResult [S]" {
+macro "update results[9]" {
     update_results();
 }
 
 function update_results () {
-    run("Set Measurements...", "area mean standard min perimeter median display redirect=None decimal=3");
     roiManager("Deselect");
-    run("Clear Results");
-    roiManager("Measure");
-    saveAs("Results",  create_series_path("_roi.csv"));
-    roiManager("Save", create_series_path("_roi.zip"));
+    if (RoiManager.size > 0)
+	roiManager("Save", create_series_path("_roi.zip"));
+    else {
+	if (File.exists(create_series_path("_roi.zip"))) {
+	    File.delete(create_series_path("_roi.zip"));
+	}
+    }
     update_info();
 }
 
@@ -1368,11 +1323,11 @@ macro "Next Undon Case [n]" {
   run("Set... ", "zoom=150");
 }
 
-function append_result(Logfile, iid, roi, type, label, value) {
+function append_result(Logfile, sid, roi, type, label, value) {
 // create_path("_misc.csv"), get_id(), "area", "liver", value 
   if(!File.exists(Logfile)) 
     File.append("id,roi,type,label,value", Logfile);
-  File.append(iid+","+roi+","+type+","+label+","+value, Logfile);
+  File.append(sid+","+roi+","+type+","+label+","+value, Logfile);
 }
 
 
@@ -1558,43 +1513,56 @@ macro "Abdominal window [f]" {
     setMinAndMax(-125, 225);
 }
 
-macro "generate [9]" {
-    generate_results();
-}
-
-function grid_overlay(width) {
+function grid_overlay(tileLength) {
     setBatchMode(true);
     color = "green";
     tileWidth = 250;
 
     getPixelSize(unit, pw, ph, pd);
     if (unit=="cm") {
-        tileWidth= width/pw;
+        tileWidth= tileLength/pw;
         tileHeight = tileWidth;
     } else {
       showMessage("Please set scale (cm) first!!!");
+      setTool("Line");
       return;
     }
 
     if (nImages>0) {
-        run("Remove Overlay");
+        //run("Remove Overlay");
+	Overlay.clear;
         width = getWidth;
         height = getHeight;
 
-        xoff=tileWidth;
+	getCursorLoc(x, y, z, flags);
+
+        xoff=x % tileWidth;
         while (true && xoff<width) { // draw vertical lines
           makeLine(xoff, 0, xoff, height);
-          run("Add Selection...", "stroke="+color);
+	  Overlay.addSelection("green");
+          //run("Add Selection...", "stroke="+color);
           xoff += tileWidth;
         }
-        yoff=tileHeight;
+        yoff=y % tileWidth;
         while (true && yoff<height) { // draw horizonal lines
           makeLine(0, yoff, width, yoff);
-          run("Add Selection...", "stroke="+color);
+	  Overlay.addSelection("green");
+          //run("Add Selection...", "stroke="+color);
           yoff += tileHeight;
         }
         run("Select None");
-	append_result(create_path("_time.csv"), iid, ymdhms(), "grid", "event", ymdhms());
     }
     setBatchMode(false);
 }
+
+/*
+macro "grid [t]" {
+    if (Overlay.size > 0) {
+	if (Overlay.hidden)
+	    grid_overlay(0.5);
+	else 
+	    Overlay.hide;
+    } else
+	grid_overlay(0.5);
+}
+*/

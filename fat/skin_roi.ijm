@@ -320,7 +320,6 @@ function saveResult () {
 
 var init_time = "";
 
-var 
 var id = newArray;
 var ts = newArray;
 var label = newArray;
@@ -328,41 +327,51 @@ var type = newArray;
 var value = newArray;
 
 function init() {
-    roiManager("reset");
-    run("Clear Results");
+    if (nImages == 0) {
+	print("\\Clear");
+	print("\\Update0:Please open an image and Press [1]");
+	print("\\Update1:");
+	print("\\Update2:[X][1] Time = " + ymd_hms());
+	print("\\Update3:[X][2] Scale = X ---> Draw line -> [2]");
+	print("\\Update4:[X][3]   ROI = X ---> Draw ROI -> [3] ");
+	print("\\Update5:[X][4]  Grid = X ---> [4]");
+	print("\\Update6:");
+	print("\\Update7:[g] Create/hide grid.");
+    } else {
+	roiManager("reset");
+	run("Clear Results");
 
-    iid = getTitle();
-    idir = getDirectory("image");
-    ipath = idir + iid;
+	iid = getTitle();
+	idir = getDirectory("image");
+	ipath = idir + iid;
 
-    print("\\Clear");
-    print("\\Update0:" + iid + " (" + ymd_hms() + ")");
-    print("\\Update1:");
-    print("\\Update2:[1] Time = " + ymd_hms());
-    print("\\Update3:[2] Scale = X ---> Draw line -> [2]");
-    print("\\Update4:[3]   ROI = X ---> Draw ROI -> [3] ");
-    print("\\Update5:[4]  Grid = X ---> [4]");
-    print("\\Update6:");
-    print("\\Update7:[g] Create grid overylay.");
-    print("\\Update8:[G] Remove grid overlay.");
+	print("\\Clear");
+	print("\\Update0:" + iid + " (" + ymd_hms() + ")");
+	print("\\Update1:");
+	print("\\Update2:[X][1] Time = " + ymd_hms());
+	print("\\Update3:[X][2] Scale = X ---> Draw line -> [2]");
+	print("\\Update4:[X][3]   ROI = X ---> Draw ROI -> [3] ");
+	print("\\Update5:[X][4]  Grid = X ---> [4]");
+	print("\\Update6:");
+	print("\\Update7:[g] Create/hide grid.");
 
-    if (File.exists(create_path("_roi.zip")))
-	roiManager("Open", create_path("_roi.zip"));
-    run("Set Measurements...", "area feret's display redirect=None decimal=3");
-    roiManager("Deselect");
-    run("Clear Results");
-    roiManager("Measure");
-    run("Set Scale...", "distance=0 known=0 unit=pixel");
+	if (File.exists(create_path("_roi.zip")))
+	    roiManager("Open", create_path("_roi.zip"));
+	run("Set Measurements...", "area feret's display redirect=None decimal=3");
+	roiManager("Deselect");
+	run("Clear Results");
+	roiManager("Measure");
+	run("Set Scale...", "distance=0 known=0 unit=pixel");
 
-    // run("Remove Overlay");
-    Overlay.clear;
-    init_time = ymdhms();
-    append_result(create_path("_time.csv"), iid, init_time, "init", "event", init_time);
-    scale = 0;
-    roi = 0;
-    grid = 0;
-    setTool("Line");
-
+	// run("Remove Overlay");
+	Overlay.clear;
+	init_time = ymdhms();
+	append_result(create_path("_time.csv"), iid, init_time, "init", "event", init_time);
+	scale = 0;
+	roi = 0;
+	grid = 0;
+	setTool("Line");
+    }
 }
 
 macro "init [1]" {
@@ -415,17 +424,17 @@ function set_scale () {
 	saveAs("Tiff", tiff_path);
 	close();
 
-	print("\\Update3:[2] Scale = "+ pixel_length + " pixels ("+ scale_length+" cm)");
+	print("\\Update3:[O][2] Scale = "+ pixel_length + " pixels ("+ scale_length+" cm)");
 	setTool("freehand");
 	scale = 1;
     } else {
-	print("\\Update3:[2] Scale = X ---> Draw scale line and do again!!");
+	print("\\Update3:[X][2] Scale = X ---> Draw a straight scale line and do again!!");
     }
 }
 
 function check_scale () {
     if (scale == 0) {
-	print("\\Update3:[2] Scale = X ---> Set scale first!!");
+	print("\\Update3:[X][2] Scale = X ---> Set scale first!!");
 	exit();
     }
 }
@@ -438,22 +447,22 @@ macro "Update ROI [3]" {
     check_id();
     check_scale();
 
-    if (selectionType == 3) { // straight line
+    if (is("area")) {
 	addROI("lesion"); 
 	getStatistics(area);
 	append_result(create_path("_time.csv"), iid, ymdhms(), "area", "lesion", area);
 	saveResult();
-	print("\\Update4:[3]   ROI = " + area + " (cm2)");
+	print("\\Update4:[O][3]   ROI = " + area + " (cm2)");
 	run("Select None");
 	roi = 1;
     } else {
-	print("\\Update4:[3]   ROI = X ---> Need a freehand ROI!!");
+	print("\\Update4:[O][3]   ROI = X ---> Need an area ROI!!");
     }
 }
 
 function check_roi () {
     if (roi == 0) {
-	print("\\Update4:[3]   ROI = X ---> Draw ROI first!!");
+	print("\\Update4:[X][3]   ROI = X ---> Draw ROI first!!");
 	exit();
     }
 }
@@ -465,14 +474,12 @@ macro "Grid [4]" {
 
     grid_overlay(0.5);
     count = 0;
-    Dialog.create("Input area count");
-    Dialog.addNumber("Count:", count);
-    Dialog.show();
-    count = Dialog.getNumber();
+    count = getNumber("Count:", count);
     if (count > 0) {
 	append_result(create_path("_time.csv"), iid, ymdhms(), "count", "lesion", count);
-	print("\\Update5:[4]  Grid = " + count + " (sq)");
-    }
+	print("\\Update5:[O][4]  Grid = " + count + " (units)");
+    } else
+	print("\\Update5:[X][4]  Grid = Number must > 0");
 }
 
 function ymd_hms() {
@@ -505,47 +512,51 @@ function ymdhms() {
     return datetime;
 }
 
-function grid_overlay(width) {
+function grid_overlay(tileLength) {
     setBatchMode(true);
     color = "green";
     tileWidth = 250;
 
     getPixelSize(unit, pw, ph, pd);
     if (unit=="cm") {
-        tileWidth= width/pw;
+        tileWidth= tileLength/pw;
         tileHeight = tileWidth;
     } else {
       showMessage("Please set scale (cm) first!!!");
+      setTool("Line");
       return;
     }
 
     if (nImages>0) {
-        run("Remove Overlay");
+        //run("Remove Overlay");
+	Overlay.clear;
         width = getWidth;
         height = getHeight;
 
-        xoff=tileWidth;
+	getCursorLoc(x, y, z, flags);
+
+        xoff=x % tileWidth;
         while (true && xoff<width) { // draw vertical lines
           makeLine(xoff, 0, xoff, height);
-          run("Add Selection...", "stroke="+color);
+	  Overlay.addSelection("green");
+          //run("Add Selection...", "stroke="+color);
           xoff += tileWidth;
         }
-        yoff=tileHeight;
+        yoff=y % tileWidth;
         while (true && yoff<height) { // draw horizonal lines
           makeLine(0, yoff, width, yoff);
-          run("Add Selection...", "stroke="+color);
+	  Overlay.addSelection("green");
+          //run("Add Selection...", "stroke="+color);
           yoff += tileHeight;
         }
         run("Select None");
-	append_result(create_path("_time.csv"), iid, ymdhms(), "grid", "event", ymdhms());
     }
     setBatchMode(false);
 }
-
 macro "Grid Overlay [g]" {
-    if (Overlay.size) {
+    if (Overlay.size > 0) {
 	if (Overlay.hidden)
-	    Overlay.show;
+	    grid_overlay(0.5);
 	else 
 	    Overlay.hide;
     } else
