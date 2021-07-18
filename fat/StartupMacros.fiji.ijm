@@ -404,8 +404,7 @@ function init() {
     update_results();
     Table.setLocationAndSize(0, 110, 300, 300, "ROI Manager");
     Table.setLocationAndSize(300, 110, 300, 300, "Log");
-    Table.setLocationAndSize(0, 410, 600, 600, "lifestyle");
-    run("Set... ", "zoom=150");
+    run("Original Scale");
     setLocation(610, -10, width * 1.5, height*1.5);
 }
 
@@ -437,6 +436,8 @@ function set_result(row, id, ts, type, label, value) {
 
 function generate_results() {
     Table.create("lifestyle");
+    Table.setLocationAndSize(0, 410, 600, 600, "lifestyle");
+    print("create lifestyle");
     Table.showRowNumbers(false);
     Table.showRowIndexes(false);
     id = newArray;
@@ -513,7 +514,7 @@ function generate_results() {
     Table.setColumn("type", type);
     Table.setColumn("value", value);
     Table.save(create_path("_results.csv"));
-    Table.update;
+    close("lifestyle");
 }
 
 function update_info() {
@@ -533,8 +534,9 @@ function update_info() {
     print_group("[ 8 ] [ G ] Aorta", group_aorta);
     print("");
     generate_results();
-    setBatchMode(false);
     selectImage(ImageID);
+    setBatchMode(false);
+    close("lifestyle");
 }
 
 macro "init [0]" {
@@ -1429,7 +1431,7 @@ function open_case(direction) {
 		    found_roi = 0;
 		    check = getFileList(pdir + list[i] + "/work");
 		    for (j = 0; j < check.length; j++) {
-			if (endsWith(check[j], "roi.zip") found = 1;
+			if (endsWith(check[j], "roi.zip")) found_roi = 1;
 		    }
 		    if (found_roi == 0) {
 			run("Close");
