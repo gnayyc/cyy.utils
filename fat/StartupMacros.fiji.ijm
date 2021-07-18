@@ -348,7 +348,6 @@ macro "Reload [R]" {
 
 
 function init() {
-    roiManager("reset");
     //run("Clear Results");
     TF = SF = VF = PF = RF = WVF = WF = 0;
     PatientName = getTag("0010,0010");
@@ -369,6 +368,7 @@ function init() {
     iid = get_iid();
     sid = get_sid();
     getDimensions(width, height, channels, slices, frames);
+    roiManager("reset");
     if (slices > 1)
 	ipath = idir + getInfo("slice.label"); 
     else
@@ -402,6 +402,11 @@ function init() {
 	roiManager("Open", create_series_path("_roi.zip"));
     }
     update_results();
+    Table.setLocationAndSize(0, 110, 300, 300, "ROI Manager");
+    Table.setLocationAndSize(300, 110, 300, 300, "Log");
+    Table.setLocationAndSize(0, 410, 600, 600, "lifestyle");
+    run("Set... ", "zoom=150");
+    setLocation(610, -10, width * 1.5, height*1.5);
 }
 
 function print_group(group_name, group_id) {
@@ -431,7 +436,6 @@ function set_result(row, id, ts, type, label, value) {
 }
 
 function generate_results() {
-    setBatchMode(true);
     Table.create("lifestyle");
     Table.showRowNumbers(false);
     Table.showRowIndexes(false);
@@ -509,7 +513,6 @@ function generate_results() {
     Table.setColumn("type", type);
     Table.setColumn("value", value);
     Table.save(create_path("_results.csv"));
-    setBatchMode(false);
     Table.update;
 }
 
@@ -529,8 +532,8 @@ function update_info() {
     print("");
     print_group("[ 8 ] [ G ] Aorta", group_aorta);
     print("");
-    setBatchMode(false);
     generate_results();
+    setBatchMode(false);
     selectImage(ImageID);
 }
 
@@ -944,7 +947,7 @@ macro "Calculate Calcification Area [8]" {
 macro "Duplicate [D]" {
   getLocationAndSize(x, y, width, height);
   run("Duplicate...", "title="+getTitle());
-  setLocation(x+200, y+50);
+  setLocation(x+200, y+50, width, height);
   run("Set... ", "zoom=150");
 
 }
@@ -1310,17 +1313,14 @@ macro "Previous Slice [x]" {
 
 macro "Next Case [C]" {
   open_case(1);
-  run("Set... ", "zoom=150");
 }
 
 macro "Prev Case [X]" {
   open_case(-1);
-  run("Set... ", "zoom=150");
 }
 
 macro "Next Undon Case [n]" {
   open_case(0);
-  run("Set... ", "zoom=150");
 }
 
 function append_result(Logfile, sid, roi, type, label, value) {
@@ -1332,6 +1332,8 @@ function append_result(Logfile, sid, roi, type, label, value) {
 
 
 function open_case(direction) {
+    ImageX = 600;
+    ImageY = -110;
     // direction = 1 (forward), 0 (find first undone), -1 (backward)
 
     idir = getDirectory("image");
@@ -1351,6 +1353,9 @@ function open_case(direction) {
 	}
 
 	getLocationAndSize(x, y, width, height);
+	call("ij.gui.ImageWindow.setNextLocation", ImageX, ImageY)
+	x = ImageX;
+	y = ImageY;
 	for (i = 0; i < list.length; i++) {
 	    if (direction == 0) {
 		// XXXXX not yet done
@@ -1398,28 +1403,42 @@ function open_case(direction) {
 	    }
 	}
     } else { // dirmode
-	pdir = File.getParent(idir) + "/";
+	pdir = File.getParent(idir) + File.separator;
 	list0 = getFileList(pdir);
 	idir = replace(idir, "\\", "/");
 	pdir = replace(pdir, "\\", "/");
 	getLocationAndSize(x, y, width, height);
+	call("ij.gui.ImageWindow.setNextLocation", x, y);
 
 	list = list0;
 	for (i = 0; i < list0.length; i++) {
-	    if (!endsWith(list0[i], "/"))
+	    if (! File.isDirectory(pdir + list0[i]))
 		list = Array.deleteValue(list, list0[i]);
 	}
 
-
 	for (i = 0; i < list.length; i++) {
 	    if (direction == 0) {
-		if (!File.exists(pdir + list[i] + "/work")) {
+		if (!File.isDirectory(pdir + list[i] + "/work")) {
 		    run("Close");
 		    open(pdir + list[i]);
 		    setLocation(x, y, width, height);
 		    init();
 		    showStatus("[" + i+1 + "/" + list.length + "] " + pdir + list[i]);
 		    return pdir + list[i];
+		} else {
+		    found_roi = 0;
+		    check = getFileList(pdir + list[i] + "/work");
+		    for (j = 0; j < check.length; j++) {
+			if (endsWith(check[j], "roi.zip") found = 1;
+		    }
+		    if (found_roi == 0) {
+			run("Close");
+			open(pdir + list[i]);
+			setLocation(x, y, width, height);
+			init();
+			showStatus("[" + i+1 + "/" + list.length + "] " + pdir + list[i]);
+			return pdir + list[i];
+		    }
 		}
 	    } else if (endsWith(list[i], "/")) {
 		tmpdir = pdir + list[i];
@@ -1514,7 +1533,7 @@ macro "Abdominal window [f]" {
 }
 
 function grid_overlay(tileLength) {
-    setBatchMode(true);
+    //setBatchMode(true);
     color = "green";
     tileWidth = 250;
 

@@ -337,6 +337,10 @@ function init() {
 	print("\\Update5:[X][4]  Grid = X ---> [4]");
 	print("\\Update6:");
 	print("\\Update7:[g] Create/hide grid.");
+	call("ij.gui.ImageWindow.setNextLocation", ImageX, ImageY);
+	roiManager("reset");
+	Table.setLocationAndSize(0, 110, 300, 300, "ROI Manager");
+	Table.setLocationAndSize(300, 110, 300, 300, "Log");
     } else {
 	roiManager("reset");
 	run("Clear Results");
@@ -371,6 +375,11 @@ function init() {
 	roi = 0;
 	grid = 0;
 	setTool("Line");
+	Table.setLocationAndSize(0, 110, 300, 400, "ROI Manager");
+	Table.setLocationAndSize(300, 110, 300, 300, "Log");
+	ImageX = 600;
+	ImageY = -110;
+	setLocation(610, -10, width, height);
     }
 }
 
