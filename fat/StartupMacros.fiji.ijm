@@ -533,7 +533,8 @@ function update_info() {
     print_group("[ 8 ] [ G ] Aorta", group_aorta);
     print("");
     //generate_results();
-    roiManager("select", RoiManager.size - 1);
+    if (RoiManager.size > 0)
+	roiManager("select", RoiManager.size - 1);
     setBatchMode(false);
 }
 
