@@ -402,10 +402,10 @@ function init() {
 	roiManager("Open", create_series_path("_roi.zip"));
     }
     update_results();
-    Table.setLocationAndSize(0, 110, 300, 300, "ROI Manager");
-    Table.setLocationAndSize(300, 110, 300, 300, "Log");
     run("Original Scale");
     setLocation(610, -10, width * 1.5, height*1.5);
+    Table.setLocationAndSize(0, 110, 300, 450, "ROI Manager");
+    Table.setLocationAndSize(300, 110, 300, 450, "Log");
 }
 
 function print_group(group_name, group_id) {
@@ -437,7 +437,6 @@ function set_result(row, id, ts, type, label, value) {
 function generate_results() {
     Table.create("lifestyle");
     Table.setLocationAndSize(0, 410, 600, 600, "lifestyle");
-    print("create lifestyle");
     Table.showRowNumbers(false);
     Table.showRowIndexes(false);
     id = newArray;
@@ -514,7 +513,8 @@ function generate_results() {
     Table.setColumn("type", type);
     Table.setColumn("value", value);
     Table.save(create_path("_results.csv"));
-    close("lifestyle");
+    selectImage(ImageID);
+    //close("lifestyle");
 }
 
 function update_info() {
@@ -530,13 +530,11 @@ function update_info() {
     print_group("[ 1 ] [ W ] L Kidney Sinus_Fat", group_lkfat);
     print_group("[ 1 ] [ E ] R Kidney Thickness", group_rkthick);
     print_group("[ 1 ] [ R ] L Kidney Thickness", group_lkthick);
-    print("");
     print_group("[ 8 ] [ G ] Aorta", group_aorta);
     print("");
-    generate_results();
-    selectImage(ImageID);
+    //generate_results();
+    roiManager("select", RoiManager.size - 1);
     setBatchMode(false);
-    close("lifestyle");
 }
 
 macro "init [0]" {
@@ -1286,7 +1284,7 @@ macro "update results[9]" {
     update_results();
 }
 
-function update_results () {
+function update_results() {
     roiManager("Deselect");
     if (RoiManager.size > 0)
 	roiManager("Save", create_series_path("_roi.zip"));
@@ -1296,6 +1294,10 @@ function update_results () {
 	}
     }
     update_info();
+    if (!isActive(ImageID)) {
+	print("select", ImageID);
+	selectImage(ImageID);
+    }
 }
 
 macro "Measure areas [A]" {
@@ -1587,3 +1589,7 @@ macro "grid [t]" {
 	grid_overlay(0.5);
 }
 */
+
+macro "close lifestyle [9]" {
+    close("lifestyle");
+}
