@@ -312,6 +312,8 @@ var vfat_title = "";
 var pfat_title = "";
 var idir = "";
 var ipath = "";
+var num_n = 0;
+var num_N = 0;
 
 var group_liver = 1;
 var group_pancreas = 2;
@@ -402,10 +404,15 @@ function init() {
 	roiManager("Open", create_series_path("_roi.zip"));
     }
     update_results();
-    Table.setLocationAndSize(0, 110, 300, 300, "ROI Manager");
-    Table.setLocationAndSize(300, 110, 300, 300, "Log");
-    run("Original Scale");
-    setLocation(610, -10, width * 1.5, height*1.5);
+    //run("Original Scale");
+    //setLocation(610, -10, width * 1.5, height*1.5);
+    setLocation(610, -10);
+    Table.setLocationAndSize(0, 110, 300, 450, "Log");
+    Table.setLocationAndSize(300, 110, 300, 450, "ROI Manager");
+    if (RoiManager.size > 0) {
+        RoiManager.select(RoiManager.size - 1);
+	roiManager("Deselect");
+    }
 }
 
 function print_group(group_name, group_id) {
@@ -437,7 +444,6 @@ function set_result(row, id, ts, type, label, value) {
 function generate_results() {
     Table.create("lifestyle");
     Table.setLocationAndSize(0, 410, 600, 600, "lifestyle");
-    print("create lifestyle");
     Table.showRowNumbers(false);
     Table.showRowIndexes(false);
     id = newArray;
@@ -514,13 +520,14 @@ function generate_results() {
     Table.setColumn("type", type);
     Table.setColumn("value", value);
     Table.save(create_path("_results.csv"));
-    close("lifestyle");
+    selectImage(ImageID);
+    //close("lifestyle");
 }
 
 function update_info() {
     setBatchMode(true);
     print("\\Clear");
-    print(sid);
+    print("["+num_n+"/"+num_N+"] "+sid);
     print("");
     print_group("[ 4 ] [ A ] Liver", group_liver);
     print_group("[ 3 ] [ S ] Pancreas", group_pancreas);
@@ -530,13 +537,14 @@ function update_info() {
     print_group("[ 1 ] [ W ] L Kidney Sinus_Fat", group_lkfat);
     print_group("[ 1 ] [ E ] R Kidney Thickness", group_rkthick);
     print_group("[ 1 ] [ R ] L Kidney Thickness", group_lkthick);
-    print("");
     print_group("[ 8 ] [ G ] Aorta", group_aorta);
     print("");
-    generate_results();
-    selectImage(ImageID);
+    //generate_results();
+    if (RoiManager.size > 0) {
+	roiManager("select", RoiManager.size - 1);
+	roiManager("Deselect");
+    }
     setBatchMode(false);
-    close("lifestyle");
 }
 
 macro "init [0]" {
@@ -1286,7 +1294,7 @@ macro "update results[9]" {
     update_results();
 }
 
-function update_results () {
+function update_results() {
     roiManager("Deselect");
     if (RoiManager.size > 0)
 	roiManager("Save", create_series_path("_roi.zip"));
@@ -1296,6 +1304,10 @@ function update_results () {
 	}
     }
     update_info();
+    if (!isActive(ImageID)) {
+	print("select", ImageID);
+	selectImage(ImageID);
+    }
 }
 
 macro "Measure areas [A]" {
@@ -1353,6 +1365,7 @@ function open_case(direction) {
 	    if (!endsWith(list0[i], "nii.gz"))
 		list = Array.deleteValue(list, list0[i]);
 	}
+	num_N = list.length;
 
 	getLocationAndSize(x, y, width, height);
 	call("ij.gui.ImageWindow.setNextLocation", ImageX, ImageY)
@@ -1364,6 +1377,7 @@ function open_case(direction) {
 		if (!File.exists(pdir + list[i] + "/work")) {
 		    run("Close");
 		    open(pdir + list[i]);
+		    num_n = i + 1;
 		    setLocation(x, y, width, height);
 		    //showStatus(idir + list[i] + " (" + i+1 + "/" + list.length + ")");
 		    init();
@@ -1378,6 +1392,7 @@ function open_case(direction) {
 			    return 0;
 			} else {
 			    run("Close");
+			    num_n = i + 1;
 			    open(idir + list[i+1]);
 			    setLocation(x, y, width, height);
 			    //showStatus(idir + list[i+1]);
@@ -1392,6 +1407,7 @@ function open_case(direction) {
 			    return 0;
 			} else {
 			    run("Close");
+			    num_n = i + 1;
 			    open(idir + list[i-1]);
 			    setLocation(x, y, width, height);
 			    //showStatus(idir + list[i-1]);
@@ -1417,11 +1433,13 @@ function open_case(direction) {
 	    if (! File.isDirectory(pdir + list0[i]))
 		list = Array.deleteValue(list, list0[i]);
 	}
+	num_N = list.length;
 
 	for (i = 0; i < list.length; i++) {
 	    if (direction == 0) {
 		if (!File.isDirectory(pdir + list[i] + "/work")) {
 		    run("Close");
+		    num_n = i + 1;
 		    open(pdir + list[i]);
 		    setLocation(x, y, width, height);
 		    init();
@@ -1435,6 +1453,7 @@ function open_case(direction) {
 		    }
 		    if (found_roi == 0) {
 			run("Close");
+			num_n = i + 1;
 			open(pdir + list[i]);
 			setLocation(x, y, width, height);
 			init();
@@ -1453,6 +1472,7 @@ function open_case(direction) {
 			} else {
 			    run("Close");
 			    open(pdir + list[i+1]);
+			    num_n = i + 1;
 			    setLocation(x, y, width, height);
 			    init();
 			    showStatus("[" + i+2 + "/" + list.length + "] " + pdir + list[i+1]);
@@ -1465,6 +1485,7 @@ function open_case(direction) {
 			} else {
 			    run("Close");
 			    open(pdir + list[i-1]);
+			    num_n = i + 1;
 			    setLocation(x, y, width, height);
 			    init();
 			    showStatus("[" + i + "/" + list.length + "] " + pdir + list[i-1]);
@@ -1501,11 +1522,18 @@ function measure_threshold(lower, upper) {
 }
 
 macro "Delete last ROI Manager [h]" {
-    if (roiManager("count") > 0) {
-	roiManager("select", roiManager("count") - 1);
+    slice_n = getSliceNumber();
+    if (RoiManager.size > 0) {
+	roiManager("Deselect");
+        RoiManager.select(RoiManager.size - 1);
 	roiManager("delete");
     }
     update_results();
+    if (RoiManager.size > 0) {
+        RoiManager.select(RoiManager.size - 1);
+	roiManager("Deselect");
+    }
+    //setSlice(slice_n);
 
 }
 
@@ -1587,3 +1615,7 @@ macro "grid [t]" {
 	grid_overlay(0.5);
 }
 */
+
+macro "close lifestyle [9]" {
+    close("lifestyle");
+}
