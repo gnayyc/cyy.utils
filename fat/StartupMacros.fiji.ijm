@@ -350,6 +350,19 @@ macro "Reload [R]" {
 
 
 function init() {
+    // get num_N num_n
+    if (num_n == 0) {
+	iname = getInfo("image.filename");
+	if ("" + iname == "")  {
+	    // directory
+	    iname = getDir("image");
+	    idir = File.getParent(iname);
+	    list0 = getFileList(idir);
+	} else {
+	    idir = getDir("image");
+	    list0 = getFileList(idir);
+	}
+    }
     //run("Clear Results");
     TF = SF = VF = PF = RF = WVF = WF = 0;
     PatientName = getTag("0010,0010");
@@ -1378,7 +1391,8 @@ function open_case(direction) {
 		if (!File.exists(pdir + list[i] + "/work")) {
 		    run("Close");
 		    open(pdir + list[i]);
-		    num_n = i + 1;
+			    num_n = i + 1;
+			    open(idir + list[num_n-1]);
 		    setLocation(x, y, width, height);
 		    //showStatus(idir + list[i] + " (" + i+1 + "/" + list.length + ")");
 		    init();
@@ -1393,8 +1407,8 @@ function open_case(direction) {
 			    return 0;
 			} else {
 			    run("Close");
-			    num_n = i + 1;
-			    open(idir + list[i+1]);
+			    num_n = i + 2;
+			    open(idir + list[num_n-1]);
 			    setLocation(x, y, width, height);
 			    //showStatus(idir + list[i+1]);
 			    //showStatus(idir + list[i+1] + " (" + i+2 + "/" + list.length + ")");
@@ -1408,8 +1422,8 @@ function open_case(direction) {
 			    return 0;
 			} else {
 			    run("Close");
-			    num_n = i + 1;
-			    open(idir + list[i-1]);
+			    num_n = i;
+			    open(idir + list[num_n-1]);
 			    setLocation(x, y, width, height);
 			    //showStatus(idir + list[i-1]);
 			    //showStatus(idir + list[i-1] + " (" + i + "/" + list.length + ")");
@@ -1441,7 +1455,7 @@ function open_case(direction) {
 		if (!File.isDirectory(pdir + list[i] + "/work")) {
 		    run("Close");
 		    num_n = i + 1;
-		    open(pdir + list[i]);
+		    open(pdir + list[num_n-1]);
 		    setLocation(x, y, width, height);
 		    init();
 		    showStatus("[" + i+1 + "/" + list.length + "] " + pdir + list[i]);
@@ -1454,8 +1468,8 @@ function open_case(direction) {
 		    }
 		    if (found_roi == 0) {
 			run("Close");
-			num_n = i + 1;
-			open(pdir + list[i]);
+			num_n = i + 2;
+			open(pdir + list[num_n-1]);
 			setLocation(x, y, width, height);
 			init();
 			showStatus("[" + i+1 + "/" + list.length + "] " + pdir + list[i]);
@@ -1472,8 +1486,8 @@ function open_case(direction) {
 			    return 0;
 			} else {
 			    run("Close");
-			    open(pdir + list[i+1]);
-			    num_n = i + 1;
+			    num_n = i + 2;
+			    open(pdir + list[num_n-1]);
 			    setLocation(x, y, width, height);
 			    init();
 			    showStatus("[" + i+2 + "/" + list.length + "] " + pdir + list[i+1]);
@@ -1485,8 +1499,8 @@ function open_case(direction) {
 			    return 0;
 			} else {
 			    run("Close");
-			    open(pdir + list[i-1]);
-			    num_n = i + 1;
+			    num_n = i;
+			    open(pdir + list[num_n-1]);
 			    setLocation(x, y, width, height);
 			    init();
 			    showStatus("[" + i + "/" + list.length + "] " + pdir + list[i-1]);
@@ -1618,5 +1632,7 @@ macro "grid [t]" {
 */
 
 macro "close lifestyle [9]" {
-    close("lifestyle");
+    print("["+getInfo("image.filename")+"]");
+    print(File.name);
+    print(getInfo("image.directory"));
 }

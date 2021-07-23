@@ -577,4 +577,128 @@ macro "Reload [R]" {
 	run("Install...", "install=["+ getDirectory("macros") + "StartupMacros.fiji.ijm]");
 }
 
+var num_n = 0;
+var num_N = 0;
 
+
+macro "init [0]" {
+    init();
+}
+macro "Class 1 [1]" {
+    set_class(1);
+    open_case(0);
+}
+macro "Class 2 [2]" {
+    set_class(2);
+    open_case(0);
+}
+macro "Class 3 [3]" {
+    set_class(3);
+    open_case(0);
+}
+macro "Class 4 [4]" {
+    set_class(4);
+    open_case(0);
+}
+macro "Class 5 [5]" {
+    set_class(5);
+    open_case(0);
+}
+
+macro "Next Case [j]" {
+  open_case(-1);
+}
+
+macro "Previous Case [k]" {
+  open_case(1);
+}
+
+macro "Next Undon Case [n]" {
+  open_case(0);
+}
+
+
+function set_class(class_n) {
+    idir = getDirectory("image");
+    iname = getInfo("image.filename");
+    icsv = idir + File.separator + File.getNameWithoutExtension(iname) + ".txt";
+    fcsv = File.open(icsv);
+    print(fcsv, class_n);
+    File.close(fcsv);
+    print("\\Update0:[", class_n, "]", "["+num_n+"/"+num_N+"]" ,iname);
+}
+
+function init() {
+    idir = getDirectory("image");
+    iname = getInfo("image.filename");
+    icsv = idir + File.separator + File.getNameWithoutExtension(iname) + ".txt";
+    if (File.exists(icsv)) {
+	    class_n = File.openAsString(icsv);
+	    class_n = String.trim(class_n);
+    } else {
+	class_n = "X";
+    }
+    print("\\Clear");
+    print("\\Update0:[", class_n, "]", "["+num_n+"/"+num_N+"]" ,iname);
+    Table.setLocationAndSize(0, 110, 300, 100, "Log");
+}
+
+function open_case(direction) {
+    // direction: -1: previous, 0: first unread, 1: next
+
+    idir = getDirectory("image");
+    list0 = getFileList(idir);
+    list = list0;
+    for (i = 0; i < list0.length; i++) {
+	if (!endsWith(list0[i], "png"))
+	    list = Array.deleteValue(list, list0[i]);
+    }
+    num_N = list.length;
+
+    getLocationAndSize(x, y, width, height);
+    call("ij.gui.ImageWindow.setNextLocation", x, y);
+    //x = ImageX;
+    //y = ImageY;
+    for (i = 0; i < list.length; i++) {
+	if (direction == 0) {
+	    if (!File.exists(idir + File.separator + File.getNameWithoutExtension(list[i]) + ".txt" )) {
+		run("Close");
+		num_n = i + 1;
+		open(idir + File.separator + list[num_n-1]);
+		setLocation(x, y);
+		//showStatus(idir + list[i] + " (" + i+1 + "/" + list.length + ")");
+		init();
+		return idir + list[i];
+	    }
+	} else {
+	    if (getInfo("image.filename") == list[i]) {
+		if (direction == -1) {
+		    if (i == list.length - 1) {
+			showMessage("Already the last one!");
+			return 0;
+		    } else {
+			run("Close");
+			num_n = i + 2;
+			open(idir + File.separator + list[num_n-1]);
+			setLocation(x, y);
+			init();
+			return idir + list[i+1];
+		    }
+		} else { 
+		    // direction == -1
+		    if (i == 0) {
+			showMessage("Already the first");
+			return 0;
+		    } else {
+			run("Close");
+			num_n = i;
+			open(idir + File.separator + list[num_n-1]);
+			setLocation(x, y);
+			init();
+			return idir + list[i-1];
+		    }
+		}
+	    }
+	}
+    }
+}
