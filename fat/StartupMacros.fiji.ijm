@@ -1006,7 +1006,8 @@ macro "Fill [l]" {
 //}
 
 macro "Elliptical [E]" {
-  setTool("oval");
+    //setTool("oval");
+    setTool("polygon");
 }
 
 macro "Select None [r]" {

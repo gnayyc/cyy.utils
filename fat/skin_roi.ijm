@@ -375,8 +375,8 @@ function init() {
 	roi = 0;
 	grid = 0;
 	setTool("Line");
-	Table.setLocationAndSize(0, 110, 300, 400, "ROI Manager");
-	Table.setLocationAndSize(300, 110, 300, 300, "Log");
+	Table.setLocationAndSize(0, 110, 300, 300, "Log");
+	Table.setLocationAndSize(300, 110, 300, 400, "ROI Manager");
 	ImageX = 600;
 	ImageY = -110;
 	setLocation(610, -10, width, height);
