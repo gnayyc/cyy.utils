@@ -1299,6 +1299,7 @@ macro "Agatston Score [g]" {
     if (is("area")) {
 	addROI("aorta", group_aorta);
 	update_results();
+	run("Previous Slice [<]");
     } else {
 	showStatus("No ROI to add");
     }
@@ -1328,6 +1329,26 @@ macro "Measure areas [A]" {
     setThreshold(255, 255);
     run("Create Selection");
     run("Measure");
+}
+
+macro "set_slice [V]" {
+    nSlice = getSliceNumber();
+}
+
+macro "mid_slice [v]" {
+    mid_slice();
+}
+
+var nSlice = 0;
+function mid_slice() {
+    if (nSlice == 0) {
+	nSlice = getSliceNumber();
+    } else {
+	n = floor((nSlice + getSliceNumber())/2);
+	setSlice(n);
+	setTool("polygon");
+	nSlice = 0;
+    }
 }
 
 
@@ -1638,15 +1659,75 @@ macro "test [9]" {
     border2selection();
 }
 
+/*
+macro "test [0]" {
+    // print("["+getInfo("image.filename")+"]");
+    // print(File.name);
+    // print(getInfo("image.directory"));
+    //border2selection();
+    roiManager("reset");
+    roiManager("Open", getDir("image")+File.getNameWithoutExtension(getInfo("image.filename"))+".zip");
+    RoiManager.select(0);
+}
+
+macro "test [8]" {
+    setNewROI("Grade1", 1);
+}
+
+macro "Set Grade 1 [1]" {
+    setNewROI("Grade1", 1);
+}
+
+macro "Set Grade 2 [2]" {
+    setNewROI("Grade2", 2);
+}
+
+macro "Set Grade 3 [3]" {
+    setNewROI("Grade3", 3);
+}
+
+macro "Set Grade 4 [4]" {
+    setNewROI("Grade4", 4);
+}
+
+macro "Set Grade 5 [5]" {
+    setNewROI("Grade5", 5);
+}
+
+macro "Select Grade 1 [a]" {
+    selectROI("Grade1");
+}
+macro "Select Grade 2 [b]" {
+    selectROI("Grade2");
+}
+macro "Select Grade 3 [c]" {
+    selectROI("Grade3");
+}
+macro "Select Grade 4 [d]" {
+    selectROI("Grade4");
+}
+macro "Select Grade 5 [e]" {
+    selectROI("Grade5");
+}
+
+macro "save masks [s]" {
+    save_mask();
+}
+
+macro "Show all ROIs [A]" {
+    roiManager("select", Array.getSequence(RoiManager.size));
+    roiManager("Combine");
+}
+
 function border2selection () {
     dir1 = getDirectory("Choose Source Directory ");
     list = getFileList(dir1);
     setBatchMode(true);
-    for (i=0; i<list.length; i++) {
-	showProgress(i+1, list.length);
-	if (endsWith(list[i], "png")) {
+    for (j=0; j<list.length; j++) {
+	showProgress(j+1, list.length);
+	if (endsWith(list[j], "png")) {
 	    roiManager("reset");
-	    open(dir1+list[i]);
+	    open(dir1+list[j]);
 	    //run("Duplicate...", "title="+getTitle);
 	    //run("Color Threshold...");
 	    // Color Thresholder 2.1.0/1.53k
@@ -1693,18 +1774,94 @@ function border2selection () {
 	    run("Fill Holes");
 	    run("Create Selection");
 	    
-	    Roi.setName("All Lesions");
-	    Roi.setGroup(0);
+	    Roi.setName("All");
+	    Roi.setGroup(7);
 	    Roi.setPosition(getSliceNumber());
 	    Roi.setProperty("timestamp", timestamp());
 	    Roi.setProperty("id", a);
-	    Roi.setGroupNames("Lesion");
+	    Roi.setGroupNames("All");
+	    Roi.setStrokeColor("white");
 	    roiManager("add");
 	    RoiManager.select(0);
-	    roiManager("Split");
-	    roiManager("Save", dir1+File.getNameWithoutExtension(list[i])+".zip");
+	    run("Analyze Particles...", "clear composite");
+	    if (nResults > 1) {
+		roiManager("Split");
+		RoiManager.select(0);
+		roiManager("delete");
+	    }
+	    i_del = newArray();
+	    for (i = 0; i < RoiManager.size; i++) {
+		RoiManager.select(i);
+		getStatistics(area);
+		if (area < 16)
+		    i_del = Array.concat(i_del, i);
+	    }
+	    if (i_del.length > 0) {
+		roiManager("select", i_del);
+		roiManager("delete");
+	    }
+	    roiManager("select", Array.getSequence(RoiManager.size));
+	    RoiManager.setGroup(7);
+	    roiManager("Save", dir1+File.getNameWithoutExtension(list[j])+".zip");
 	    close();
 	}
     }
     setBatchMode(false);
 }
+
+function setNewROI(tag, group_id) {
+    ix = roiManager("index");
+    if (selectionType >= 0) {
+	Roi.setName(tag);
+	Roi.setGroup(group_id);
+	Roi.setGroupNames(tag);
+	//Roi.setPosition(getSliceNumber());
+	Roi.setProperty("timestamp", timestamp());
+	Roi.setProperty("id", getInfo("image.filename"));
+	roiManager("add");
+    } 
+    RoiManager.select(ix);
+    roiManager("delete");
+    roiManager("Save", getDir("image")+File.getNameWithoutExtension(getInfo("image.filename"))+".zip");
+    RoiManager.select(0);
+}
+
+function selectROI(Name) {
+    ix = newArray();
+    for (i = 0; i < RoiManager.size; i++) {
+	if (startsWith(RoiManager.getName(i), Name)) {
+	    ix = Array.concat(ix, i);
+	}
+    }
+    roiManager("select", ix);
+    roiManager("Combine");
+}
+
+function save_mask() {
+    grades = newArray("Grade1", "Grade2", "Grade3", "Grade4", "Grade5");
+    setBatchMode(true);
+    for (i = 0; i < grades.length; i++) {
+	m_file = getDir("image")+File.getNameWithoutExtension(getInfo("image.filename"))+"_grade"+ (i+1) +".png";
+	selectROI(grades[i]);
+	run("Create Mask");
+	run("Invert");
+	save(m_file);
+	close();
+    }
+    setBatchMode(false);
+}
+*/
+
+
+//group colors
+//0 default
+//1 blue
+//2 red
+//3 green
+//4 #000033 dark blue
+//5 #ff00b6 magenta
+//6 #005300 dark green
+//7 #ffd300 yellow
+//8 #009fff sky blue
+//9 #9a4d42 gray
+//10 #00ffbe light green
