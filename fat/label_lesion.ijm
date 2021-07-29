@@ -349,6 +349,7 @@ macro "Reload [R]" {
 }
 
 
+/*
 function init() {
     // get num_N num_n
     if (num_n == 0) {
@@ -1659,16 +1660,15 @@ macro "test [9]" {
     border2selection();
 }
 
-/*
-macro "Load [0]" {
+macro "Init [0]" {
     // print("["+getInfo("image.filename")+"]");
     // print(File.name);
     // print(getInfo("image.directory"));
     //border2selection();
     roiManager("reset");
     roiManager("Open", getDir("image")+File.getNameWithoutExtension(getInfo("image.filename"))+".zip");
+    nextROI(0);
     //RoiManager.select(0);
-    nextROI();
 }
 
 macro "test [8]" {
@@ -1820,14 +1820,12 @@ function updateROI(tag, group_id) {
 	Roi.setProperty("timestamp", timestamp());
 	Roi.setProperty("id", getInfo("image.filename"));
 	if (ix >= 0) {
-	    // roiManager("add");
-	    // RoiManager.select(ix);
-	    // roiManager("delete");
 	    roiManager("update");
 	    roiManager("rename", tag);
 	    roiManager("Save", getDir("image")+File.getNameWithoutExtension(getInfo("image.filename"))+".zip");
-	    // RoiManager.select(ix+1);
-	    nextROI();
+	    nextROI(0);
+	} else {
+	    roiManager("add");
 	}
     } 
 }
@@ -1844,21 +1842,69 @@ function selectROI(Name) {
 }
 
 macro "next ROI [n]" {
-    nextROI();
+    nextROI(1);
 }
 
-function nextROI() {
+macro "prev ROI [p]" {
+    nextROI(-1);
+}
+
+function nextROI(direction) {
     if (RoiManager.size > 0) {
-	for (i = roiManager("index")+1; i < RoiManager.size; i++) {
-	    if (!startsWith(RoiManager.getName(i), "Grade")) {
-		RoiManager.select(i);
-		run("To Selection");
-		run("Out [-]");
-		current_zoom = getZoom();
-		getSelectionBounds(sx, sy, sw, sh); 
-		if (sw < 500 || sh < 500)
+	ix = roiManager("index");
+	if (direction == 0) {
+	    for (i = 0; i < RoiManager.size; i++) {
+		if (!startsWith(RoiManager.getName(i), "Grade")) {
+		    RoiManager.select(i);
+		    run("To Selection");
 		    run("Out [-]");
-		exit();
+		    current_zoom = getZoom();
+		    getSelectionBounds(sx, sy, sw, sh); 
+		    if (sw < 1000 || sh < 1000) {
+			run("Out [-]");
+			run("Out [-]");
+			run("Out [-]");
+			run("Out [-]");
+		    }
+		    RoiManager.select(i);
+		    exit();
+		}
+	    }
+	} else if (direction == -1) {
+	    for (i = roiManager("index")-1; i >= 0; i--) {
+		if (!startsWith(RoiManager.getName(i), "Grade")) {
+		    RoiManager.select(i);
+		    run("To Selection");
+		    run("Out [-]");
+		    current_zoom = getZoom();
+		    getSelectionBounds(sx, sy, sw, sh); 
+		    if (sw < 1000 || sh < 1000) {
+			run("Out [-]");
+			run("Out [-]");
+			run("Out [-]");
+			run("Out [-]");
+		    }
+		    RoiManager.select(i);
+		    exit();
+		}
+	    }
+	} else {
+	    for (i = roiManager("index")+1; i < RoiManager.size; i++) {
+		if (!startsWith(RoiManager.getName(i), "Grade")) {
+		    RoiManager.select(i);
+		    run("To Selection");
+		    run("Out [-]");
+		    current_zoom = getZoom();
+		    getSelectionBounds(sx, sy, sw, sh); 
+		    if (sw < 1000 || sh < 1000) {
+			run("Out [-]");
+			run("Out [-]");
+			run("Out [-]");
+			run("Out [-]");
+		    }
+		    RoiManager.select(i);
+		    exit();
+		}
 	    }
 	}
     }
@@ -1877,7 +1923,6 @@ function save_mask() {
     }
     setBatchMode(false);
 }
-*/
 
 
 
