@@ -1691,24 +1691,33 @@ macro "Set Grade 4 [4]" {
     updateROI("Grade4", 4);
 }
 
-macro "Set Grade 5 [5]" {
-    updateROI("Grade5", 5);
+macro "Set Grade X [5]" {
+    updateROI("GradeX", 5);
+}
+
+macro "Set Grade R [6]" {
+    updateROI("GradeR", 6);
 }
 
 macro "Select Grade 1 [a]" {
-    selectROI("Grade1");
+    //selectROI("Grade1");
+    selectROI(1);
 }
 macro "Select Grade 2 [b]" {
-    selectROI("Grade2");
+    //selectROI("Grade2");
+    selectROI(2);
 }
 macro "Select Grade 3 [c]" {
-    selectROI("Grade3");
+    //selectROI("Grade3");
+    selectROI(3);
 }
 macro "Select Grade 4 [d]" {
-    selectROI("Grade4");
+    //selectROI("Grade4");
+    selectROI(4);
 }
 macro "Select Grade 5 [e]" {
-    selectROI("Grade5");
+    //selectROI("Grade5");
+    selectROI(5);
 }
 
 macro "save masks [s]" {
@@ -1830,14 +1839,15 @@ function updateROI(tag, group_id) {
     } 
 }
 
-function selectROI(Name) {
-    ix = newArray();
-    for (i = 0; i < RoiManager.size; i++) {
-	if (startsWith(RoiManager.getName(i), Name)) {
-	    ix = Array.concat(ix, i);
-	}
-    }
-    roiManager("select", ix);
+function selectROI(group_id) {
+    //ix = newArray();
+    //for (i = 0; i < RoiManager.size; i++) {
+//	if (startsWith(RoiManager.getName(i), Name)) {
+//	    ix = Array.concat(ix, i);
+//	}
+ //   }
+    //roiManager("select", ix);
+    RoiManager.selectGroup(group_id);
     roiManager("Combine");
 }
 
@@ -1911,15 +1921,19 @@ function nextROI(direction) {
 }
 
 function save_mask() {
-    grades = newArray("Grade1", "Grade2", "Grade3", "Grade4", "Grade5");
+    //grades = newArray("Grade1", "Grade2", "Grade3", "Grade4", "Grade5");
     setBatchMode(true);
-    for (i = 0; i < grades.length; i++) {
+    for (i = 0; i < 5; i++) {
 	m_file = getDir("image")+File.getNameWithoutExtension(getInfo("image.filename"))+"_grade"+ (i+1) +".png";
-	selectROI(grades[i]);
-	run("Create Mask");
-	run("Invert");
-	save(m_file);
-	close();
+	//RoiManager.selectGroup();
+	//selectROI(grades[i]);
+	selectROI(i+1);
+	if (RoiManager.selected > 0) {
+	    run("Create Mask");
+	    run("Invert");
+	    save(m_file);
+	    close();
+	}
     }
     setBatchMode(false);
 }
