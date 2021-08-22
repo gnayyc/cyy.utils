@@ -1919,6 +1919,72 @@ function save_mask() {
 */
 
 
+function overlay_selection() {
+    cwd = getDirectory("Choose Source Directory ");
+    setBatchMode(true); 
+    list = getFileList(cwd);
+    for (i = 0; i < list.length; i++) {
+	if (endsWith(list[i], "JPG")) {
+	    print(i + ": " + list[i]);
+	    fname = File.getNameWithoutExtension(list[i]);
+	    ly2roi = "LY2_" + fname + "_roi.zip";
+	    lw2roi = "LW2_" + fname + "_roi.zip";
+	    lyroi = "LY_" + fname + "_roi.zip";
+	    lwroi = "LW_" + fname + "_roi.zip";
+
+	    open(cwd + list[i]);
+
+	    Overlay.clear;
+	    roiManager("reset");
+	    if (File.exists(cwd + ly2roi)) {
+		roiManager("open", cwd+ly2roi);
+		for (j = 0; j < RoiManager.size; j++) {
+		    if (matches(RoiManager.getName(j), ".*lesion.*")) {
+			RoiManager.select(j);
+		        Overlay.addSelection("blue", 5);
+		    }
+		}
+	    }
+	    roiManager("reset");
+	    if (File.exists(cwd + lw2roi)) {
+		roiManager("open", cwd+lw2roi);
+		for (j = 0; j < RoiManager.size; j++) {
+		    if (matches(RoiManager.getName(j), ".*lesion.*")) {
+			RoiManager.select(j);
+		        Overlay.addSelection("red", 5);
+		    }
+		}
+	    }
+	    roiManager("reset");
+	    if (File.exists(cwd + lyroi)) {
+		roiManager("open", cwd+lyroi);
+		for (j = 0; j < RoiManager.size; j++) {
+		    if (matches(RoiManager.getName(j), ".*lesion.*")) {
+			RoiManager.select(j);
+		        Overlay.addSelection("cyan", 5);
+		    }
+		}
+	    }
+	    roiManager("reset");
+	    if (File.exists(cwd + lwroi)) {
+		roiManager("open", cwd+lwroi);
+		for (j = 0; j < RoiManager.size; j++) {
+		    if (matches(RoiManager.getName(j), ".*lesion.*")) {
+			RoiManager.select(j);
+		        Overlay.addSelection("green", 5);
+		    }
+		}
+	    }
+	    Overlay.flatten;
+	    //print(list[i] + ": done");
+	    save(cwd + fname + "_overlay.jpg");
+	    close();
+	    close();
+	}
+    }
+    setBatchMode(false); 
+}
+
 
 //group colors
 //0 default
