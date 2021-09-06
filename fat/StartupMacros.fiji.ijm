@@ -425,6 +425,7 @@ function init() {
     }
     else {
 	Modality = "CT";
+	setMinAndMax(-125, 225);
 	setOption("BlackBackground", false);
 	run("Colors...", "foreground=black background=white selection=red"); //set colors display
 	run("Options...", "iterations=1 count=1"); //set white background 
@@ -665,6 +666,35 @@ macro "Set Fat Mask [f]" {
   run("Select None");
   run("Add Image...", "image="+Title+" x=0 y=0 opacity=60");
   showStatus("Next Step: Total Fat then press [1]");
+}
+
+function fatMask() {
+    //init();
+
+    iid = getImageID();
+    title = getTitle;
+    workingSlice = getSliceNumber();
+    title_fat = title+"_"+workingSlice+"_fat";
+    run("Select None");
+    getLocationAndSize(x, y, width, height);
+    run("Duplicate...", "title="+title_fat);
+    iid2 = getImageID();
+    setLocation(x+width+10, y);
+    //run("Set... ", "zoom=150");
+
+    //File.copy(ipath, create_path("_fat.dcm"));
+
+    setThreshold(-250, -50);
+    run("Convert to Mask");
+
+    //run("Display...", " "); //do not use Inverting LUT
+    // run("Convert to Mask");
+    run("Create Selection");
+    selectImage(iid);
+    run("Restore Selection");
+    selectImage(iid2);
+    run("Select None");
+    //run("Add Image...", "image="+title+" x=0 y=0 opacity=60");
 }
 
 function softMask() {
@@ -1706,8 +1736,8 @@ function timestamp() {
      return TimeString; // Prints the time stamp
 }
 
-macro "Abdominal window [f]" {
-    setMinAndMax(-125, 225);
+macro "Create fat mask [f]" {
+    fatMask();
 }
 
 function grid_overlay(tileLength) {
@@ -2461,6 +2491,14 @@ macro "add ROI psoas_3 [w]" {
 
 macro "add ROI back_3 [e]" {
     addMask("back_3", group_back_3);
+}
+
+macro "add ROI sat_7 [a]" {
+    addMask("sat_u", group_sat_u);
+}
+
+macro "add ROI sat_7 [s]" {
+    addMask("vat_u", group_vat_u);
 }
 
 function addMask (tag, group_id) {
