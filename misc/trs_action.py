@@ -33,7 +33,7 @@ html = etree.HTML(content)
 tt = html.xpath('//td[@class="today"]//a/text()')
 actions = html.xpath('//td[@class="today"]//a/@href')
 
-debug = True
+debug = False
 if debug == True:
     url = "https://www.rsroc.org.tw/action/"
     response = requests.get(url)
@@ -65,8 +65,11 @@ for i in range(0, len(tt)):
             m = t.group(5)
             h2 = t.group(6)
             m2 = t.group(7)
+            #echo '/home/ubuntu/trs_action.py'|at 0745
             tg_cmd = "curl 'https://api.telegram.org/bot%s/sendmessage?chat_id=%s&text=%s'" % (tg_token, tg_chatid, urllib.parse.quote(checkin_url[0]))
-            os.system(tg_cmd)
+            #os.system(tg_cmd)
+            at_cmd = "echo '%s'| at %s%s" % (tg_cmd, h, m)
+            os.system(at_cmd)
         t = re.search('放射線專科醫師教育積分', content)
         if t:
             print(t.group(0))
