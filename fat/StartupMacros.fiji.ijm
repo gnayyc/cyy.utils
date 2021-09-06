@@ -606,9 +606,12 @@ function update_info() {
     print_group("[ 1 ] [ R ] L Kidney Thickness", group_lkthick);
     print_group("[ 8 ] [ G ] Aorta", group_aorta);
     print("");
-    print_group("[ 1 ] [ Q ] Abdominal Wall", group_aw_u);
-    print_group("[ 1 ] [ W ] Psoas", group_psoas_u);
-    print_group("[ 1 ] [ E ] Back", group_back_u);
+    print_group("[ 1 ] [ Q ] Abdominal Wall L3", group_aw_3);
+    print_group("[ 1 ] [ W ] Psoas L3", group_psoas_3);
+    print_group("[ 1 ] [ E ] Back L3", group_back_3);
+    print("");
+    print_group("[ 1 ] [   ] SAT U", group_sat_u);
+    print_group("[ 1 ] [   ] VAT U", group_vat_u);
     print("");
     //generate_results();
     if (RoiManager.size > 0) {
