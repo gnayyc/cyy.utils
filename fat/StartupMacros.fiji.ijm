@@ -1402,7 +1402,7 @@ macro "Agatston Score [g]" {
     }
 }
 
-macro "update results[9]" {
+macro "update results [U]" {
     update_results();
 }
 
