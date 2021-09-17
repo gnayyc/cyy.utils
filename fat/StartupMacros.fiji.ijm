@@ -611,8 +611,8 @@ function update_info() {
     print_group("[ 1 ] [ W ] Psoas L3", group_psoas_3);
     print_group("[ 1 ] [ E ] Back L3", group_back_3);
     print("");
-    print_group("[ 1 ] [   ] SAT U", group_sat_u);
-    print_group("[ 1 ] [   ] VAT U", group_vat_u);
+    print_group("[ 1 ] [ A ] SAT U", group_sat_u);
+    print_group("[ 1 ] [ S ] VAT U", group_vat_u);
     print("");
     //generate_results();
     if (RoiManager.size > 0) {
@@ -668,61 +668,44 @@ macro "Set Fat Mask [f]" {
   showStatus("Next Step: Total Fat then press [1]");
 }
 
-function fatMask() {
-    //init();
-
-    iid = getImageID();
-    title = getTitle;
-    workingSlice = getSliceNumber();
-    title_fat = title+"_"+workingSlice+"_fat";
+function createMask(lower, upper) {
+    //setBatchMode(true);
     run("Select None");
-    getLocationAndSize(x, y, width, height);
-    run("Duplicate...", "title="+title_fat);
-    iid2 = getImageID();
-    setLocation(x+width+10, y);
-    //run("Set... ", "zoom=150");
-
-    //File.copy(ipath, create_path("_fat.dcm"));
-
-    setThreshold(-250, -50);
-    run("Convert to Mask");
-
-    //run("Display...", " "); //do not use Inverting LUT
-    // run("Convert to Mask");
-    run("Create Selection");
-    selectImage(iid);
-    run("Restore Selection");
-    selectImage(iid2);
-    run("Select None");
-    //run("Add Image...", "image="+title+" x=0 y=0 opacity=60");
-}
-
-function softMask() {
-    //init();
-
+    run("Duplicate...", " ");
+	setThreshold(-300, 2048);
+	run("Convert to Mask");
+	run("Erode");
+	run("Analyze Particles...", "size=5000-Infinity pixel show=Masks");
+	    run("Dilate");
+	    run("Fill Holes");
+	    run("Create Selection");
+	close();
+    close();
     iid = getImageID();
     title = getTitle;
     workingSlice = getSliceNumber();
     title_soft = title+"_"+workingSlice+"_soft";
     run("Select None");
     getLocationAndSize(x, y, width, height);
-    run("Duplicate...", "title="+title_soft);
+
+    print(title_soft);
+    //run("Duplicate...", "title="+title_soft);
+    run("Duplicate...", "title="+getTitle + "_mask");
     iid2 = getImageID();
     setLocation(x+width+10, y);
-    //run("Set... ", "zoom=150");
-
-    //File.copy(ipath, create_path("_fat.dcm"));
-
-    setThreshold(0, 90);
+    setThreshold(lower, upper);
     run("Convert to Mask");
 
     //run("Display...", " "); //do not use Inverting LUT
     // run("Convert to Mask");
+    run("Restore Selection"); // Largest body
+    run("Clear Outside", "slice");
     run("Create Selection");
     selectImage(iid);
     run("Restore Selection");
     selectImage(iid2);
-    run("Select None");
+    setBatchMode(false);
+    //run("Select None");
     //run("Add Image...", "image="+title+" x=0 y=0 opacity=60");
 }
 
@@ -1090,8 +1073,8 @@ macro "Calculate Calcification Area [8]" {
 macro "Duplicate [D]" {
   getLocationAndSize(x, y, width, height);
   run("Duplicate...", "title="+getTitle());
-  setLocation(x+200, y+50, width, height);
-  run("Set... ", "zoom=150");
+  //setLocation(x+200, y+50, width, height);
+  //run("Set... ", "zoom=150");
 
 }
 
@@ -1446,10 +1429,10 @@ function update_results() {
 	}
     }
     update_info();
-    if (!isActive(ImageID)) {
-	print("select", ImageID);
-	selectImage(ImageID);
-    }
+    //if (!isActive(ImageID)) {
+	//print("select", ImageID);
+	//selectImage(ImageID);
+    //}
 }
 
 macro "Measure areas [A]" {
@@ -1737,7 +1720,7 @@ function timestamp() {
 }
 
 macro "Create fat mask [f]" {
-    fatMask();
+    createMask(-250, -50);
 }
 
 function grid_overlay(tileLength) {
@@ -2341,7 +2324,7 @@ function scanFatdir() {
 
 
 macro "softMask [F]" {
-    softMask();
+    createMask(0, 90);
 }
 
 macro "processFat [8]" {
