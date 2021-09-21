@@ -2476,11 +2476,11 @@ macro "add ROI back_3 [e]" {
     addMask("back_3", group_back_3);
 }
 
-macro "add ROI sat_7 [a]" {
+macro "add ROI sat_u [a]" {
     addMask("sat_u", group_sat_u);
 }
 
-macro "add ROI sat_7 [s]" {
+macro "add ROI vat_u [s]" {
     addMask("vat_u", group_vat_u);
 }
 
