@@ -339,6 +339,7 @@ var group_psoas_3 = 35;
 var group_back_3 = 36;
 var group_aw_3 = 37;
 var group_body_3 = 38;
+var group_qlum_3 = 39;
 
 //------------------------------------ Fat related macros
 // # Press [f] to set fat mask
@@ -442,6 +443,7 @@ function init() {
     if (RoiManager.size > 0) {
         RoiManager.select(RoiManager.size - 1);
 	roiManager("Deselect");
+	RoiManager.selectGroup(group_psoas_3);
     }
 }
 
@@ -610,6 +612,7 @@ function update_info() {
     print_group("[ 1 ] [ Q ] Abdominal Wall L3", group_aw_3);
     print_group("[ 1 ] [ W ] Psoas L3", group_psoas_3);
     print_group("[ 1 ] [ E ] Back L3", group_back_3);
+    print_group("[ 1 ] [ Q ] Quadratus Lumborum L3", group_qlum_3);
     print("");
     print_group("[ 1 ] [ A ] SAT U", group_sat_u);
     print_group("[ 1 ] [ S ] VAT U", group_vat_u);
@@ -2465,7 +2468,12 @@ macro "Clear Outside [X]" {
 }
 
 macro "add mask aw_3 [q]" {
-    addMask("aw_3", group_aw_3);
+    if (is("area")) {
+	addROI("qlum_3", group_qlum_3);
+	update_results();
+    } else {
+	showStatus("No ROI to add");
+    }
 }
 
 macro "add ROI psoas_3 [w]" {
