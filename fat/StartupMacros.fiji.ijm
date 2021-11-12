@@ -2342,6 +2342,7 @@ function gen_fat_results() {
 
 	run("Set Measurements...", "area mean standard perimeter median skewness kurtosis display redirect=None decimal=3");
 
+	roiManager("deselect");
 	RoiManager.selectGroup(group_sat_u);
 	getStatistics(area, mean, min, max, std, histogram);
 	if (endsWith(getInfo("image.filename"), "gz")) {
@@ -2354,6 +2355,7 @@ function gen_fat_results() {
 	variable = Array.concat(variable, "sat_mean");
 	value = Array.concat(value, mean);
 
+	roiManager("deselect");
 	RoiManager.selectGroup(group_vat_u);
 	getStatistics(area, mean, min, max, std, histogram);
 	if (endsWith(getInfo("image.filename"), "gz")) {
@@ -2366,6 +2368,7 @@ function gen_fat_results() {
 	variable = Array.concat(variable, "vat_mean");
 	value = Array.concat(value, mean);
 
+	roiManager("deselect");
 	RoiManager.selectGroup(group_body_u);
 	perim = getValue("Perim.");
 	if (endsWith(getInfo("image.filename"), "gz")) {
