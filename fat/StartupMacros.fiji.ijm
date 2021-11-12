@@ -502,6 +502,7 @@ function gen_sdir() {
 	    open(sdir + list[i]);
 	    init();
 	    generate_results();
+	    gen_m_results();
 	    close();
 	}
     }
@@ -592,6 +593,113 @@ function generate_results() {
     //setBatchMode(false);
 
     //close("lifestyle");
+}
+
+function gen_m_results() {
+	setBatchMode(true);
+	ImageID = getImageID();
+	setBatchMode(true);
+	Table.create("lifestyle");
+	Table.setLocationAndSize(0, 410, 600, 600, "lifestyle");
+	Table.showRowNumbers(false);
+	Table.showRowIndexes(false);
+	id = newArray;
+	variable = newArray;
+	value = newArray;
+	sid = get_sid();
+
+	run("Set Measurements...", "area mean standard perimeter median skewness kurtosis display redirect=None decimal=3");
+
+	i_qlum = -1;
+	area = 0;
+	mean = 0;
+	roiManager("deselect");
+	RoiManager.selectGroup(group_qlum_3);
+	if (RoiManager.selected == 0) {
+	    area = 0;
+	    mean = 0;
+	} else {
+	    i_qlum = roiManager("index");
+	    getStatistics(area, mean, min, max, std, histogram);
+	}
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "qlum_area");
+	value = Array.concat(value, area);
+
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "qlum_mean");
+	value = Array.concat(value, mean);
+
+	roiManager("deselect");
+	RoiManager.selectGroup(group_psoas_3);
+	i_psoas = roiManager("index");
+	getStatistics(area, mean, min, max, std, histogram);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "psoas_area");
+	value = Array.concat(value, area);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "psoas_mean");
+	value = Array.concat(value, mean);
+
+	if (i_qlum >= 0) {
+	    roiManager("Select", newArray(i_psoas, i_qlum));
+	    roiManager("XOR");
+	    getStatistics(area, mean, min, max, std, histogram);
+	} 
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "psoas_area_adj");
+	value = Array.concat(value, area);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "psoas_mean_adj");
+	value = Array.concat(value, mean);
+
+	roiManager("deselect");
+	RoiManager.selectGroup(group_back_3);
+	getStatistics(area, mean, min, max, std, histogram);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "back_area");
+	value = Array.concat(value, area);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "back_mean");
+	value = Array.concat(value, mean);
+
+	roiManager("deselect");
+	RoiManager.selectGroup(group_aw_3);
+	getStatistics(area, mean, min, max, std, histogram);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "aw_area");
+	value = Array.concat(value, area);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "aw_mean");
+	value = Array.concat(value, mean);
+
+	create_body_selection();
+	perim = getValue("Perim.");
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "body_perimeter");
+	value = Array.concat(value, perim);
+	getStatistics(area, mean, min, max, std, histogram);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "body_area");
+	value = Array.concat(value, area);
+
+	getPixelSize(unit, uwidth, uheight, udepth);
+	getSelectionBounds(x, y, width, height);
+	width *= uwidth;
+	height *= uheight;
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "body_thickness");
+	value = Array.concat(value, height);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "body_width");
+	value = Array.concat(value, width);
+
+	Table.setColumn("id", id);
+	Table.setColumn("variable", variable);
+	Table.setColumn("value", value);
+	Table.save(create_path("_muscle.csv"));
+	selectImage(ImageID);
+	setBatchMode(true);
 }
 
 function update_info() {
@@ -1857,10 +1965,6 @@ macro "mask2selection [9]" {
     mask2selection(1);
 }
 
-macro "gen_sdir [9]" {
-    gen_sdir();
-}
-
 function border2selection () {
     dir1 = getDirectory("Choose Source Directory ");
     list = getFileList(dir1);
@@ -2201,6 +2305,30 @@ function loadSeg() {
     setBatchMode(false);
 }
 
+function create_body_selection() {
+    //setBatchMode(true);
+    iter = 2;
+    run("Select None");
+    run("Duplicate...", " ");
+	setThreshold(-300, 2048);
+	run("Convert to Mask");
+	//run("Erode");
+	run("Options...", "iterations="+ iter +" count=2 do=Erode");
+	run("Analyze Particles...", "size=5000-Infinity pixel show=Masks");
+	    //run("Dilate");
+	    run("Options...", "iterations="+ iter +" count=2 do=Dilate");
+	    run("Fill Holes");
+	    run("Create Selection");
+	    run("Fill Holes");
+	close();
+    close();
+    run("Restore Selection");
+}
+
+macro "test body [7]" {
+    gen_m_results();
+}
+
 function gen_fat_results() {
 	ImageID = getImageID();
 	setBatchMode(true);
@@ -2505,4 +2633,7 @@ function addMask (tag, group_id) {
     update_results();
 }
 
+macro "gen_sdir [9]" {
+    gen_sdir();
+}
 
