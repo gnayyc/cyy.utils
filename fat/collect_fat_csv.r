@@ -5,32 +5,19 @@ library(stringr)
 library(lubridate)
 
 files = dir(".", recursive=T)
-result.files =  files[str_detect(files,"results.csv$")]
+result.files =  files[str_detect(files,"_results.csv$")]
 y <- rbindlist(lapply(result.files,fread, colClasses=list("character"=c("timestamp"))))
+names(y) = c("id","variable","value")
 
-y[, var := str_extract(label, "^\\w*")]
+#y[, var := str_extract(label, "^\\w*")]
 y[, sid := str_extract(id, "^[:alnum:]*")]
 y[, xdate := str_extract(id, "(?<=^[:alnum:]{1,12}_)\\d*")]
-fwrite(y, "y.csv")
+fwrite(y, "fat_y.csv")
 
-var.density = c('liver','pancreas','spleen')
-var.area = c('rkfat','lkfat')
-var.length = c('rkthick','lkthick')
-var.asis = c(var.area, var.length)
-var.ao = c('aorta')
-.x = dcast(y[var %in% var.density], sid + xdate + timestamp + label + var ~ type, value.var='value')[, .(density = sum(area*mean)/sum(area)), by = c("sid","xdate","var")][,var := paste0(var, "_density")]
-x.density =  dcast(.x, sid+xdate~var, value.var='density')
+x = dcast(y, sid + xdate ~ variable, value.var="value")
+names(x) = c("sid", "xdate", "body_area_U", "body_thickness_U", "body_perimeter_U", 
+"body_width_U", "sat_area_U", "sat_mean_U", "vat_area_U", "vat_mean_U")
 
-x.ao = dcast(y[var %in% var.ao & type == 'ca'], sid + xdate + timestamp + label + var ~ type, value.var='value')[order(-timestamp)][order(-timestamp)][, .(calcium_score = sum(ca[1:8])), by = c('sid','xdate')]
-
-x.asis = dcast(unique(y[var %in% var.asis], by=c("sid","xdate","var"), fromLast=T), sid + xdate ~ var, value.var='value')
-
-x = x.asis[x.density[x.ao]]
-fwrite(x, "x.csv")
-fwrite(x, "lifestyle_CT_density.csv")
-
-
-
-
+fwrite(x, "lifestyle_fat_U.csv")
 
 

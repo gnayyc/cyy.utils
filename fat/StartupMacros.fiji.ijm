@@ -501,8 +501,9 @@ function gen_sdir() {
 	    print(sdir + list[i] + File.separator + "work" + File.separator + roi);
 	    open(sdir + list[i]);
 	    init();
-	    generate_results();
-	    gen_m_results();
+	    //generate_results();
+	    //gen_m_results();
+	    gen_f_results();
 	    close();
 	}
     }
@@ -613,6 +614,7 @@ function gen_m_results() {
 	i_qlum = -1;
 	area = 0;
 	mean = 0;
+	selectImage(ImageID);
 	roiManager("deselect");
 	RoiManager.selectGroup(group_qlum_3);
 	if (RoiManager.selected == 0) {
@@ -630,6 +632,7 @@ function gen_m_results() {
 	variable = Array.concat(variable, "qlum_mean");
 	value = Array.concat(value, mean);
 
+	selectImage(ImageID);
 	roiManager("deselect");
 	RoiManager.selectGroup(group_psoas_3);
 	i_psoas = roiManager("index");
@@ -642,6 +645,7 @@ function gen_m_results() {
 	value = Array.concat(value, mean);
 
 	if (i_qlum >= 0) {
+	    selectImage(ImageID);
 	    roiManager("Select", newArray(i_psoas, i_qlum));
 	    roiManager("XOR");
 	    getStatistics(area, mean, min, max, std, histogram);
@@ -653,6 +657,7 @@ function gen_m_results() {
 	variable = Array.concat(variable, "psoas_mean_adj");
 	value = Array.concat(value, mean);
 
+	selectImage(ImageID);
 	roiManager("deselect");
 	RoiManager.selectGroup(group_back_3);
 	getStatistics(area, mean, min, max, std, histogram);
@@ -663,6 +668,7 @@ function gen_m_results() {
 	variable = Array.concat(variable, "back_mean");
 	value = Array.concat(value, mean);
 
+	selectImage(ImageID);
 	roiManager("deselect");
 	RoiManager.selectGroup(group_aw_3);
 	getStatistics(area, mean, min, max, std, histogram);
@@ -673,6 +679,7 @@ function gen_m_results() {
 	variable = Array.concat(variable, "aw_mean");
 	value = Array.concat(value, mean);
 
+	selectImage(ImageID);
 	create_body_selection();
 	perim = getValue("Perim.");
 	id = Array.concat(id, sid);
@@ -698,6 +705,73 @@ function gen_m_results() {
 	Table.setColumn("variable", variable);
 	Table.setColumn("value", value);
 	Table.save(create_path("_muscle.csv"));
+	selectImage(ImageID);
+	setBatchMode(true);
+}
+
+function gen_f_results() {
+	setBatchMode(true);
+	ImageID = getImageID();
+	setBatchMode(true);
+	Table.create("lifestyle");
+	Table.setLocationAndSize(0, 410, 600, 600, "lifestyle");
+	Table.showRowNumbers(false);
+	Table.showRowIndexes(false);
+	id = newArray;
+	variable = newArray;
+	value = newArray;
+	sid = get_sid();
+
+	run("Set Measurements...", "area mean standard perimeter median skewness kurtosis display redirect=None decimal=3");
+
+	selectImage(ImageID);
+	roiManager("deselect");
+	RoiManager.selectGroup(group_sat_u);
+	getStatistics(area, mean, min, max, std, histogram);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "sat_area_U");
+	value = Array.concat(value, area);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "sat_mean_U");
+	value = Array.concat(value, mean);
+
+	selectImage(ImageID);
+	roiManager("deselect");
+	RoiManager.selectGroup(group_vat_u);
+	getStatistics(area, mean, min, max, std, histogram);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "vat_area_U");
+	value = Array.concat(value, area);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "vat_mean_U");
+	value = Array.concat(value, mean);
+
+	selectImage(ImageID);
+	create_body_selection();
+	perim = getValue("Perim.");
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "body_perimeter_U");
+	value = Array.concat(value, perim);
+	getStatistics(area, mean, min, max, std, histogram);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "body_area_U");
+	value = Array.concat(value, area);
+
+	getPixelSize(unit, uwidth, uheight, udepth);
+	getSelectionBounds(x, y, width, height);
+	width *= uwidth;
+	height *= uheight;
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "body_thickness_U");
+	value = Array.concat(value, height);
+	id = Array.concat(id, sid);
+	variable = Array.concat(variable, "body_width_U");
+	value = Array.concat(value, width);
+
+	Table.setColumn("id", id);
+	Table.setColumn("variable", variable);
+	Table.setColumn("value", value);
+	Table.save(create_path("_fat.csv"));
 	selectImage(ImageID);
 	setBatchMode(true);
 }
@@ -749,6 +823,7 @@ macro "Duplicate for fat work [9]" {
   File.copy(ipath, create_path("_fat.dcm"));
 }
 
+/*
 macro "Set Fat Mask [f]" {
   init();
 
@@ -778,6 +853,7 @@ macro "Set Fat Mask [f]" {
   run("Add Image...", "image="+Title+" x=0 y=0 opacity=60");
   showStatus("Next Step: Total Fat then press [1]");
 }
+*/
 
 function createMask(lower, upper) {
     //setBatchMode(true);
@@ -799,7 +875,7 @@ function createMask(lower, upper) {
     run("Select None");
     getLocationAndSize(x, y, width, height);
 
-    print(title_soft);
+    // print(title_soft);
     //run("Duplicate...", "title="+title_soft);
     run("Duplicate...", "title="+getTitle + "_mask");
     iid2 = getImageID();
@@ -1452,80 +1528,6 @@ macro "Oval_50 [5]" {
 
 
 
-macro "Liver [a]" {
-    if (is("area")) {
-	addROI("liver", group_liver);
-	update_results();
-    } else {
-	showStatus("No ROI to add");
-    }
-}
-
-macro "Spleen [d]" {
-    if (is("area")) {
-	addROI("spleen", group_spleen);
-	update_results();
-    } else {
-	showStatus("No ROI to add");
-    }
-}
-
-macro "Pancreas [s]" {
-    if (is("area")) {
-	addROI("pancreas", group_pancreas);
-	update_results();
-    } else {
-	showStatus("No ROI to add");
-    }
-}
-
-
-macro "Right Renal Sinus Fat [q]" {
-    if (is("area")) {
-	addROI("rkfat", group_rkfat); //right perirenal sinus fat
-	update_results();
-    } else {
-	showStatus("No ROI to add");
-    }
-}
-
-macro "Left Renal Sinus Fat [w]" {
-    if (is("area")) {
-	addROI("lkfat", group_lkfat); //right perirenal sinus fat
-	update_results();
-    } else {
-	showStatus("No ROI to add");
-    }
-}
-
-macro "Right Perirenal Thickness [e]" {
-    if (is("line")) {
-	addROI("rkthick", group_rkthick); //right perirenal thickness
-	update_results();
-    } else {
-	print("!!! Draw a straight line first !!!");
-    }
-}
-
-macro "Left Perirenal Thickness [r]" {
-    if (is("line")) {
-	addROI("lkthick", group_lkthick); //right perirenal thickness
-	update_results();
-    } else {
-	print("!!! Draw a straight line first !!!");
-    }
-}
-
-macro "Agatston Score [g]" {
-    if (is("area")) {
-	addROI("aorta", group_aorta);
-	update_results();
-	run("Previous Slice [<]");
-    } else {
-	showStatus("No ROI to add");
-    }
-}
-
 macro "update results [U]" {
     update_results();
 }
@@ -1554,10 +1556,6 @@ macro "Measure areas [A]" {
 
 macro "set_slice [V]" {
     nSlice = getSliceNumber();
-}
-
-macro "mid_slice [v]" {
-    mid_slice();
 }
 
 var nSlice = 0;
@@ -2306,7 +2304,7 @@ function loadSeg() {
 }
 
 function create_body_selection() {
-    //setBatchMode(true);
+    setBatchMode(true);
     iter = 2;
     run("Select None");
     run("Duplicate...", " ");
@@ -2323,10 +2321,6 @@ function create_body_selection() {
 	close();
     close();
     run("Restore Selection");
-}
-
-macro "test body [7]" {
-    gen_m_results();
 }
 
 function gen_fat_results() {
@@ -2459,6 +2453,10 @@ function scanFatdir() {
 
 macro "softMask [F]" {
     createMask(0, 90);
+}
+
+macro "Set Fat Mask [f]" {
+    createMask( -250, -50);
 }
 
 macro "processFat [8]" {
@@ -2598,13 +2596,15 @@ macro "Clear Outside [X]" {
   run("Clear Outside", "slice");
 }
 
+/* sarcopenia, vat, sat
 macro "add mask aw_3 [q]" {
-    if (is("area")) {
-	addROI("qlum_3", group_qlum_3);
-	update_results();
-    } else {
-	showStatus("No ROI to add");
-    }
+//    if (is("area")) {
+//	addROI("qlum_3", group_qlum_3);
+//	update_results();
+//    } else {
+//	showStatus("No ROI to add");
+//    }
+    addMask("aw_3", group_aw_3);
 }
 
 macro "add ROI psoas_3 [w]" {
@@ -2615,13 +2615,14 @@ macro "add ROI back_3 [e]" {
     addMask("back_3", group_back_3);
 }
 
-macro "add ROI sat_u [a]" {
+macro "add ROI sat_u [s]" {
     addMask("sat_u", group_sat_u);
 }
 
-macro "add ROI vat_u [s]" {
+macro "add ROI vat_u [v]" {
     addMask("vat_u", group_vat_u);
 }
+*/
 
 function addMask (tag, group_id) {
     if (selectionType >= 0) {
@@ -2640,3 +2641,86 @@ macro "gen_sdir [9]" {
     gen_sdir();
 }
 
+macro "test body [7]" {
+    gen_m_results();
+}
+
+///*** For organ density
+macro "Liver [a]" {
+    if (is("area")) {
+	addROI("liver", group_liver);
+	update_results();
+    } else {
+	showStatus("No ROI to add");
+    }
+}
+
+macro "Pancreas [s]" {
+    if (is("area")) {
+	addROI("pancreas", group_pancreas);
+	update_results();
+    } else {
+	showStatus("No ROI to add");
+    }
+}
+
+macro "Spleen [d]" {
+    if (is("area")) {
+	addROI("spleen", group_spleen);
+	update_results();
+    } else {
+	showStatus("No ROI to add");
+    }
+}
+
+macro "Right Renal Sinus Fat [q]" {
+    if (is("area")) {
+	addROI("rkfat", group_rkfat); //right perirenal sinus fat
+	update_results();
+    } else {
+	showStatus("No ROI to add");
+    }
+}
+
+macro "Left Renal Sinus Fat [w]" {
+    if (is("area")) {
+	addROI("lkfat", group_lkfat); //right perirenal sinus fat
+	update_results();
+    } else {
+	showStatus("No ROI to add");
+    }
+}
+
+macro "Right Perirenal Thickness [e]" {
+    if (is("line")) {
+	addROI("rkthick", group_rkthick); //right perirenal thickness
+	update_results();
+    } else {
+	print("!!! Draw a straight line first !!!");
+    }
+}
+
+macro "Left Perirenal Thickness [r]" {
+    if (is("line")) {
+	addROI("lkthick", group_lkthick); //right perirenal thickness
+	update_results();
+    } else {
+	print("!!! Draw a straight line first !!!");
+    }
+}
+
+macro "Agatston Score [g]" {
+    if (is("area")) {
+	addROI("aorta", group_aorta);
+	update_results();
+	run("Previous Slice [<]");
+    } else {
+	showStatus("No ROI to add");
+    }
+}
+
+macro "mid_slice [v]" {
+    mid_slice();
+}
+
+///*** For organ density
