@@ -464,7 +464,6 @@ function get_length() {
 	return -1;
 }
 
-
 function set_result(row, id, ts, type, label, value) {
     setResult("id", row, id);
     setResult("timestamp", row, ts);
@@ -472,7 +471,6 @@ function set_result(row, id, ts, type, label, value) {
     setResult("label", row, label);
     setResult("value", row, value);
 }
-
 
 function gen_sdir() {
     setBatchMode(true); 
@@ -501,8 +499,8 @@ function gen_sdir() {
 	    print(sdir + list[i] + File.separator + "work" + File.separator + roi);
 	    open(sdir + list[i]);
 	    init();
-	    //generate_results();
-	    //gen_m_results();
+	    generate_results();
+	    gen_m_results();
 	    gen_f_results();
 	    close();
 	}
@@ -539,33 +537,35 @@ function generate_results() {
             type = Array.concat(type, "length");
             value = Array.concat(value, length);
         } else if (startsWith(name, "aorta")) {
+	    aid = Roi.getProperty("id");
+	    ats = Roi.getProperty("timestamp");
             ca1 = measure_threshold(130, 199);
             ca2 = measure_threshold(200, 299);
             ca3 = measure_threshold(300, 399);
             ca4 = measure_threshold(400, 1500);
             ca = ca1 + ca2 * 2 + ca3 * 3 + ca4 * 4;
-            id = Array.concat(id, Roi.getProperty("id"));
-            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            id = Array.concat(id, aid);
+            ts = Array.concat(ts, ats);
             label = Array.concat(label, name);
             type = Array.concat(type, "ca1");
             value = Array.concat(value, ca1);
-            id = Array.concat(id, Roi.getProperty("id"));
-            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            id = Array.concat(id, aid);
+            ts = Array.concat(ts, ats);
             label = Array.concat(label, name);
             type = Array.concat(type, "ca2");
             value = Array.concat(value, ca2);
-            id = Array.concat(id, Roi.getProperty("id"));
-            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            id = Array.concat(id, aid);
+            ts = Array.concat(ts, ats);
             label = Array.concat(label, name);
             type = Array.concat(type, "ca3");
             value = Array.concat(value, ca3);
-            id = Array.concat(id, Roi.getProperty("id"));
-            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            id = Array.concat(id, aid);
+            ts = Array.concat(ts, ats);
             label = Array.concat(label, name);
             type = Array.concat(type, "ca4");
             value = Array.concat(value, ca4);
-            id = Array.concat(id, Roi.getProperty("id"));
-            ts = Array.concat(ts, Roi.getProperty("timestamp"));
+            id = Array.concat(id, aid);
+            ts = Array.concat(ts, ats);
             label = Array.concat(label, name);
             type = Array.concat(type, "ca");
             value = Array.concat(value, ca);
@@ -1680,10 +1680,10 @@ function open_case(direction) {
 	getLocationAndSize(x, y, width, height);
 	call("ij.gui.ImageWindow.setNextLocation", x, y);
 
-	list = list0;
+	list = newArray;
 	for (i = 0; i < list0.length; i++) {
 	    if (! File.isDirectory(pdir + list0[i]))
-		list = Array.deleteValue(list, list0[i]);
+		list = Array.concat(list, list0[i]);
 	}
 	num_N = list.length;
 
@@ -1831,60 +1831,6 @@ function timestamp() {
 macro "Create fat mask [f]" {
     createMask(-250, -50);
 }
-
-function grid_overlay(tileLength) {
-    //setBatchMode(true);
-    color = "green";
-    tileWidth = 250;
-
-    getPixelSize(unit, pw, ph, pd);
-    if (unit=="cm") {
-        tileWidth= tileLength/pw;
-        tileHeight = tileWidth;
-    } else {
-      showMessage("Please set scale (cm) first!!!");
-      setTool("Line");
-      return;
-    }
-
-    if (nImages>0) {
-        //run("Remove Overlay");
-	Overlay.clear;
-        width = getWidth;
-        height = getHeight;
-
-	getCursorLoc(x, y, z, flags);
-
-        xoff=x % tileWidth;
-        while (true && xoff<width) { // draw vertical lines
-          makeLine(xoff, 0, xoff, height);
-	  Overlay.addSelection("green");
-          //run("Add Selection...", "stroke="+color);
-          xoff += tileWidth;
-        }
-        yoff=y % tileWidth;
-        while (true && yoff<height) { // draw horizonal lines
-          makeLine(0, yoff, width, yoff);
-	  Overlay.addSelection("green");
-          //run("Add Selection...", "stroke="+color);
-          yoff += tileHeight;
-        }
-        run("Select None");
-    }
-    setBatchMode(false);
-}
-
-/*
-macro "grid [t]" {
-    if (Overlay.size > 0) {
-	if (Overlay.hidden)
-	    grid_overlay(0.5);
-	else 
-	    Overlay.hide;
-    } else
-	grid_overlay(0.5);
-}
-*/
 
 macro "test [9]" {
     // print("["+getInfo("image.filename")+"]");
@@ -2724,3 +2670,245 @@ macro "mid_slice [v]" {
 }
 
 ///*** For organ density
+
+///*** Overlay and save skin images
+
+var group_lw = 1;
+var group_ly = 2;
+var group_template = 3;
+
+function skinOverlay () {
+    // xx: "LW", "LY"
+    iname = getInfo("image.filename");
+    fname = File.getNameWithoutExtension(iname);
+    idir = getDir("image");
+
+    Overlay.remove;
+    roiManager("reset");
+    xx = "LW";
+    color = "green";
+    group = group_lw;
+    roi = idir + "../" + xx + "/" + fname + "_roi.zip";
+    if (File.exists(roi)) {
+	roiManager("open", roi);
+	i = -1;
+	for (j = 0; j < RoiManager.size; j++) {
+	    if (matches(RoiManager.getName(j), ".*lesion.*")) {
+		i = j;
+	    }
+	}
+	if (i >= 0) {
+	    RoiManager.select(i);
+	    roiManager("rename", xx);
+	    RoiManager.setGroup(group);
+	    roiManager("save selected", idir + fname + "_" + xx + ".zip");
+	    Overlay.addSelection(color, 5);
+	}
+    }
+    roiManager("reset");
+    xx = "LY";
+    color = "red";
+    group = group_ly;
+    roi = idir + "../" + xx + "/" + fname + "_roi.zip";
+    if (File.exists(roi)) {
+	roiManager("open", roi);
+	i = -1;
+	for (j = 0; j < RoiManager.size; j++) {
+	    if (matches(RoiManager.getName(j), ".*lesion.*")) {
+		i = j;
+	    }
+	}
+	if (i >= 0) {
+	    RoiManager.select(i);
+	    roiManager("rename", xx);
+	    RoiManager.setGroup(group);
+	    roiManager("save selected", idir + fname + "_" + xx + ".zip");
+	    Overlay.addSelection(color, 5);
+	}
+    }
+    roiManager("reset");
+    roiManager("open", idir + fname + "_LW" + ".zip");
+    roiManager("open", idir + fname + "_LY" + ".zip");
+    run("Select None");
+
+}
+
+function skinOverlayTemplate () {
+    // xx: "LW", "LY"
+    iname = getInfo("image.filename");
+    fname = File.getNameWithoutExtension(iname);
+    idir = getDir("image");
+    WorkDir = idir + "work/";
+
+    Overlay.remove;
+    roiManager("reset");
+    color = "red";
+    group = group_template;
+    roi = WorkDir + fname + "_template.zip";
+
+    if (File.exists(roi)) {
+	Overlay.remove;
+	roiManager("open", roi);
+	RoiManager.selectGroup(group_template);
+	Overlay.addSelection("006600", 5);
+	roiManager("reset");
+    }
+    run("Select None");
+}
+
+function skinSaveOverlay (color) {
+    iname = getInfo("image.filename");
+    fname = File.getNameWithoutExtension(iname);
+    idir = getDir("image");
+    WorkDir = idir + "work/";
+    if(!File.exists(WorkDir)) File.makeDirectory(WorkDir);
+
+    roi = WorkDir + fname + "_template.zip";
+
+    
+    if (color == "blue") {
+	if (is("area")) {
+	    group = group_wy;
+	    Roi.setName("template");
+	    Roi.setGroup(group_template);
+	    roiManager("add");
+	} else return 0;
+	
+    } else if (color == "green") {
+	xx = "LW";
+	group = group_lw;
+    } else if (color == "red") {
+	xx = "LY";
+	group = group_ly;
+    } 
+    RoiManager.selectGroup(group);
+    Roi.setName("template");
+    Roi.setGroup(group_template);
+    roiManager("add");
+    RoiManager.selectGroup(group_template);
+    roiManager("save selected", roi);
+
+    Overlay.remove;
+    RoiManager.selectGroup(group_template);
+    Overlay.addSelection("red", 5);
+    Overlay.flatten;
+    save(WorkDir + iname);
+    close();
+    skinOverlay();
+}
+
+function grid_overlay(tileLength) {
+    //setBatchMode(true);
+    color = "green";
+    tileWidth = 250;
+
+    getPixelSize(unit, pw, ph, pd);
+    if (unit=="cm") {
+        tileWidth= tileLength/pw;
+        tileHeight = tileWidth;
+    } else {
+      showMessage("Please set scale (cm) first!!!");
+      setTool("Line");
+      return;
+    }
+
+    if (nImages>0) {
+        //run("Remove Overlay");
+	Overlay.clear;
+        width = getWidth;
+        height = getHeight;
+
+	getCursorLoc(x, y, z, flags);
+
+        xoff=x % tileWidth;
+        while (true && xoff<width) { // draw vertical lines
+          makeLine(xoff, 0, xoff, height);
+	  Overlay.addSelection("green");
+          //run("Add Selection...", "stroke="+color);
+          xoff += tileWidth;
+        }
+        yoff=y % tileWidth;
+        while (true && yoff<height) { // draw horizonal lines
+          makeLine(0, yoff, width, yoff);
+	  Overlay.addSelection("green");
+          //run("Add Selection...", "stroke="+color);
+          yoff += tileHeight;
+        }
+        run("Select None");
+    }
+    setBatchMode(false);
+}
+
+macro "Load [0]" {
+    roiManager("reset");
+    skinOverlay();
+    skinOverlayTemplate();
+}
+
+function openSkin(dir = 0) {
+    // dir: 0 [next undo], -1 [prev], 1 [next]
+    idir = getDir("image");
+    iname = getInfo("image.filename");
+    getFileList(idir);
+    WorkDir = idir + "work/";
+    ifiles0 = getFileList(idir);
+
+    ifiles = newArray;
+    for (i = 0; i < ifiles0.length; i++) {
+	if (endsWith(ifiles[j], "jpg") || endsWith(ifiles[j], "JPG")) {
+	    ifiles = Array.concat(ifiles, ifiles0[i]);
+    }
+
+    i = -1;
+    for (j=0; j<ifiles.length; j++) {
+	if (dir == 0) {
+	    fname = File.getNameWithoutExtension(ifiles[j]);
+	    roi = WorkDir + fname + "_template.zip";
+	    target_file = roi;
+	    if(!File.exists(target_file)) {
+		i = j;
+	    }
+	} else {
+	    if (iname == ifiles[j]) {
+		i = j + dir;
+		if (i < 0) {
+		    i = 0;
+		} else if (i == ifiles.length) {
+		    i = ifiles.length - 1;
+		}
+	    }
+	}
+	if (i >= 0) {
+	    close("*");
+	    open(idir + ifiles[i]);
+	    skinOverlayTemplate();
+	    return 0;
+	}
+    }
+}
+
+macro "undo [a]" {
+    openSkin(0);
+}
+
+macro "next [n]" {
+    openSkin(1);
+}
+
+macro "previous [p]" {
+    openSkin(1);
+}
+
+macro "Save Overlay [g]" {
+    skinSaveOverlay("green");
+}
+
+macro "Save Overlay [r]" {
+    skinSaveOverlay("red");
+}
+
+macro "Save Selection [b]" {
+    skinSaveOverlay("blue");
+}
+
+///*** Overlay and save skin images

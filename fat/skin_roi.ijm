@@ -702,3 +702,203 @@ function open_case(direction) {
 	}
     }
 }
+
+///*** Overlay and save skin images
+
+var group_lw = 1;
+var group_ly = 2;
+var group_template = 3;
+
+function skinOverlay () {
+    // xx: "LW", "LY"
+    iname = getInfo("image.filename");
+    fname = File.getNameWithoutExtension(iname);
+    idir = getDir("image");
+
+    Overlay.remove;
+    roiManager("reset");
+    xx = "LW";
+    color = "green";
+    group = group_lw;
+    roi = idir + "../" + xx + "/" + fname + "_roi.zip";
+    if (File.exists(roi)) {
+	roiManager("open", roi);
+	i = -1;
+	for (j = 0; j < RoiManager.size; j++) {
+	    if (matches(RoiManager.getName(j), ".*lesion.*")) {
+		i = j;
+	    }
+	}
+	if (i >= 0) {
+	    RoiManager.select(i);
+	    roiManager("rename", xx);
+	    RoiManager.setGroup(group);
+	    roiManager("save selected", idir + fname + "_" + xx + ".zip");
+	    Overlay.addSelection(color, 5);
+	}
+    }
+    roiManager("reset");
+    xx = "LY";
+    color = "red";
+    group = group_ly;
+    roi = idir + "../" + xx + "/" + fname + "_roi.zip";
+    if (File.exists(roi)) {
+	roiManager("open", roi);
+	i = -1;
+	for (j = 0; j < RoiManager.size; j++) {
+	    if (matches(RoiManager.getName(j), ".*lesion.*")) {
+		i = j;
+	    }
+	}
+	if (i >= 0) {
+	    RoiManager.select(i);
+	    roiManager("rename", xx);
+	    RoiManager.setGroup(group);
+	    roiManager("save selected", idir + fname + "_" + xx + ".zip");
+	    Overlay.addSelection(color, 5);
+	}
+    }
+    roiManager("reset");
+    roiManager("open", idir + fname + "_LW" + ".zip");
+    roiManager("open", idir + fname + "_LY" + ".zip");
+    run("Select None");
+
+}
+
+function skinOverlayTemplate () {
+    // xx: "LW", "LY"
+    iname = getInfo("image.filename");
+    fname = File.getNameWithoutExtension(iname);
+    idir = getDir("image");
+    WorkDir = idir + "work/";
+
+    Overlay.remove;
+    roiManager("reset");
+    color = "red";
+    group = group_template;
+    roi = WorkDir + fname + "_template.zip";
+
+    if (File.exists(roi)) {
+	Overlay.remove;
+	roiManager("open", roi);
+	RoiManager.selectGroup(group_template);
+	Overlay.addSelection("006600", 5);
+	roiManager("reset");
+    }
+    run("Select None");
+}
+
+function skinSaveOverlay (color) {
+    iname = getInfo("image.filename");
+    fname = File.getNameWithoutExtension(iname);
+    idir = getDir("image");
+    WorkDir = idir + "work/";
+    if(!File.exists(WorkDir)) File.makeDirectory(WorkDir);
+
+    roi = WorkDir + fname + "_template.zip";
+
+    
+    if (color == "blue") {
+	if (is("area")) {
+	    group = group_wy;
+	    Roi.setName("template");
+	    Roi.setGroup(group_template);
+	    roiManager("add");
+	} else return 0;
+	
+    } else if (color == "green") {
+	xx = "LW";
+	group = group_lw;
+    } else if (color == "red") {
+	xx = "LY";
+	group = group_ly;
+    } 
+    RoiManager.selectGroup(group);
+    Roi.setName("template");
+    Roi.setGroup(group_template);
+    roiManager("add");
+    RoiManager.selectGroup(group_template);
+    roiManager("save selected", roi);
+
+    Overlay.remove;
+    RoiManager.selectGroup(group_template);
+    Overlay.addSelection("red", 5);
+    Overlay.flatten;
+    save(WorkDir + iname);
+    close();
+    skinOverlay();
+}
+
+macro "Load [0]" {
+    roiManager("reset");
+    skinOverlay();
+    skinOverlayTemplate();
+}
+
+function openSkin(dir = 0) {
+    // dir: 0 [next undo], -1 [prev], 1 [next]
+    idir = getDir("image");
+    iname = getInfo("image.filename");
+    getFileList(idir);
+    WorkDir = idir + "work/";
+    ifiles0 = getFileList(idir);
+
+    ifiles = newArray;
+    for (i = 0; i < ifiles0.length; i++) {
+	if (endsWith(ifiles[j], "jpg") || endsWith(ifiles[j], "JPG")) {
+	    ifiles = Array.concat(ifiles, ifiles0[i]);
+    }
+
+    i = -1;
+    for (j=0; j<ifiles.length; j++) {
+	if (dir == 0) {
+	    fname = File.getNameWithoutExtension(ifiles[j]);
+	    roi = WorkDir + fname + "_template.zip";
+	    target_file = roi;
+	    if(!File.exists(target_file)) {
+		i = j;
+	    }
+	} else {
+	    if (iname == ifiles[j]) {
+		i = j + dir;
+		if (i < 0) {
+		    i = 0;
+		} else if (i == ifiles.length) {
+		    i = ifiles.length - 1;
+		}
+	    }
+	}
+	if (i >= 0) {
+	    close("*");
+	    open(idir + ifiles[i]);
+	    skinOverlayTemplate();
+	    return 0;
+	}
+    }
+}
+
+macro "undo [a]" {
+    openSkin(0);
+}
+
+macro "next [n]" {
+    openSkin(1);
+}
+
+macro "previous [p]" {
+    openSkin(1);
+}
+
+macro "Save Overlay [g]" {
+    skinSaveOverlay("green");
+}
+
+macro "Save Overlay [r]" {
+    skinSaveOverlay("red");
+}
+
+macro "Save Selection [b]" {
+    skinSaveOverlay("blue");
+}
+
+///*** Overlay and save skin images
