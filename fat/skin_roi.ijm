@@ -835,7 +835,7 @@ macro "Load [0]" {
     skinOverlayTemplate();
 }
 
-function openSkin(dir = 0) {
+function openSkin(dir) {
     // dir: 0 [next undo], -1 [prev], 1 [next]
     idir = getDir("image");
     iname = getInfo("image.filename");
