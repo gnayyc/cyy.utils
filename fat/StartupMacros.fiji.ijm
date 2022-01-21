@@ -2857,6 +2857,7 @@ function openSkin(dir = 0) {
     for (i = 0; i < ifiles0.length; i++) {
 	if (endsWith(ifiles[j], "jpg") || endsWith(ifiles[j], "JPG")) {
 	    ifiles = Array.concat(ifiles, ifiles0[i]);
+	}
     }
 
     i = -1;
