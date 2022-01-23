@@ -2691,6 +2691,7 @@ function skinOverlay () {
     roi = idir + "../" + xx + "/" + fname + "_roi.zip";
     if (File.exists(roi)) {
 	roiManager("open", roi);
+	print(roi);
 	i = -1;
 	for (j = 0; j < RoiManager.size; j++) {
 	    if (matches(RoiManager.getName(j), ".*lesion.*")) {
@@ -2699,10 +2700,10 @@ function skinOverlay () {
 	}
 	if (i >= 0) {
 	    RoiManager.select(i);
+	    Overlay.addSelection(color, 5);
 	    roiManager("rename", xx);
 	    RoiManager.setGroup(group);
 	    roiManager("save selected", idir + fname + "_" + xx + ".zip");
-	    Overlay.addSelection(color, 5);
 	}
     }
     roiManager("reset");
@@ -2712,6 +2713,7 @@ function skinOverlay () {
     roi = idir + "../" + xx + "/" + fname + "_roi.zip";
     if (File.exists(roi)) {
 	roiManager("open", roi);
+	print(roi);
 	i = -1;
 	for (j = 0; j < RoiManager.size; j++) {
 	    if (matches(RoiManager.getName(j), ".*lesion.*")) {
@@ -2720,15 +2722,16 @@ function skinOverlay () {
 	}
 	if (i >= 0) {
 	    RoiManager.select(i);
+	    Overlay.addSelection(color, 5);
 	    roiManager("rename", xx);
 	    RoiManager.setGroup(group);
 	    roiManager("save selected", idir + fname + "_" + xx + ".zip");
-	    Overlay.addSelection(color, 5);
 	}
     }
+
     roiManager("reset");
-    roiManager("open", idir + fname + "_LW" + ".zip");
-    roiManager("open", idir + fname + "_LY" + ".zip");
+    roiManager("Open", idir + fname + "_LW.zip");
+    roiManager("Open", idir + fname + "_LY.zip");
     run("Select None");
 
 }
@@ -2740,18 +2743,17 @@ function skinOverlayTemplate () {
     idir = getDir("image");
     WorkDir = idir + "work/";
 
-    Overlay.remove;
-    roiManager("reset");
-    color = "red";
+    color = "blue";
     group = group_template;
     roi = WorkDir + fname + "_template.zip";
 
     if (File.exists(roi)) {
-	Overlay.remove;
+	//roiManager("reset");
+	//Overlay.remove;
 	roiManager("open", roi);
 	RoiManager.selectGroup(group_template);
-	Overlay.addSelection("006600", 5);
-	roiManager("reset");
+	Overlay.addSelection("0000aa", 5);
+	//roiManager("reset");
     }
     run("Select None");
 }
@@ -2764,7 +2766,6 @@ function skinSaveOverlay (color) {
     if(!File.exists(WorkDir)) File.makeDirectory(WorkDir);
 
     roi = WorkDir + fname + "_template.zip";
-
     
     if (color == "blue") {
 	if (is("area")) {
@@ -2785,7 +2786,9 @@ function skinSaveOverlay (color) {
     Roi.setName("template");
     Roi.setGroup(group_template);
     roiManager("add");
-    RoiManager.selectGroup(group_template);
+    //RoiManager.selectGroup(group_template);
+    //File.delete(roi);
+    RoiManager.select(RoiManager.size-1);
     roiManager("save selected", roi);
 
     Overlay.remove;
@@ -2794,7 +2797,6 @@ function skinSaveOverlay (color) {
     Overlay.flatten;
     save(WorkDir + iname);
     close();
-    skinOverlay();
 }
 
 function grid_overlay(tileLength) {
@@ -2855,7 +2857,7 @@ function openSkin(dir) {
 
     ifiles = newArray;
     for (i = 0; i < ifiles0.length; i++) {
-	if (endsWith(ifiles[j], "jpg") || endsWith(ifiles[j], "JPG")) {
+	if (endsWith(ifiles0[i], "jpg") || endsWith(ifiles0[i], "JPG")) {
 	    ifiles = Array.concat(ifiles, ifiles0[i]);
 	}
     }
@@ -2888,28 +2890,43 @@ function openSkin(dir) {
     }
 }
 
-macro "undo [a]" {
+macro "todo [a]" {
     openSkin(0);
+    roiManager("reset");
+    skinOverlay();
+    skinOverlayTemplate();
 }
 
 macro "next [n]" {
     openSkin(1);
+    roiManager("reset");
+    skinOverlay();
+    skinOverlayTemplate();
 }
 
 macro "previous [p]" {
-    openSkin(1);
+    openSkin(-1);
+    roiManager("reset");
+    skinOverlay();
+    skinOverlayTemplate();
 }
 
 macro "Save Overlay [g]" {
     skinSaveOverlay("green");
+    skinOverlay();
+    skinOverlayTemplate();
 }
 
 macro "Save Overlay [r]" {
     skinSaveOverlay("red");
+    skinOverlay();
+    skinOverlayTemplate();
 }
 
 macro "Save Selection [b]" {
     skinSaveOverlay("blue");
+    skinOverlay();
+    skinOverlayTemplate();
 }
 
 ///*** Overlay and save skin images
