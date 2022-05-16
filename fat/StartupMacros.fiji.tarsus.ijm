@@ -341,6 +341,9 @@ var group_aw_3 = 37;
 var group_body_3 = 38;
 var group_qlum_3 = 39;
 
+var group_ccn = 1;
+var group_5mt = 2;
+
 //------------------------------------ Fat related macros
 // # Press [f] to set fat mask
 // # If default threshold doesn't work well, use another routine:
@@ -364,6 +367,7 @@ macro "Reload [R]" {
 }
 
 
+/*
 function init() {
     // get num_N num_n
     if (num_n == 0) {
@@ -378,74 +382,82 @@ function init() {
 	    list0 = getFileList(idir);
 	}
     }
-    //run("Clear Results");
-    TF = SF = VF = PF = RF = WVF = WF = 0;
-    PatientName = getTag("0010,0010");
-    PatientID = getTag("0010,0020");
-    PatientsBirthDate = getTag("0010,0030");
-    PatientSex = getTag("0010,0040");
-    StudyDate = getTag("0008,0020");
-    studyid = getTag("0020,0010");
-    series = getTag("0020,0011");
-    image = getTag("0020,0013");
-    Modality = getTag("0008,0060");
-    time = replace(getTime,"E12","");
-    time = replace(time, "\\\.", "");
 
-    ImageID = getImageID();
-    Title = getTitle();
-    idir = getDirectory("image");
-    iid = get_iid();
-    sid = get_sid();
-    getDimensions(width, height, channels, slices, frames);
-    roiManager("reset");
-    if (slices > 1)
-	ipath = idir + getInfo("slice.label"); 
-    else
-	ipath = idir + Title;
 
-    if(!File.exists(ipath)) {
-	ipath = ipath + ".dcm";
-    }
-    if(!File.exists(ipath)) {
-	ipath = "";
-    }
-    nSlice = 0;
-    workingSlice = 0;
 
-    fat_title = Title+"_1fat";
-    wvfat_title = Title+"_2wvfat";
-    vfat_title = Title+"_3vfat";
-    pfat_title = Title+"_4pfat";
+    if (0) {
+	//run("Clear Results");
+	TF = SF = VF = PF = RF = WVF = WF = 0;
+	PatientName = getTag("0010,0010");
+	PatientID = getTag("0010,0020");
+	PatientsBirthDate = getTag("0010,0030");
+	PatientSex = getTag("0010,0040");
+	StudyDate = getTag("0008,0020");
+	studyid = getTag("0020,0010");
+	series = getTag("0020,0011");
+	image = getTag("0020,0013");
+	Modality = getTag("0008,0060");
+	time = replace(getTime,"E12","");
+	time = replace(time, "\\\.", "");
 
-    if (matches(Modality, ".*MR.*")){
-	Modality = "MR";
-	setOption("BlackBackground", true);
-	run("Colors...", "foreground=white background=black selection=red"); //set colors display
-	run("Options...", "iterations=1 black count=1"); //set white background vvv
+	ImageID = getImageID();
+	Title = getTitle();
+	idir = getDirectory("image");
+	iid = get_iid();
+	sid = get_sid();
+	getDimensions(width, height, channels, slices, frames);
+	roiManager("reset");
+	if (nSlices > 1)
+	    ipath = idir + getInfo("slice.label"); 
+	else
+	    ipath = idir + Title;
+
+	if(!File.exists(ipath)) {
+	    ipath = ipath + ".dcm";
+	}
+	if(!File.exists(ipath)) {
+	    ipath = "";
+	}
+	nSlice = 0;
+	workingSlice = 0;
+
+	fat_title = Title+"_1fat";
+	wvfat_title = Title+"_2wvfat";
+	vfat_title = Title+"_3vfat";
+	pfat_title = Title+"_4pfat";
+
+	if (matches(Modality, ".*MR.*")){
+	    Modality = "MR";
+	    setOption("BlackBackground", true);
+	    run("Colors...", "foreground=white background=black selection=red"); //set colors display
+	    run("Options...", "iterations=1 black count=1"); //set white background vvv
+	}
+	else {
+	    Modality = "CT";
+	    setMinAndMax(-125, 225);
+	    setOption("BlackBackground", false);
+	    run("Colors...", "foreground=black background=white selection=red"); //set colors display
+	    run("Options...", "iterations=1 count=1"); //set white background 
+	}
+	if (File.exists(create_series_path("_roi.zip"))) {
+	    roiManager("Open", create_series_path("_roi.zip"));
+	}
+	update_results();
+	//run("Original Scale");
+	//setLocation(610, -10, width * 1.5, height*1.5);
+	//setLocation(610, -10);
+	Table.setLocationAndSize(0, 110, 300, 450, "Log");
+	Table.setLocationAndSize(300, 110, 300, 450, "ROI Manager");
+	if (RoiManager.size > 0) {
+	    RoiManager.select(RoiManager.size - 1);
+	    roiManager("Deselect");
+	    RoiManager.selectGroup(group_psoas_3);
+	}
+
     }
-    else {
-	Modality = "CT";
-	setMinAndMax(-125, 225);
-	setOption("BlackBackground", false);
-	run("Colors...", "foreground=black background=white selection=red"); //set colors display
-	run("Options...", "iterations=1 count=1"); //set white background 
-    }
-    if (File.exists(create_series_path("_roi.zip"))) {
-	roiManager("Open", create_series_path("_roi.zip"));
-    }
-    update_results();
-    //run("Original Scale");
-    //setLocation(610, -10, width * 1.5, height*1.5);
-    //setLocation(610, -10);
-    Table.setLocationAndSize(0, 110, 300, 450, "Log");
-    Table.setLocationAndSize(300, 110, 300, 450, "ROI Manager");
-    if (RoiManager.size > 0) {
-        RoiManager.select(RoiManager.size - 1);
-	roiManager("Deselect");
-	RoiManager.selectGroup(group_psoas_3);
-    }
+
 }
+*/
 
 function print_group(group_name, group_id) {
     RoiManager.selectGroup(group_id);
@@ -878,9 +890,11 @@ function createMask(lower, upper) {
     // print(title_soft);
     //run("Duplicate...", "title="+title_soft);
     run("Duplicate...", "title="+getTitle + "_mask");
+    //run("Duplicate...", "title="+getTitle + "_mask duplicate"); //stack duplicate
     iid2 = getImageID();
     setLocation(x+width+10, y);
     setThreshold(lower, upper);
+    //run("Convert to Mask", "method=Default background=Light create");
     run("Convert to Mask");
 
     //run("Display...", " "); //do not use Inverting LUT
@@ -1060,41 +1074,6 @@ function saveROI() {
     }
   }
 }
-
-
-function get_id(lvl) {
-  if (Title == "")
-    Title = getTitle();
-
-  if (endsWith(getInfo("image.filename"), ".nii.gz"))
-    return getInfo("image.filename");
-  date = getTag("0008,0020");
-  if (lvl == "date")
-    xid = PatientID + "_" + date;
-  else if (lvl == "series")
-    xid = PatientID + "_" + date + "-S"+studyid + "_s"+series;
-  else if (lvl == "dcm")
-    xid = "S"+studyid + "_s"+series + "_i"+image;
-  else if (lvl == "image")
-    xid = PatientID + "_" + date + "-S"+studyid + "_s"+series + "_i"+image;
-  return xid;
-}
-
-function get_did() {
-    xid = get_id("date");
-    return xid;
-}
-
-function get_sid() {
-    xid = get_id("series");
-    return xid;
-}
-
-function get_iid() {
-    xid = get_id("image");
-    return xid;
-}
-
 
 
 //macro "SelectFile [F8]" {
@@ -1433,19 +1412,12 @@ function addROI(tag, group_id) {
     if (selectionType >= 0) {
 	Roi.setName(tag);
 	Roi.setGroup(group_id);
-	getDimensions(width, height, channels, slices, frames);
-	if (slices > 1) {
-	    Roi.setPosition(getSliceNumber());
-	} else if (workingSlice > 1) {
-	    Roi.setPosition(workingSlice);
-	} else {
-	    Roi.setPosition(getSliceNumber());
-	}
+	Roi.setPosition(getSliceNumber());
 	Roi.setProperty("timestamp", timestamp());
 	Roi.setProperty("id", get_sid());
 	Roi.setGroupNames(tag);
 	roiManager("add");
-	showStatus("Added ROI: " + sid + ":" + tag);
+	showStatus("Added ROI: " + get_sid() + ":" + tag);
     } else {
 	showStatus("No ROI to add");
     }
@@ -1568,203 +1540,6 @@ function mid_slice() {
 	setSlice(n);
 	setTool("polygon");
 	nSlice = 0;
-    }
-}
-
-
-macro "Next Slice [c]" {
-    run("Next Slice [>]");
-}
-
-macro "Previous Slice [x]" {
-    run("Previous Slice [<]");
-}
-
-macro "Next Case [N]" {
-  open_case(1);
-}
-
-macro "Prev Case [P]" {
-  open_case(-1);
-}
-
-macro "Next Undon Case [n]" {
-  open_case(0);
-}
-
-function append_result(Logfile, sid, roi, type, label, value) {
-// create_path("_misc.csv"), get_id(), "area", "liver", value 
-  if(!File.exists(Logfile)) 
-    File.append("id,roi,type,label,value", Logfile);
-  File.append(sid+","+roi+","+type+","+label+","+value, Logfile);
-}
-
-
-function open_case(direction) {
-    ImageX = 600;
-    ImageY = -110;
-    // direction = 1 (forward), 0 (find first undone), -1 (backward)
-
-    idir = getDirectory("image");
-    if (endsWith(getInfo("image.filename"), ".nii.gz")) {
-	filemode = 1;
-    } else { filemode = 0; }
-
-    if (filemode == 1) { // nii.gz
-	iname = getInfo("image.filename");
-	list0 = getFileList(idir);
-	idir = replace(idir, "\\", "/");
-
-	list = list0;
-	for (i = 0; i < list0.length; i++) {
-	    if (!endsWith(list0[i], "nii.gz"))
-		list = Array.deleteValue(list, list0[i]);
-	}
-	num_N = list.length;
-
-	getLocationAndSize(x, y, width, height);
-	call("ij.gui.ImageWindow.setNextLocation", ImageX, ImageY)
-	x = ImageX;
-	y = ImageY;
-	for (i = 0; i < list.length; i++) {
-	    if (direction == 0) {
-		// XXXXX not yet done
-		if (!File.exists(pdir + list[i] + "/work")) {
-		    run("Close");
-		    open(pdir + list[i]);
-			    num_n = i + 1;
-			    open(idir + list[num_n-1]);
-		    setLocation(x, y, width, height);
-		    //showStatus(idir + list[i] + " (" + i+1 + "/" + list.length + ")");
-		    init();
-		    showStatus("[" + i+1 + "/" + list.length + "] " + idir + list[i]);
-		    return pdir + list[i];
-		}
-	    } else if (endsWith(list[i], "nii.gz")) {
-		if (iname == list[i]) {
-		    if (direction == 1) {
-			if (i == list.length - 1) {
-			    showMessage("Done");
-			    return 0;
-			} else {
-			    run("Close");
-			    num_n = i + 2;
-			    open(idir + list[num_n-1]);
-			    setLocation(x, y, width, height);
-			    init();
-			    showStatus("[" + num_n + "/" + list.length + "] " + pdir + list[i+1]);
-			    return idir + list[i+1];
-			}
-		    } else { // direction == -1
-			if (i == 0) {
-			    showMessage("Already the first");
-			    return 0;
-			} else {
-			    run("Close");
-			    num_n = i;
-			    open(idir + list[num_n-1]);
-			    setLocation(x, y, width, height);
-			    init();
-			    showStatus("[" + num_n + "/" + list.length + "] " + pdir + list[i+1]);
-			    return idir + list[i-1];
-			}
-		    }
-		}
-	    }
-	}
-    } else { // dirmode
-	pdir = File.getParent(idir) + File.separator;
-	list0 = getFileList(pdir);
-	idir = replace(idir, "\\", "/");
-	pdir = replace(pdir, "\\", "/");
-	getLocationAndSize(x, y, width, height);
-	call("ij.gui.ImageWindow.setNextLocation", x, y);
-
-	list = newArray;
-	for (i = 0; i < list0.length; i++) {
-	    if (! File.isDirectory(pdir + list0[i]))
-		list = Array.concat(list, list0[i]);
-	}
-	num_N = list.length;
-
-	for (i = 0; i < list.length; i++) {
-	    if (direction == 0) {
-		if (!File.isDirectory(pdir + list[i] + "/work")) {
-		    // check work dir
-		    close("*");
-		    num_n = i + 1;
-		    open(pdir + list[num_n-1]);
-		    setLocation(x, y, width, height);
-		    init();
-		    showStatus("[" + num_n + "/" + list.length + "] " + pdir + list[i]);
-		    return pdir + list[i];
-		} else {
-		    // check work/roi
-		    found_roi = 0;
-		    check = getFileList(pdir + list[i] + "/work");
-		    for (j = 0; j < check.length; j++) {
-			if (endsWith(check[j], "roi.zip")) { found_roi = check[j]; }
-		    }
-		    if (found_roi == 0) {
-			// no roi
-			close("*");
-			num_n = i + 1;
-			open(pdir + list[num_n-1]);
-			setLocation(x, y, width, height);
-			init();
-			showStatus("[" + num_n + "/" + list.length + "] " + pdir + list[i]);
-			return pdir + list[i];
-		    } else {
-			// check back in roi
-			num_n = i + 1;
-			roiManager("reset");
-			roiManager("Open", pdir + list[num_n-1] + "work/" +found_roi);
-			RoiManager.selectGroup(group_back_3);
-			if (RoiManager.selected == 0) {
-			    close("*");
-			    num_n = i + 1;
-			    open(pdir + list[num_n-1]);
-			    setLocation(x, y, width, height);
-			    init();
-			    showStatus("[" + num_n + "/" + list.length + "] " + pdir + list[i]);
-			    return pdir + list[i];
-			}
-		    }
-		}
-	    } else if (endsWith(list[i], "/")) {
-		tmpdir = pdir + list[i];
-		//showMessage("idir: "+ idir + "; list[i]: " + tmpdir);
-		if (idir == tmpdir) {
-		    if (direction == 1) {
-			if (i == list.length - 1) {
-			    showMessage("Done");
-			    return 0;
-			} else {
-			    close("*");
-			    num_n = i + 2;
-			    open(pdir + list[num_n-1]);
-			    setLocation(x, y, width, height);
-			    init();
-			    showStatus("[" + num_n + "/" + list.length + "] " + pdir + list[i+1]);
-			    return pdir + list[i+1];
-			}
-		    } else { // direction == -1
-			if (i == 0) {
-			    showMessage("Already the first");
-			    return 0;
-			} else {
-			    run("Close");
-			    num_n = i;
-			    open(pdir + list[num_n-1]);
-			    setLocation(x, y, width, height);
-			    init();
-			    showStatus("[" + num_n + "/" + list.length + "] " + pdir + list[i+1]);
-			    return pdir + list[i-1];
-			}
-		    }
-		}
-	    }
-	}
     }
 }
 
@@ -1903,7 +1678,6 @@ macro "Show all ROIs [A]" {
 macro "next ROI [n]" {
     nextROI();
 }
-*/
 
 macro "mask2selection [9]" {
     mask2selection(1);
@@ -2102,7 +1876,6 @@ function save_mask() {
     }
     setBatchMode(false);
 }
-*/
 
 
 function overlay_selection() {
@@ -2170,6 +1943,7 @@ function overlay_selection() {
     }
     setBatchMode(false); 
 }
+*/
 
 
 //group colors
@@ -2892,6 +2666,7 @@ macro "undo [a]" {
     openSkin(0);
 }
 
+/*
 macro "next [n]" {
     openSkin(1);
 }
@@ -2899,6 +2674,7 @@ macro "next [n]" {
 macro "previous [p]" {
     openSkin(1);
 }
+*/
 
 macro "Save Overlay [g]" {
     skinSaveOverlay("green");
@@ -2913,3 +2689,300 @@ macro "Save Selection [b]" {
 }
 
 ///*** Overlay and save skin images
+
+function append_result(Logfile, sid, roi, type, label, value) {
+// create_path("_misc.csv"), get_id(), "area", "liver", value 
+  if(!File.exists(Logfile)) 
+    File.append("id,roi,type,label,value", Logfile);
+  File.append(sid+","+roi+","+type+","+label+","+value, Logfile);
+}
+
+
+//************ For flat foot tarsal calcaneal measurement
+
+function init() {
+    roiManager("reset");
+    setTool("Line");
+    if(File.exists(pathROI(""))) {
+	roiManager("Open", pathROI(""));
+	roiManager("Show All");
+	roiManager("Show All with labels");
+    }
+    update_info();
+}
+
+function pathROI(xpath) {
+    
+    //print("\\Clear");
+    //print(ipath);
+
+    if (xpath == "") xpath = pathImage();
+
+    if (File.isDirectory(xpath)) {
+	// assume dcm dir
+	iName = File.getName(xpath);
+	wdir = xpath + "/work/";
+	iROI = wdir + iName + "_roi.zip";
+    } else {
+	dotIndex = lastIndexOf(xpath, ".");
+	iDir = File.getDirectory(xpath);
+	iName = File.getNameWithoutExtension(xpath);
+	iROI = iDir + iName + "_roi.zip";
+    }
+    //print(iROI);
+    return iROI;
+}
+
+function existROI(ipath) {
+    //print("\\Clear");
+    //print(ipath);
+    //print(pathROI(ipath));
+    if (File.exists(pathROI(ipath)))
+	return true;
+    else
+	return false;
+}
+
+function pathImage() {
+    ipath = "";
+    // get ipath of current image
+    iFilename = getInfo("image.filename");
+    if (iFilename == "") { // assume it is a directory
+	iFilename = getInfo("image.title");
+	idir = File.getParent(getInfo("image.directory")) + File.separator;
+	idir = replace(idir, "\\", "/");
+    } else {
+	idir = getInfo("image.directory");
+	idir = replace(idir, "\\", "/");
+    }
+    xpath = "" + idir + iFilename;
+    print(xpath);
+    return xpath;
+}
+
+function open_case(direction) {
+    // direction = 1 (forward), 0 (find first undone), -1 (backward)
+
+    iFilename = getInfo("image.filename");
+    if (iFilename == "") { // assume it is a directory
+	filemode = 0;
+	iFilename = getInfo("image.title");
+	idir = File.getParent(getInfo("image.directory")) + File.separator;
+	idir = replace(idir, "\\", "/");
+
+	ifiles0 = getFileList(idir);
+	ifiles = newArray;
+	for (i = 0; i < ifiles0.length; i++) {
+	    if (File.isDirectory(idir + ifiles0[i]))
+		itmp = replace(ifiles0[i], "\\", "");
+		itmp = replace(itmp, "/", "");
+		ifiles = Array.concat(ifiles, itmp);
+	}
+    } else {
+	idir = getInfo("image.directory");
+	filemode = 1;
+	iName = File.getNameWithoutExtension(iFilename);
+	iExt = replace(iFilename, iName + ".", "");
+
+	ifiles0 = getFileList(idir);
+	idir = replace(idir, "\\", "/");
+
+	ifiles = ifiles0;
+	for (i = 0; i < ifiles0.length; i++) {
+	    if (!endsWith(ifiles0[i], iExt))
+		ifiles = Array.deleteValue(ifiles, ifiles0[i]);
+	}
+    }
+
+    num_n = -1;
+    for (i = 0; i < ifiles.length; i++) {
+	// find first undo
+	ipath = idir + ifiles[i];
+	if (direction == 0) {
+	    if (! existROI(ipath)) { num_n = i + 1; }
+	} else {
+	    if (iFilename == ifiles[i]) {
+		if (direction == 1) {
+		    if (i == ifiles.length - 1) {
+			showMessage("Done");
+			return 0;
+		    } else {
+			num_n = i + 2;
+		    }
+		} else { // direction == -1
+		    if (i == 0) {
+			showMessage("Already the first");
+			return 0;
+		    } else {
+			num_n = i;
+		    }
+		}
+	    }
+	}
+	if (num_n >= 0) {
+	    num_N = ifiles.length;
+	    getLocationAndSize(x, y, width, height);
+	    call("ij.gui.ImageWindow.setNextLocation", x, y);
+
+	    close("*");
+	    open(idir + ifiles[num_n-1]);
+	    setLocation(x, y, width, height);
+	    init();
+	    showStatus("[" + num_n + "/" + ifiles.length + "] " + idir + ifiles[num_n-1]);
+	    return idir + ifiles[num_n-1];
+	}
+    }
+
+}
+
+function get_id(lvl) {
+    if (Title == "")
+    Title = getTitle();
+
+    iFilename = getInfo("image.filename");
+    if (iFilename == "") { // assume it is a directory
+      date = getTag("0008,0020");
+      if (lvl == "date")
+	xid = PatientID + "_" + date;
+      else if (lvl == "series")
+	xid = PatientID + "_" + date + "-S"+studyid + "_s"+series;
+      else if (lvl == "dcm")
+	xid = "S"+studyid + "_s"+series + "_i"+image;
+      else if (lvl == "image")
+	xid = PatientID + "_" + date + "-S"+studyid + "_s"+series + "_i"+image;
+      return xid;
+    } else {
+	return iFilename;
+    }
+}
+
+function get_did() {
+    xid = get_id("date");
+    return xid;
+}
+
+function get_sid() {
+    xid = get_id("series");
+    return xid;
+}
+
+function get_iid() {
+    xid = get_id("image");
+    return xid;
+}
+
+function addLine(tag, group_id) {
+    if (selectionType == 5) {
+	Roi.setName(tag);
+	Roi.setGroup(group_id);
+	Roi.setPosition(getSliceNumber());
+	Roi.setProperty("timestamp", timestamp());
+	Roi.setProperty("id", get_sid());
+	Roi.setGroupNames(tag);
+	roiManager("add");
+	showStatus("Added ROI: " + get_sid() + ":" + tag);
+    } else {
+	showStatus("No Line selection to add. ");
+    }
+}
+
+function setLine(tag, group_id) {
+    if (selectionType == 5) {
+	Roi.setName(tag);
+	Roi.setGroup(group_id);
+	Roi.setPosition(getSliceNumber());
+	Roi.setProperty("timestamp", timestamp());
+	Roi.setProperty("id", get_sid());
+	Roi.setGroupNames(tag);
+	roiManager("deselect");
+	RoiManager.selectGroup(group_id);
+	if (RoiManager.selected == 0) {
+	    roiManager("add"); 
+	    showStatus("Added ROI: " + get_sid() + ":" + tag);
+	} else {
+	    run("Restore Selection");
+	    roiManager("Update");
+	    showStatus("Updated ROI: " + get_sid() + ":" + tag);
+	} 
+    } else {
+	showStatus("No Line selection to add. ");
+    }
+}
+
+function update_results() {
+    roiManager("Deselect");
+    if (RoiManager.size > 0) {
+	roiManager("Save", pathROI(""));
+    } else {
+	if (File.exists(pathROI(""))) {
+	    File.delete(pathROI(""));
+	}
+    }
+    update_info();
+}
+
+function update_info() {
+    setBatchMode(true);
+    print("\\Clear");
+    print("["+num_n+"/"+num_N+"] "+get_sid());
+    print("");
+    print("[1] Calcaneal line");
+    print("[2] 5MT line");
+    print("[3] Next undone");
+    print("[4] Update");
+    print("[q] Prev");
+    print("[w] Next");
+    print("[e] Next undone");
+}
+
+
+macro "Next Slice [c]" {
+    run("Next Slice [>]");
+}
+
+macro "Previous Slice [x]" {
+    run("Previous Slice [<]");
+}
+
+macro "Next Case [N]" {
+  open_case(1);
+}
+
+macro "Prev Case [P]" {
+  open_case(-1);
+}
+
+macro "Next Undone Case [n]" {
+  open_case(0);
+}
+
+macro "Add calcaneal line [1]" {
+    setLine("Calcaneal", group_ccn);
+    update_results();
+}
+
+macro "Add 5mt line [2]" {
+    setLine("5MT", group_5mt);
+    update_results();
+}
+
+macro "Next Undone Case [3]" {
+  open_case(0);
+}
+
+macro "Update [4]" {
+    update_results();
+}
+
+macro "Next Case [w]" {
+  open_case(1);
+}
+
+macro "Prev Case [q]" {
+  open_case(-1);
+}
+
+macro "Next Undone [e]" {
+  open_case(0);
+}
+
