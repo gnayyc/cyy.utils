@@ -1412,7 +1412,13 @@ function addROI(tag, group_id) {
     if (selectionType >= 0) {
 	Roi.setName(tag);
 	Roi.setGroup(group_id);
-	Roi.setPosition(getSliceNumber());
+	if (nSlices > 1) {
+	    Roi.setPosition(getSliceNumber());
+	} else if (workingSlice > 1) {
+	    Roi.setPosition(workingSlice);
+	} else {
+	    Roi.setPosition(getSliceNumber());
+	}
 	Roi.setProperty("timestamp", timestamp());
 	Roi.setProperty("id", get_sid());
 	Roi.setGroupNames(tag);
@@ -2702,11 +2708,11 @@ function append_result(Logfile, sid, roi, type, label, value) {
 
 function init() {
     roiManager("reset");
+    roiManager("Show All");
+    roiManager("Show All with labels");
     setTool("Line");
     if(File.exists(pathROI(""))) {
 	roiManager("Open", pathROI(""));
-	roiManager("Show All");
-	roiManager("Show All with labels");
     }
     update_info();
 }
@@ -2929,7 +2935,7 @@ function update_info() {
     print("[1] Calcaneal line");
     print("[2] 5MT line");
     print("[3] Next undone");
-    print("[4] Update");
+    print("");
     print("[q] Prev");
     print("[w] Next");
     print("[e] Next undone");
@@ -2956,22 +2962,18 @@ macro "Next Undone Case [n]" {
   open_case(0);
 }
 
-macro "Add calcaneal line [1]" {
+macro "Set calcaneal line [1]" {
     setLine("Calcaneal", group_ccn);
     update_results();
 }
 
-macro "Add 5mt line [2]" {
+macro "Set 5mt line [2]" {
     setLine("5MT", group_5mt);
     update_results();
 }
 
 macro "Next Undone Case [3]" {
   open_case(0);
-}
-
-macro "Update [4]" {
-    update_results();
 }
 
 macro "Next Case [w]" {

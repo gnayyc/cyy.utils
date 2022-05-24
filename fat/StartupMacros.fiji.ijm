@@ -310,8 +310,11 @@ var fat_title = "";
 var wvfat_title = "";
 var vfat_title = "";
 var pfat_title = "";
-var idir = "";
-var ipath = "";
+var idir = ""; // directory containing image
+var ipath = ""; // image path
+var widir = ""; // working idir
+var wipath = ""; //working ipath
+var roidir = ""; //working roipath
 var num_n = 0;
 var num_N = 0;
 
@@ -343,6 +346,10 @@ var group_qlum_3 = 39;
 
 var group_ccn = 1;
 var group_5mt = 2;
+
+var group_od = 2; // red
+var group_os = 7; // yellow
+//var group_ou = 3;
 
 //------------------------------------ Fat related macros
 // # Press [f] to set fat mask
@@ -1431,8 +1438,7 @@ function addROI(tag, group_id) {
     if (selectionType >= 0) {
 	Roi.setName(tag);
 	Roi.setGroup(group_id);
-	getDimensions(width, height, channels, slices, frames);
-	if (slices > 1) {
+	if (nSlices > 1) {
 	    Roi.setPosition(getSliceNumber());
 	} else if (workingSlice > 1) {
 	    Roi.setPosition(workingSlice);
@@ -1443,7 +1449,7 @@ function addROI(tag, group_id) {
 	Roi.setProperty("id", get_sid());
 	Roi.setGroupNames(tag);
 	roiManager("add");
-	showStatus("Added ROI: " + sid + ":" + tag);
+	showStatus("Added ROI: " + get_sid() + ":" + tag);
     } else {
 	showStatus("No ROI to add");
     }
@@ -1600,6 +1606,7 @@ function append_result(Logfile, sid, roi, type, label, value) {
 }
 
 
+/*
 function open_case(direction) {
     ImageX = 600;
     ImageY = -110;
@@ -1767,6 +1774,7 @@ function open_case(direction) {
 	}
     }
 }
+*/
 
 function measure_threshold(lower, upper) {
     run("Duplicate...", "title="+getTitle());
@@ -2669,9 +2677,9 @@ macro "mid_slice [v]" {
     mid_slice();
 }
 
-///*** For organ density
+/// For organ density
 
-///*** Overlay and save skin images stage II
+/// Overlay and save skin images stage II
 
 var group_lw = 1;
 var group_ly = 2;
@@ -2843,11 +2851,13 @@ function grid_overlay(tileLength) {
     setBatchMode(false);
 }
 
+/*
 macro "Load [0]" {
     roiManager("reset");
     skinOverlay();
     skinOverlayTemplate();
 }
+*/
 
 function openSkin(dir) {
     // dir: 0 [next undo], -1 [prev], 1 [next]
@@ -3039,25 +3049,39 @@ function overlayStack(Title) {
     setBatchMode(false);
 }
 
-macro "stackMask [D]" {
-    // createStackMask(-250, -50);
-    createStackMask(-250, 100);
-    title = getTitle;
-    title_mask = title + "_mask";
-    selectWindow(title_mask);
-    //overlayStack(title);
-}
-
 
 ////// For flat foot tarsal calcaneal measurement
 
+function initVar() {
+    roidir = "";
+    //wipath = "";
+    iFilename = getInfo("image.filename");
+    if (iFilename == "") { // assume it is a directory
+	iFilename = getInfo("image.title");
+	idir = File.getParent(getInfo("image.directory")) + File.separator;
+	idir = replace(idir, "\\", "/");
+	roidir = idir + iFilename + "/work/";
+    } else {
+	idir = getInfo("image.directory");
+	idir = replace(idir, "\\", "/");
+	//print("idir = " +  idir);
+	roidir = idir;
+    }
+    //wipath = pathImage();
+
+    print("roidir = " + roidir);
+    //print("wipath = " + wipath);
+}
+
+
 function init() {
+    initVar();
     roiManager("reset");
-    setTool("Line");
+    //setTool("Line");
     if(File.exists(pathROI(""))) {
 	roiManager("Open", pathROI(""));
-	roiManager("Show All");
-	roiManager("Show All with labels");
+	//roiManager("Show All");
+	//roiManager("Show All with labels");
     }
     update_info();
 }
@@ -3067,7 +3091,12 @@ function pathROI(xpath) {
     //print("\\Clear");
     //print(ipath);
 
-    if (xpath == "") xpath = pathImage();
+    if (xpath == "") {
+	//if (wipath == "") 
+	    xpath = pathImage();
+	//else
+	    //xpath = wipath;
+    }
 
     if (File.isDirectory(xpath)) {
 	// assume dcm dir
@@ -3095,18 +3124,21 @@ function existROI(ipath) {
 }
 
 function pathImage() {
-    ipath = "";
-    // get ipath of current image
-    iFilename = getInfo("image.filename");
-    if (iFilename == "") { // assume it is a directory
-	iFilename = getInfo("image.title");
-	idir = File.getParent(getInfo("image.directory")) + File.separator;
-	idir = replace(idir, "\\", "/");
-    } else {
-	idir = getInfo("image.directory");
-	idir = replace(idir, "\\", "/");
+    xpath = getMetadata("ipath"); 
+    if (xpath == "") {
+	ipath = "";
+	// get ipath of current image
+	iFilename = getInfo("image.filename");
+	if (iFilename == "") { // assume it is a directory
+	    iFilename = getInfo("image.title");
+	    idir = File.getParent(getInfo("image.directory")) + File.separator;
+	    idir = replace(idir, "\\", "/");
+	} else {
+	    idir = getInfo("image.directory");
+	    idir = replace(idir, "\\", "/");
+	}
+	xpath = "" + idir + iFilename;
     }
-    xpath = "" + idir + iFilename;
     //print(xpath);
     return xpath;
 }
@@ -3263,6 +3295,10 @@ function setLine(tag, group_id) {
 function update_results() {
     roiManager("Deselect");
     if (RoiManager.size > 0) {
+	roidir = File.getParent(pathROI(""));
+	if (!File.exists(roidir))  {
+	    File.makeDirectory(roidir);
+	}
 	roiManager("Save", pathROI(""));
     } else {
 	if (File.exists(pathROI(""))) {
@@ -3270,6 +3306,20 @@ function update_results() {
 	}
     }
     update_info();
+}
+
+function update_info() {
+    setBatchMode(true);
+    print("\\Clear");
+    print("["+num_n+"/"+num_N+"] "+get_sid());
+    print("");
+    print("[1] Calcaneal line");
+    print("[2] 5MT line");
+    print("[3] Next undone");
+    print("");
+    print("[q] Prev");
+    print("[w] Next");
+    print("[e] Next undone");
 }
 
 
@@ -3294,22 +3344,18 @@ macro "Next Undone Case [n]" {
   open_case(0);
 }
 
-macro "Add calcaneal line [1]" {
+macro "Set calcaneal line [1]" {
     setLine("Calcaneal", group_ccn);
     update_results();
 }
 
-macro "Add 5mt line [2]" {
+macro "Set 5mt line [2]" {
     setLine("5MT", group_5mt);
     update_results();
 }
 
 macro "Next Undone Case [3]" {
   open_case(0);
-}
-
-macro "Update [4]" {
-    update_results();
 }
 
 macro "Next Case [w]" {
@@ -3323,4 +3369,33 @@ macro "Prev Case [q]" {
 macro "Next Undone [e]" {
   open_case(0);
 }
+
+
+macro "info [i]" {
+    print("\\Clear");
+    print("image.fiename: [" + getInfo("image.filename") + "]");
+    print("widir: [" + widir + "]");
+    print("pathImage(): [" + pathImage() + "]");
+    print("pathROI(\"\"): [" + pathROI("") + "]");
+}
+
+macro "OD [a]" {
+    addMask("OD", group_od);
+    if (RoiManager.size > 0) 
+        RoiManager.select(RoiManager.size - 1);
+    run("Next Slice [>]");
+}
+
+macro "stackMask [D]" {
+    // createStackMask(-250, -50);
+    initVar();
+    ipath = pathImage();
+    createStackMask(-250, 100);
+    setMetadata("ipath", ipath); 
+    title = getTitle;
+    title_mask = title + "_mask";
+    selectWindow(title_mask);
+    //overlayStack(title);
+}
+
 
