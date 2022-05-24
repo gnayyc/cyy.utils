@@ -2951,15 +2951,18 @@ macro "Previous Slice [x]" {
 }
 
 macro "Next Case [N]" {
-  open_case(1);
+    update_results();
+    open_case(1);
 }
 
 macro "Prev Case [P]" {
-  open_case(-1);
+    update_results();
+    open_case(-1);
 }
 
 macro "Next Undone Case [n]" {
-  open_case(0);
+    update_results();
+    open_case(0);
 }
 
 macro "Set calcaneal line [1]" {
@@ -2973,18 +2976,22 @@ macro "Set 5mt line [2]" {
 }
 
 macro "Next Undone Case [3]" {
-  open_case(0);
+    update_results();
+    open_case(0);
 }
 
 macro "Next Case [w]" {
-  open_case(1);
+    update_results();
+    open_case(1);
 }
 
 macro "Prev Case [q]" {
-  open_case(-1);
+    update_results();
+    open_case(-1);
 }
 
 macro "Next Undone [e]" {
-  open_case(0);
+    update_results();
+    open_case(0);
 }
 
