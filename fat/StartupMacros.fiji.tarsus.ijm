@@ -718,7 +718,7 @@ function gen_m_results() {
 	Table.setColumn("value", value);
 	Table.save(create_path("_muscle.csv"));
 	selectImage(ImageID);
-	setBatchMode(true);
+	setBatchMode(false);
 }
 
 function gen_f_results() {
@@ -785,7 +785,7 @@ function gen_f_results() {
 	Table.setColumn("value", value);
 	Table.save(create_path("_fat.csv"));
 	selectImage(ImageID);
-	setBatchMode(true);
+	setBatchMode(false);
 }
 
 function update_info() {
@@ -816,7 +816,7 @@ function update_info() {
 	roiManager("select", RoiManager.size - 1);
 	roiManager("Deselect");
     }
-    //setBatchMode(false);
+    setBatchMode(false);
 }
 
 macro "init [0]" {
@@ -1526,6 +1526,84 @@ function update_results() {
     //}
 }
 
+function update_tarsus() {
+    update_results();
+    ImageID = getImageID();
+    Title = getTitle();
+    //setBatchMode(true);
+    id = newArray;
+    variable = newArray;
+    value = newArray;
+    sid = get_sid();
+
+    run("Set Measurements...", "area mean standard perimeter median skewness kurtosis display redirect=None decimal=3");
+
+    selectImage(ImageID);
+
+    id = Array.concat(id, sid);
+    variable = Array.concat(variable, "width");
+    value = Array.concat(value, getWidth());
+
+    id = Array.concat(id, sid);
+    variable = Array.concat(variable, "height");
+    value = Array.concat(value, getHeight());
+
+    roiManager("deselect");
+    RoiManager.selectGroup(group_ccn);
+    if (RoiManager.selected == 1) {
+	getLine(x1, y1, x2, y2, lineWidth);
+	rid = Roi.getProperty("id");
+
+	id = Array.concat(id, rid);
+	variable = Array.concat(variable, "calcaneus_x1");
+	value = Array.concat(value, x1);
+
+	id = Array.concat(id, rid);
+	variable = Array.concat(variable, "calcaneus_y1");
+	value = Array.concat(value, y1);
+
+	id = Array.concat(id, rid);
+	variable = Array.concat(variable, "calcaneus_x2");
+	value = Array.concat(value, x2);
+
+	id = Array.concat(id, rid);
+	variable = Array.concat(variable, "calcaneus_y2");
+	value = Array.concat(value, y2);
+    }
+    RoiManager.selectGroup(group_5mt);
+    if (RoiManager.selected == 1) {
+	getLine(x1, y1, x2, y2, lineWidth);
+	rid = Roi.getProperty("id");
+
+	id = Array.concat(id, rid);
+	variable = Array.concat(variable, "5mt_x1");
+	value = Array.concat(value, x1);
+
+	id = Array.concat(id, rid);
+	variable = Array.concat(variable, "5mt_y1");
+	value = Array.concat(value, y1);
+
+	id = Array.concat(id, rid);
+	variable = Array.concat(variable, "5mt_x2");
+	value = Array.concat(value, x2);
+
+	id = Array.concat(id, rid);
+	variable = Array.concat(variable, "5mt_y2");
+	value = Array.concat(value, y2);
+    }
+
+    Table.reset("Results");
+    //Table.setLocationAndSize(0, 410, 600, 600, "lifestyle");
+    Table.showRowNumbers(false);
+    Table.showRowIndexes(false);
+    Table.setColumn("id", id);
+    Table.setColumn("variable", variable);
+    Table.setColumn("value", value);
+    Table.save(pathCSV(""));
+    Table.reset("Results");
+    selectImage(ImageID);
+}
+
 macro "Measure areas [A]" {
     setThreshold(255, 255);
     run("Create Selection");
@@ -2129,6 +2207,7 @@ function gen_fat_results() {
     iname = replace(iname, "_0anatomy.dcm", "");
     lname = iname + "_7label.nii.gz";
     Table.save(idir + iname + "_results.csv");
+    setBatchMode(false);
     selectImage(ImageID);
 }
 
@@ -2680,7 +2759,6 @@ macro "next [n]" {
 macro "previous [p]" {
     openSkin(1);
 }
-*/
 
 macro "Save Overlay [g]" {
     skinSaveOverlay("green");
@@ -2693,6 +2771,7 @@ macro "Save Overlay [r]" {
 macro "Save Selection [b]" {
     skinSaveOverlay("blue");
 }
+*/
 
 ///*** Overlay and save skin images
 
@@ -2706,43 +2785,83 @@ function append_result(Logfile, sid, roi, type, label, value) {
 
 //************ For flat foot tarsal calcaneal measurement
 
+function initVar() {
+
+    roidir = "";
+    //wipath = "";
+    iFilename = getInfo("image.filename");
+    if (iFilename == "") { // assume it is a directory
+	iFilename = getInfo("image.title");
+	idir = File.getParent(getInfo("image.directory")) + File.separator;
+	idir = replace(idir, "\\", "/");
+	roidir = idir + iFilename + "/work/";
+    } else {
+	idir = getInfo("image.directory");
+	idir = replace(idir, "\\", "/");
+	//print("idir = " +  idir);
+	roidir = idir;
+    }
+    //wipath = pathImage();
+
+    //print("roidir = " + roidir);
+    //print("wipath = " + wipath);
+
+}
+
 function init() {
+    initVar();
     roiManager("reset");
     roiManager("Show All");
     roiManager("Show All with labels");
     setTool("Line");
-    if(File.exists(pathROI(""))) {
-	roiManager("Open", pathROI(""));
-    }
+    loadROI("");
     update_info();
 }
 
-function pathROI(xpath) {
+function loadROI(xpath) {
+    if(File.exists(pathROI(xpath))) {
+	roiManager("Open", pathROI(xpath));
+    }
+    tidyROI();
     
-    //print("\\Clear");
-    //print(ipath);
+}
 
+function pathExt(xpath, ext) {
     if (xpath == "") xpath = pathImage();
 
     if (File.isDirectory(xpath)) {
 	// assume dcm dir
 	iName = File.getName(xpath);
 	wdir = xpath + "/work/";
-	iROI = wdir + iName + "_roi.zip";
+	iROI = wdir + iName + ext;
     } else {
 	dotIndex = lastIndexOf(xpath, ".");
 	iDir = File.getDirectory(xpath);
 	iName = File.getNameWithoutExtension(xpath);
-	iROI = iDir + iName + "_roi.zip";
+	iROI = iDir + iName + ext;
     }
     //print(iROI);
     return iROI;
 }
 
+function pathCSV(xpath) {
+    path = pathExt(xpath, "_roi.csv");
+    return path;
+}
+
+function pathROI(xpath) {
+    path = pathExt(xpath, "_roi.zip");
+    return path;
+}
+
+function existCSV(ipath) {
+    if (File.exists(pathCSV(ipath)))
+	return true;
+    else
+	return false;
+}
+
 function existROI(ipath) {
-    //print("\\Clear");
-    //print(ipath);
-    //print(pathROI(ipath));
     if (File.exists(pathROI(ipath)))
 	return true;
     else
@@ -2750,19 +2869,22 @@ function existROI(ipath) {
 }
 
 function pathImage() {
-    ipath = "";
-    // get ipath of current image
-    iFilename = getInfo("image.filename");
-    if (iFilename == "") { // assume it is a directory
-	iFilename = getInfo("image.title");
-	idir = File.getParent(getInfo("image.directory")) + File.separator;
-	idir = replace(idir, "\\", "/");
-    } else {
-	idir = getInfo("image.directory");
-	idir = replace(idir, "\\", "/");
+    xpath = getMetadata("ipath"); 
+    if (xpath == "") {
+	ipath = "";
+	// get ipath of current image
+	iFilename = getInfo("image.filename");
+	if (iFilename == "") { // assume it is a directory
+	    iFilename = getInfo("image.title");
+	    idir = File.getParent(getInfo("image.directory")) + File.separator;
+	    idir = replace(idir, "\\", "/");
+	} else {
+	    idir = getInfo("image.directory");
+	    idir = replace(idir, "\\", "/");
+	}
+	xpath = "" + idir + iFilename;
     }
-    xpath = "" + idir + iFilename;
-    print(xpath);
+    //print(xpath);
     return xpath;
 }
 
@@ -2829,10 +2951,89 @@ function open_case(direction) {
 	    num_N = ifiles.length;
 	    getLocationAndSize(x, y, width, height);
 	    call("ij.gui.ImageWindow.setNextLocation", x, y);
-
+	    nZoom = getZoom() * 100;
 	    close("*");
 	    open(idir + ifiles[num_n-1]);
-	    setLocation(x, y, width, height);
+	    //setLocation(x, y, width, height);
+	    setLocation(x, y);
+	    run("Set... ", "zoom="+ nZoom);
+	    init();
+	    showStatus("[" + num_n + "/" + ifiles.length + "] " + idir + ifiles[num_n-1]);
+	    return idir + ifiles[num_n-1];
+	}
+    }
+
+}
+
+function val_case(direction) {
+    // direction = 1 (forward), 0 (find first undone), -1 (backward)
+
+    iFilename = getInfo("image.filename");
+    if (iFilename == "") { // assume it is a directory
+	filemode = 0;
+	iFilename = getInfo("image.title");
+	idir = File.getParent(getInfo("image.directory")) + File.separator;
+	idir = replace(idir, "\\", "/");
+
+	ifiles0 = getFileList(idir);
+	ifiles = newArray;
+	for (i = 0; i < ifiles0.length; i++) {
+	    if (File.isDirectory(idir + ifiles0[i]))
+		itmp = replace(ifiles0[i], "\\", "");
+		itmp = replace(itmp, "/", "");
+		ifiles = Array.concat(ifiles, itmp);
+	}
+    } else {
+	idir = getInfo("image.directory");
+	filemode = 1;
+	iName = File.getNameWithoutExtension(iFilename);
+	iExt = replace(iFilename, iName + ".", "");
+
+	ifiles0 = getFileList(idir);
+	idir = replace(idir, "\\", "/");
+
+	ifiles = ifiles0;
+	for (i = 0; i < ifiles0.length; i++) {
+	    if (!endsWith(ifiles0[i], iExt))
+		ifiles = Array.deleteValue(ifiles, ifiles0[i]);
+	}
+    }
+
+    num_n = -1;
+    for (i = 0; i < ifiles.length; i++) {
+	// find first undo
+	ipath = idir + ifiles[i];
+	if (direction == 0) {
+	    if (! existCSV(ipath)) { num_n = i + 1; }
+	} else {
+	    if (iFilename == ifiles[i]) {
+		if (direction == 1) {
+		    if (i == ifiles.length - 1) {
+			showMessage("Done");
+			return 0;
+		    } else {
+			num_n = i + 2;
+		    }
+		} else { // direction == -1
+		    if (i == 0) {
+			showMessage("Already the first");
+			return 0;
+		    } else {
+			num_n = i;
+		    }
+		}
+	    }
+	}
+	if (num_n >= 0) {
+	    num_N = ifiles.length;
+	    getLocationAndSize(x, y, width, height);
+	    call("ij.gui.ImageWindow.setNextLocation", x, y);
+	    nZoom = getZoom() * 100;
+	    close("*");
+	    open(idir + ifiles[num_n-1]);
+	    //setLocation(x, y, width, height);
+	    setLocation(x, y);
+	    run("Set... ", "zoom="+ nZoom);
 	    init();
 	    showStatus("[" + num_n + "/" + ifiles.length + "] " + idir + ifiles[num_n-1]);
 	    return idir + ifiles[num_n-1];
@@ -2915,9 +3116,35 @@ function setLine(tag, group_id) {
     }
 }
 
+function tidyROI() {
+    sid = get_sid();
+    for (i = 0; i < RoiManager.size; i++) {
+	RoiManager.select(i);
+	aid = Roi.getProperty("id");
+	if (aid != sid) {
+	    Roi.setGroup(99);
+	}
+	print("aid: " + aid);
+	print("sid: " + sid);
+    }
+    RoiManager.selectGroup(99);
+
+    if (RoiManager.selected > 0) {
+	roiManager("delete");
+    }
+}
+
 function update_results() {
     roiManager("Deselect");
+    sid = get_sid();
+    // check valid data
+    tidyROI();
+
     if (RoiManager.size > 0) {
+	roidir = File.getParent(pathROI(""));
+	if (!File.exists(roidir))  {
+	    File.makeDirectory(roidir);
+	}
 	roiManager("Save", pathROI(""));
     } else {
 	if (File.exists(pathROI(""))) {
@@ -2927,8 +3154,14 @@ function update_results() {
     update_info();
 }
 
+function set_exclude() {
+    sid = get_sid();
+    xpath = pathExt("", ".json");
+    File.append('{"id":"' + sid + '", "status":"excluded"}', xpath);
+}
+
 function update_info() {
-    setBatchMode(true);
+    //setBatchMode(true);
     print("\\Clear");
     print("["+num_n+"/"+num_N+"] "+get_sid());
     print("");
@@ -2939,9 +3172,11 @@ function update_info() {
     print("[q] Prev");
     print("[w] Next");
     print("[e] Next undone");
+    //setBatchMode(false);
 }
 
 
+/*
 macro "Next Slice [c]" {
     run("Next Slice [>]");
 }
@@ -2949,6 +3184,7 @@ macro "Next Slice [c]" {
 macro "Previous Slice [x]" {
     run("Previous Slice [<]");
 }
+*/
 
 macro "Next Case [N]" {
     update_results();
@@ -2960,9 +3196,8 @@ macro "Prev Case [P]" {
     open_case(-1);
 }
 
-macro "Next Undone Case [n]" {
-    update_results();
-    open_case(0);
+macro "init [0]" {
+    init();
 }
 
 macro "Set calcaneal line [1]" {
@@ -2980,6 +3215,10 @@ macro "Next Undone Case [3]" {
     open_case(0);
 }
 
+macro "Exclude [9]" {
+    set_exclude();
+}
+
 macro "Next Case [w]" {
     update_results();
     open_case(1);
@@ -2993,5 +3232,28 @@ macro "Prev Case [q]" {
 macro "Next Undone [e]" {
     update_results();
     open_case(0);
+}
+
+macro "Prev Case [z]" {
+    open_case(-1);
+}
+
+macro "Next Case [x]" {
+    open_case(1);
+}
+
+macro "Check Tarsus and Next [c]" {
+    update_tarsus();
+    open_case(1);
+}
+
+macro "Next Unchecked Case [v]" {
+    val_case(0);
+}
+
+
+macro "info [i]" {
+    print("pathImage: " + pathImage());
+    print("pathROI: " + pathROI(""));
 }
 
