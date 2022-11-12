@@ -7,6 +7,10 @@ cat("==== min(SliceThickness) ====\n")
 x[!is.na(SliceThickness)][,.(SliceThickness = min(SliceThickness)), by = .(PatientID, StudyDate)][order(PatientID, StudyDate)]
 cat("====\n")
 
+cat("==== min(SliceThickness) ====\n")
+x[!is.na(SliceThickness)][,.(SliceThickness = min(SliceThickness)), by = .(PatientID, StudyDate)][order(StudyDate)]
+cat("====\n")
+
 cat("==== min(SliceThickness) > 1 ====\n")
 x[!is.na(SliceThickness)][,.(SliceThickness = min(SliceThickness)), by = .(PatientID, StudyDate)][order(PatientID, StudyDate)][SliceThickness > 1]
 cat("====\n")
