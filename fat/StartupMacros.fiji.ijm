@@ -363,7 +363,7 @@ var group_liver_mre = 51;
 //	{wdir} = {dir0}/{xdir}/{data_dir}
 
 
-var xmode = 0;
+var xmode = 2;
 //var data_dir = "0data/";
 var data_dir = "";
 var anatomy_dir = "0anatomy/";

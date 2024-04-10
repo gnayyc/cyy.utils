@@ -6,7 +6,7 @@
 
 .f <- lapply(.fs, data.table::fread)
 
-dt <- data.table::rbindlist(.f)
+dt <- data.table::rbindlist(.f, fill=T)
 
 # safer way
 # dt <- dplyr::bind_rows(.f)
