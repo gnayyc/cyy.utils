@@ -15,7 +15,7 @@ gs4_auth(email = T)
     , hospital := ifelse(str_detect(V1, "^\\d"), "總院", "生醫")] |> 
     setnames("V1", "PatientID")
 
-system('dcmdir2csv.py')
+#system('dcmdir2csv.py')
 #id = fread("id.csv")
 id = .x
 x = fread("info.csv")
@@ -25,7 +25,8 @@ y = id[y, on="PatientID"][order(StudyID, StudyDate)]
 
 #y[,i_Exam := data.table::rowid(PatientID)][,N_Exam:= .N, by=.(PatientID)]
 y[!is.na(StudyID), i_Exam := rowid(StudyID)][!is.na(StudyID), N_Exam := .N, by=.(StudyID)][, hospital := ifelse(str_detect(PatientID, "^\\d"), "總院", "生醫")]
-z = y[,.(StudyID,hospital,PatientID,StudyDate,StudyTime,i_Exam,N_Exam,InstitutionName,ManufacturerModelName,Manufacturer,SeriesDescription,SliceThickness)]
+#z = y[,.(StudyID,hospital,PatientID,StudyDate,StudyTime,i_Exam,N_Exam,InstitutionName,ManufacturerModelName,Manufacturer,SeriesDescription,SliceThickness)]
+z = y[,.(StudyID,i_Exam,N_Exam,hospital,PatientID,StudyDate,StudyTime,InstitutionName,ManufacturerModelName,Manufacturer,SeriesDescription,SliceThickness)]
 
 data.table::fwrite(z, "GO_CT_list.csv")
 

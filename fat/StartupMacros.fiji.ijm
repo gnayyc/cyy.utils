@@ -1738,6 +1738,86 @@ function createMask(lower, upper) {
     //run("Add Image...", "image="+title+" x=0 y=0 opacity=60");
 }
 
+function createMask1() {
+    // Manual threshold for fat
+    //setBatchMode(true);
+    // 1. 
+    // To get the selection of the largest particle
+    run("Select None");
+    run("Duplicate...", " ");
+	setThreshold(-1024, 2048);
+	run("Convert to Mask");
+	run("Erode");
+	run("Analyze Particles...", "size=5000-Infinity pixel show=Masks");
+	    run("Dilate");
+	    run("Fill Holes");
+	    run("Create Selection");
+	close();
+    close();
+
+    // 2. 
+    // get/set metadata
+    iid = getImageID();
+    title = getTitle;
+
+    id = getTag("0010,0020");
+    series = getTag("0020,0011");
+    InstanceNumber = getTag("0020,0013");
+    modality = getTag("0008,0060");
+
+    id = replace(id, " ", "");
+    series = replace(series, " ", "");
+    InstanceNumber = replace(InstanceNumber, " ", "");
+
+
+    xid = getXid("");
+    xdir = getXdir("");
+    xpath = getIpath();
+    workingSlice = getSliceNumber();
+    run("Select None");
+    getLocationAndSize(x, y, width, height);
+
+    // 3.
+    // Duplicate
+    run("Duplicate...", "title="+getTitle + "_mask ignore duplicate");
+    Property.set("xid", xid);
+    Property.set("xdir", xdir);
+    Property.set("xpath", xpath);
+    //showMessage("set xpath = " + xpath);
+    Property.set("id", id);
+    Property.set("series", series);
+    Property.set("InstanceNumber", InstanceNumber);
+    Property.set("workingSlice", workingSlice);
+    //run("Duplicate...", "title="+getTitle + "_mask duplicate"); //stack duplicate
+    iid2 = getImageID();
+    setLocation(x+width+10, y);
+    run("Threshold...");
+    title = "Wait";
+    msg = "If necessary, use the \"Threshold\" tool to\nadjust the threshold, then click \"OK\".";
+    waitForUser(title, msg);
+    selectImage(iid2);
+    getThreshold(lower, upper);
+    // setThreshold(lower, upper);
+    
+    //run("Convert to Mask");   // slice dup
+    //run("Convert to Mask", "method=Default background=Light create");
+    run("Convert to Mask", "method=Default background=Default");
+
+
+    //run("Display...", " "); //do not use Inverting LUT
+    // run("Convert to Mask");
+    run("Restore Selection"); // Largest body
+    run("Clear Outside", "slice");
+    run("Create Selection");
+    selectImage(iid);
+    run("Restore Selection");
+    selectImage(iid2);
+    setBatchMode(false);
+    //run("Select None");
+    //run("Add Image...", "image="+title+" x=0 y=0 opacity=60");
+}
+
+
 macro "Set Manual Fat Mask after duplicate and threshold [F]" {
   if (Modality.contains("MR")) {
     run("Make Binary");
@@ -3859,16 +3939,10 @@ macro "Previous case [d]" {
 }
 
 macro "Next undone [n]" {
-	update_results();
-	open_case(0);
-    createMask(1, 4096);
-    roiManager("reset");
-    loadROI("");
-}
-
-
-macro "Create fat mask [F]" {
-    createMask(100, 800);
+    update_results();
+    open_case(0);
+    //createMask(1, 4096);
+    createMask1();
     roiManager("reset");
     loadROI("");
 }
@@ -3923,6 +3997,7 @@ function gen_oat(level) {
 }
 
 /*
+var xmode = 0;
 macro "Total adipose tissue [t]" {
     addMask1("tat_3", group_tat_3);
     update_results();
@@ -3944,6 +4019,7 @@ macro "Subcutaneous adipose tissue [s]" {
     addMask1("sat_3", group_sat_3);
     update_results();
 }
+*/
 
 /*
 macro "Set xmode[0] [F1]" {
@@ -4054,11 +4130,11 @@ macro "Liver MRE [e]" {
 }
 
 
+/*
 macro "Next Slice [c]" {
     run("Next Slice [>]");
 }
 
-/*
 macro "Previous Slice [x]" {
     run("Previous Slice [<]");
 }
@@ -4066,5 +4142,143 @@ macro "Previous Slice [x]" {
 
 macro "WandSelect [v]" {
     wandSelect("4-connected");
+}
+
+/// For Fat segmentation
+var xmode = 0;
+
+macro "Create fat mask [F]" {
+    createMask(100, 800);
+    //createMask(230, 65535);
+    roiManager("reset");
+    loadROI("");
+}
+
+macro "Create fat mask manual threshold [G]" {
+    createMask1();
+    //createMask(230, 65535);
+    roiManager("reset");
+    loadROI("");
+}
+
+macro "Total adipose tissue [t]" {
+    addMask1("tat_3", group_tat_3);
+    update_results();
+}
+
+macro "Other+visceral adipose tissue [o]" {
+    addMask1("ovat_3", group_ovat_3);
+    gen_sat(3);
+    update_results();
+}
+
+macro "Visceral adipose tissue [v]" {
+    addMask1("vat_3", group_vat_3);
+    gen_oat(3);
+    update_results();
+}
+
+macro "Subcutaneous adipose tissue [s]" {
+    addMask1("sat_3", group_sat_3);
+    update_results();
+}
+
+function overlay_roi(roi_name, color) {
+    for (j = 0; j < RoiManager.size; j++) {
+	if (RoiManager.getName(j) == roi_name) {
+	    RoiManager.select(j);
+	    Overlay.addSelection("", 0, color);
+	    //Overlay.fill(color)
+	}
+    }
+}
+function overlay_fatroi() {
+	xpath = getIpath();
+	path = pathExt(xpath, "_roi.png");
+	Overlay.clear;
+	overlay_roi("vat_3", "#7F00FF00");
+	overlay_roi("sat_3", "#7FFF0000");
+	Overlay.flatten;
+	save(path);
+	close();
+}
+
+function gen_overlay_sdir() {
+  // file mode
+  setBatchMode(true); 
+  sdir = getDirectory("Choose Source Directory ");
+  sdir = replace(sdir, "\\", "/");
+
+  ifiles = getFileList(sdir);
+
+  for (i = 0; i < ifiles.length; i++) {
+    if (xmode == 0) {
+      if (endsWith(ifiles[i], "_roi.zip")) {
+        ibase = ifiles[i].replace("_roi.zip","");
+        idcm = ibase + ".dcm";
+        showStatus(sdir + idcm);
+        open(sdir + idcm);
+        init();
+        //generate_results();
+        //gen_m_results();
+        //gen_f_results();
+        //gen_results();
+	overlay_fatroi();
+        close();
+      }
+    } else if (xmode == 2) {
+      xdir = sdir + ifiles[i];
+      if (File.isDirectory(xdir)) {
+        ilist0 = getFileList(xdir);
+        i_F = 0;
+        i_W= 0;
+        i_E = 0;
+        for (j = 0; j < ilist0.length; j++) {
+          if (ilist0[j].startsWith("03_F1") && File.isDirectory(xdir + ilist0[j])) {
+            i_F = j;
+          }
+          if (ilist0[j].startsWith("04_W1") && File.isDirectory(xdir + ilist0[j])) {
+            i_W = j;
+          }
+          if (ilist0[j].startsWith("09_MRE95") && File.isDirectory(xdir + ilist0[j])) {
+            i_E = j;
+          }
+        }
+        fat_path = xdir + ilist0[i_F];
+        water_path = xdir + ilist0[i_W];
+        mre_path = xdir + ilist0[i_E];
+        //XXXXXXXXX
+
+        open(fat_path);
+        init_dixon();
+        roifile = pathExt("", "_dixon.zip");
+        if(File.exists(roifile)) {
+          generate_dixon_results("fat");
+        }
+        close();
+
+        open(water_path);
+        init_dixon();
+        roifile = pathExt("", "_dixon.zip");
+        if(File.exists(roifile)) {
+          generate_dixon_results("water");
+        }
+        close();
+
+        open(mre_path);
+        init_mre();
+        roifile = pathExt("", "_mre.zip");
+        if(File.exists(roifile)) {
+          generate_mre_results();
+        }
+        close();
+      }
+    }
+  }
+  //setBatchMode(false); 
+}
+
+macro "Overlay sat/vat [y]" {
+    gen_overlay_sdir();
 }
 
